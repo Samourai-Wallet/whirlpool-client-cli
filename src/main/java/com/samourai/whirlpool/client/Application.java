@@ -127,7 +127,7 @@ public class Application implements ApplicationRunner {
     }
 
     // start mixing in a pool
-    private void whirlpool(WhirlpoolClient whirlpoolClient, String poolId, long denomination, NetworkParameters params) {
+    private void whirlpool(WhirlpoolClient whirlpoolClient, String poolId, long poolDenomination, NetworkParameters params) {
         String utxoHash = appArgs.getUtxoHash();
         long utxoIdx = appArgs.getUtxoIdx();
         String utxoKey = appArgs.getUtxoKey();
@@ -137,14 +137,14 @@ public class Application implements ApplicationRunner {
         final int mixs = appArgs.getMixs();
 
         try {
-            runWhirlpool(whirlpoolClient, poolId, denomination, params, utxoHash, utxoIdx, utxoKey, utxoBalance, seedWords, seedPassphrase, mixs);
+            runWhirlpool(whirlpoolClient, poolId, poolDenomination, params, utxoHash, utxoIdx, utxoKey, utxoBalance, seedWords, seedPassphrase, mixs);
             waitDone();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private WhirlpoolClient runWhirlpool(WhirlpoolClient whirlpoolClient, String poolId, long denomination, NetworkParameters params, String utxoHash, long utxoIdx, String utxoKey, long utxoBalance, String seedWords, String seedPassphrase, int mixs) throws Exception {
+    private WhirlpoolClient runWhirlpool(WhirlpoolClient whirlpoolClient, String poolId, long poolDenomination, NetworkParameters params, String utxoHash, long utxoIdx, String utxoKey, long utxoBalance, String seedWords, String seedPassphrase, int mixs) throws Exception {
         // utxo key
         DumpedPrivateKey dumpedPrivateKey = new DumpedPrivateKey(params, utxoKey);
         ECKey ecKey = dumpedPrivateKey.getKey();
@@ -165,7 +165,7 @@ public class Application implements ApplicationRunner {
         IMixHandler mixHandler = new MixHandler(ecKey, bip47w, appArgs.getPaynymIndex(), Bip47Util.getInstance());
         MixParams mixParams = new MixParams(utxoHash, utxoIdx, utxoBalance, mixHandler);
         WhirlpoolClientListener listener = computeClientListener();
-        whirlpoolClient.whirlpool(poolId, denomination, mixParams, mixs, listener);
+        whirlpoolClient.whirlpool(poolId, poolDenomination, mixParams, mixs, listener);
         return whirlpoolClient;
     }
 
