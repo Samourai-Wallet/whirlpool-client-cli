@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.client;
 
 import com.samourai.wallet.bip47.rpc.BIP47Wallet;
+import com.samourai.wallet.bip47.rpc.impl.Bip47Util;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.whirlpool.client.app.JavaHttpClient;
 import com.samourai.whirlpool.client.app.JavaStompClient;
@@ -161,7 +162,7 @@ public class Application implements ApplicationRunner {
         BIP47Wallet bip47w = new BIP47Wallet(47, mc, params, Hex.decode(hdw.getSeedHex()), hdw.getPassphrase(), 1);
 
         // whirlpool
-        IMixHandler mixHandler = new MixHandler(ecKey, bip47w, appArgs.getPaynymIndex());
+        IMixHandler mixHandler = new MixHandler(ecKey, bip47w, appArgs.getPaynymIndex(), Bip47Util.getInstance());
         MixParams mixParams = new MixParams(utxoHash, utxoIdx, utxoBalance, mixHandler);
         WhirlpoolClientListener listener = computeClientListener();
         whirlpoolClient.whirlpool(poolId, denomination, mixParams, mixs, listener);

@@ -30,6 +30,7 @@ public class JavaStompClient implements IWhirlpoolStompClient {
             this.stompSession = stompClient.connect(url, (WebSocketHttpHeaders) null, stompHeadersObj, computeStompSessionHandler(onConnect, onDisconnect)).get();
             this.stompSessionId = stompSession.getSessionId();
         } catch(Exception e) {
+            disconnect();
             onDisconnect.onMessage(e);
         }
     }
@@ -93,6 +94,7 @@ public class JavaStompClient implements IWhirlpoolStompClient {
             public void handleTransportError(StompSession session, Throwable exception) {
                 super.handleTransportError(session, exception);
                 if (exception instanceof ConnectionLostException) {
+                    disconnect();
                     onDisconnect.onMessage(exception);
                 }
                 else {
