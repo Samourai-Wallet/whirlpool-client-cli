@@ -14,7 +14,7 @@
         <dependency>
             <groupId>com.samouraiwallet</groupId>
             <artifactId>whirlpool-client</artifactId>
-            <version>0.0.1-android-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
