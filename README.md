@@ -33,3 +33,22 @@ Arguments:
 - pool: id of the pool to join.
 - test-mode: disable tx0 checks (samourai fees) - when server is in testMode
 - debug: display more logs for debugging
+
+
+## Build instructions
+Before using whirlpool-client-cli, install dependencies in this order:
+- whirlpool-protocol
+- whirlpool-client
+- whirlpool-client-cli
+
+```
+cd whirlpool-protocol
+mvn clean install -Dmaven.test.skip=true
+
+cd whirlpool-client
+mvn clean install -Dmaven.test.skip=true
+
+cd whirlpool-client-cli
+mvn clean install -Dmaven.test.skip=true
+
+```
