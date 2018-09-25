@@ -1,31 +1,29 @@
-package com.samourai.whirlpool.client.app;
+package com.samourai.http.client;
 
-import com.samourai.whirlpool.client.whirlpool.httpClient.IWhirlpoolHttpClient;
-import com.samourai.whirlpool.client.whirlpool.httpClient.WhirlpoolHttpException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
-public class JavaHttpClient implements IWhirlpoolHttpClient {
+public class JavaHttpClient implements IHttpClient {
     @Override
-    public <T> T getJsonAsEntity(String url, Class<T> entityClass) throws WhirlpoolHttpException {
+    public <T> T parseJson(String url, Class<T> entityClass) throws HttpException {
         RestTemplate restTemplate = new RestTemplate();
         try {
             ResponseEntity<T> result = restTemplate.getForEntity(url, entityClass);
             if (result == null || !result.getStatusCode().is2xxSuccessful()) {
                 // response error
                 String responseBody = null;
-                throw new WhirlpoolHttpException(new Exception("unable to retrieve pools"), responseBody);
+                throw new HttpException(new Exception("unable to retrieve pools"), responseBody);
             }
             return result.getBody();
         } catch(RestClientResponseException e) {
             String responseBody = e.getResponseBodyAsString();
-            throw new WhirlpoolHttpException(e, responseBody);
+            throw new HttpException(e, responseBody);
         }
     }
 
     @Override
-    public void postJsonOverTor(String url, Object body) throws WhirlpoolHttpException {
+    public void postJsonOverTor(String url, Object body) throws HttpException {
         try {
             // TODO use TOR
             RestTemplate restTemplate = new RestTemplate();
@@ -33,12 +31,12 @@ public class JavaHttpClient implements IWhirlpoolHttpClient {
             if (result == null || !result.getStatusCode().is2xxSuccessful()) {
                 // response error
                 String responseBody = null;
-                throw new WhirlpoolHttpException(new Exception("statusCode not successful"), responseBody);
+                throw new HttpException(new Exception("statusCode not successful"), responseBody);
             }
         }
         catch(RestClientResponseException e) {
             String responseBody = e.getResponseBodyAsString();
-            throw new WhirlpoolHttpException(e, responseBody);
+            throw new HttpException(e, responseBody);
         }
     }
 }

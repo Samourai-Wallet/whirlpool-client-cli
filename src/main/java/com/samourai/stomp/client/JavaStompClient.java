@@ -1,7 +1,6 @@
-package com.samourai.whirlpool.client.app;
+package com.samourai.stomp.client;
 
 import com.samourai.whirlpool.client.Application;
-import com.samourai.whirlpool.client.mix.transport.IWhirlpoolStompClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -13,16 +12,15 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import javax.websocket.MessageHandler;
 import java.util.Map;
 
-public class JavaStompClient implements IWhirlpoolStompClient {
+public class JavaStompClient implements IStompClient {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
-    private static final String HEADER_USERNAME = "user-name";
 
     private WebSocketStompClient stompClient;
     private StompSession stompSession;
     private String stompSessionId;
 
     @Override
-    public void connect(String url, Map<String, String> stompHeaders, MessageHandler.Whole<String> onConnect, MessageHandler.Whole<Throwable> onDisconnect) {
+    public void connect(String url, Map<String, String> stompHeaders, MessageHandler.Whole<IStompMessage> onConnect, MessageHandler.Whole<Throwable> onDisconnect) {
         this.stompClient = computeWebSocketClient();
 
         StompHeaders stompHeadersObj = computeStompHeaders(stompHeaders);
@@ -41,7 +39,7 @@ public class JavaStompClient implements IWhirlpoolStompClient {
     }
 
     @Override
-    public void subscribe(Map<String, String> stompHeaders, final MessageHandler.Whole<Object> onMessage, final MessageHandler.Whole<String> onError) {
+    public void subscribe(Map<String, String> stompHeaders, final MessageHandler.Whole<IStompMessage> onMessage, final MessageHandler.Whole<String> onError) {
         StompHeaders stompHeadersObj = computeStompHeaders(stompHeaders);
         JavaStompFrameHandler frameHandler = new JavaStompFrameHandler(onMessage, onError);
         stompSession.subscribe(stompHeadersObj, frameHandler);
@@ -73,15 +71,15 @@ public class JavaStompClient implements IWhirlpoolStompClient {
         }
     }
 
-    private StompSessionHandlerAdapter computeStompSessionHandler(final MessageHandler.Whole<String> onConnect, final MessageHandler.Whole<Throwable> onDisconnect) {
+    private StompSessionHandlerAdapter computeStompSessionHandler(final MessageHandler.Whole<IStompMessage> onConnect, final MessageHandler.Whole<Throwable> onDisconnect) {
         return new StompSessionHandlerAdapter() {
             @Override
             public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
                 super.afterConnected(session, connectedHeaders);
 
-                // username
-                String stompUsername = connectedHeaders.get(HEADER_USERNAME).iterator().next();
-                onConnect.onMessage(stompUsername);
+                // send back headers
+                IStompMessage stompMessage = new JavaStompMessage(connectedHeaders, null);
+                onConnect.onMessage(stompMessage);
             }
 
             @Override

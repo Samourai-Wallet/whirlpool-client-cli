@@ -1,22 +1,22 @@
 package com.samourai.whirlpool.client;
 
+import com.samourai.http.client.IHttpClient;
+import com.samourai.http.client.JavaHttpClient;
+import com.samourai.stomp.client.IStompClient;
+import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.bip47.rpc.BIP47Wallet;
 import com.samourai.wallet.bip47.rpc.impl.Bip47Util;
 import com.samourai.wallet.hd.HD_Wallet;
-import com.samourai.whirlpool.client.app.JavaHttpClient;
-import com.samourai.whirlpool.client.app.JavaStompClient;
 import com.samourai.whirlpool.client.mix.MixParams;
 import com.samourai.whirlpool.client.mix.handler.IMixHandler;
 import com.samourai.whirlpool.client.mix.handler.MixHandler;
 import com.samourai.whirlpool.client.mix.listener.MixStep;
 import com.samourai.whirlpool.client.mix.listener.MixSuccess;
-import com.samourai.whirlpool.client.mix.transport.IWhirlpoolStompClient;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.beans.Pools;
-import com.samourai.whirlpool.client.whirlpool.httpClient.IWhirlpoolHttpClient;
 import com.samourai.whirlpool.client.whirlpool.listener.LoggingWhirlpoolClientListener;
 import com.samourai.whirlpool.client.whirlpool.listener.WhirlpoolClientListener;
 import org.bitcoinj.core.Context;
@@ -68,8 +68,8 @@ public class Application implements ApplicationRunner {
             new Context(params); // initialize bitcoinj context
 
             // instanciate client
-            IWhirlpoolHttpClient httpClient = new JavaHttpClient();
-            IWhirlpoolStompClient stompClient = new JavaStompClient();
+            IHttpClient httpClient = new JavaHttpClient();
+            IStompClient stompClient = new JavaStompClient();
             WhirlpoolClientConfig config = new WhirlpoolClientConfig(httpClient, stompClient, server, params);
             if (appArgs.isTestMode()) {
                 config.setTestMode(true);
