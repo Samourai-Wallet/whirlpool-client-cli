@@ -19,13 +19,20 @@ public class JavaStompClient implements IStompClient {
     private StompSession stompSession;
     private String stompSessionId;
 
+    private StompHeaders connectedHeaders;
+
     @Override
     public void connect(String url, Map<String, String> stompHeaders, MessageHandler.Whole<IStompMessage> onConnect, MessageHandler.Whole<Throwable> onDisconnect) {
         this.stompClient = computeWebSocketClient();
 
         StompHeaders stompHeadersObj = computeStompHeaders(stompHeaders);
         try {
-            this.stompSession = stompClient.connect(url, (WebSocketHttpHeaders) null, stompHeadersObj, computeStompSessionHandler(onConnect, onDisconnect)).get();
+            this.stompSession = stompClient.connect(url, (WebSocketHttpHeaders) null, stompHeadersObj, computeStompSessionHandler(onDisconnect)).get();
+
+            // send back connected headers (set by sessionHandler before stompSession is set)
+            IStompMessage stompMessage = new JavaStompMessage(connectedHeaders, null);
+            onConnect.onMessage(stompMessage);
+
             this.stompSessionId = stompSession.getSessionId();
         } catch(Exception e) {
             disconnect();
@@ -71,15 +78,12 @@ public class JavaStompClient implements IStompClient {
         }
     }
 
-    private StompSessionHandlerAdapter computeStompSessionHandler(final MessageHandler.Whole<IStompMessage> onConnect, final MessageHandler.Whole<Throwable> onDisconnect) {
+    private StompSessionHandlerAdapter computeStompSessionHandler(final MessageHandler.Whole<Throwable> onDisconnect) {
         return new StompSessionHandlerAdapter() {
             @Override
             public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
                 super.afterConnected(session, connectedHeaders);
-
-                // send back headers
-                IStompMessage stompMessage = new JavaStompMessage(connectedHeaders, null);
-                onConnect.onMessage(stompMessage);
+                JavaStompClient.this.connectedHeaders = connectedHeaders;
             }
 
             @Override
