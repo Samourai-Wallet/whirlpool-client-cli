@@ -43,9 +43,11 @@ import java.util.List;
 @EnableAutoConfiguration
 public class Application implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
+    private static final String BIP39_ENGLISH_SHA256 = "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db";
 
     private ApplicationArgs appArgs;
     private boolean done = false;
+
 
     public static void main(String... args) {
         SpringApplication.run(Application.class, args);
@@ -137,20 +139,19 @@ public class Application implements ApplicationRunner {
         final int mixs = appArgs.getMixs();
 
         try {
-            runWhirlpool(whirlpoolClient, poolId, poolDenomination, params, utxoHash, utxoIdx, utxoKey, utxoBalance, seedWords, seedPassphrase, mixs);
-            waitDone();
+            CliListener listener = runWhirlpool(whirlpoolClient, poolId, poolDenomination, params, utxoHash, utxoIdx, utxoKey, utxoBalance, seedWords, seedPassphrase, mixs);
+            listener.waitDone();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private WhirlpoolClient runWhirlpool(WhirlpoolClient whirlpoolClient, String poolId, long poolDenomination, NetworkParameters params, String utxoHash, long utxoIdx, String utxoKey, long utxoBalance, String seedWords, String seedPassphrase, int mixs) throws Exception {
+    private CliListener runWhirlpool(WhirlpoolClient whirlpoolClient, String poolId, long poolDenomination, NetworkParameters params, String utxoHash, long utxoIdx, String utxoKey, long utxoBalance, String seedWords, String seedPassphrase, int mixs) throws Exception {
         // utxo key
         DumpedPrivateKey dumpedPrivateKey = new DumpedPrivateKey(params, utxoKey);
         ECKey ecKey = dumpedPrivateKey.getKey();
 
         // wallet
-        final String BIP39_ENGLISH_SHA256 = "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db";
         InputStream wis = HD_Wallet.class.getResourceAsStream("/en_US.txt");
         List<String> seedWordsList = Arrays.asList(seedWords.split("\\s+"));
         MnemonicCode mc = new MnemonicCode(wis, BIP39_ENGLISH_SHA256);
@@ -164,52 +165,9 @@ public class Application implements ApplicationRunner {
         // whirlpool
         IMixHandler mixHandler = new MixHandler(ecKey, bip47w, appArgs.getPaynymIndex(), Bip47Util.getInstance());
         MixParams mixParams = new MixParams(utxoHash, utxoIdx, utxoBalance, mixHandler);
-        WhirlpoolClientListener listener = computeClientListener();
+        CliListener listener = new CliListener();
         whirlpoolClient.whirlpool(poolId, poolDenomination, mixParams, mixs, listener);
-        return whirlpoolClient;
-    }
-
-    // this listener gets notified of mix status in real time
-    private WhirlpoolClientListener computeClientListener() {
-        return new LoggingWhirlpoolClientListener(){
-            @Override
-            public void success(int nbMixs, MixSuccess mixSuccess) {
-                super.success(nbMixs, mixSuccess);
-                done = true;
-
-                // override with custom code here: all mixs success
-            }
-
-            @Override
-            public void fail(int currentMix, int nbMixs) {
-                super.fail(currentMix, nbMixs);
-                done = true;
-
-                // override with custom code here: failure
-            }
-
-            @Override
-            public void progress(int currentMix, int nbMixs, MixStep step, String stepInfo, int stepNumber, int nbSteps) {
-                super.progress(currentMix, nbMixs, step, stepInfo, stepNumber, nbSteps);
-
-                // override with custom code here: mix progress
-            }
-
-            @Override
-            public void mixSuccess(int currentMix, int nbMixs, MixSuccess mixSuccess) {
-                super.mixSuccess(currentMix, nbMixs, mixSuccess);
-
-                // override with custom code here: one mix success (check if more mixs remaining with currentMix==nbMixs)
-            }
-        };
-    }
-
-    private void waitDone() throws InterruptedException {
-        synchronized (this) {
-            while(!done) {
-                wait(1000);
-            }
-        }
+        return listener;
     }
 
     private double satToBtc(long sat) {
