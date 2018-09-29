@@ -92,7 +92,11 @@ public class Application implements ApplicationRunner {
                    Pool pool = pools.findPoolById(poolId);
                    if (pool != null) {
                        // pool found, go whirlpool
-                       whirlpool(whirlpoolClient, pool.getPoolId(), pool.getDenomination(), params);
+                       try {
+                           new RunWhirlpool().run(appArgs, whirlpoolClient, pool.getPoolId(), pool.getDenomination());
+                       } catch (Exception e) {
+                           e.printStackTrace();
+                       }
                        return;
                    } else {
                        log.error("Pool not found: " + poolId);
@@ -126,48 +130,6 @@ public class Application implements ApplicationRunner {
         } catch(Exception e) {
             log.error("", e);
         }
-    }
-
-    // start mixing in a pool
-    private void whirlpool(WhirlpoolClient whirlpoolClient, String poolId, long poolDenomination, NetworkParameters params) {
-        String utxoHash = appArgs.getUtxoHash();
-        long utxoIdx = appArgs.getUtxoIdx();
-        String utxoKey = appArgs.getUtxoKey();
-        long utxoBalance = appArgs.getUtxoBalance();
-        String seedWords = appArgs.getSeedWords();
-        String seedPassphrase = appArgs.getSeedPassphrase();
-        final int mixs = appArgs.getMixs();
-
-        try {
-            CliListener listener = runWhirlpool(whirlpoolClient, poolId, poolDenomination, params, utxoHash, utxoIdx, utxoKey, utxoBalance, seedWords, seedPassphrase, mixs);
-            listener.waitDone();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private CliListener runWhirlpool(WhirlpoolClient whirlpoolClient, String poolId, long poolDenomination, NetworkParameters params, String utxoHash, long utxoIdx, String utxoKey, long utxoBalance, String seedWords, String seedPassphrase, int mixs) throws Exception {
-        // utxo key
-        DumpedPrivateKey dumpedPrivateKey = new DumpedPrivateKey(params, utxoKey);
-        ECKey ecKey = dumpedPrivateKey.getKey();
-
-        // wallet
-        InputStream wis = HD_Wallet.class.getResourceAsStream("/en_US.txt");
-        List<String> seedWordsList = Arrays.asList(seedWords.split("\\s+"));
-        MnemonicCode mc = new MnemonicCode(wis, BIP39_ENGLISH_SHA256);
-        byte[] seed = mc.toEntropy(seedWordsList);
-
-        // init BIP44 wallet
-        HD_Wallet hdw = new HD_Wallet(44, mc, params, seed, seedPassphrase, 1);
-        // init BIP47 wallet for input
-        BIP47Wallet bip47w = new BIP47Wallet(47, mc, params, Hex.decode(hdw.getSeedHex()), hdw.getPassphrase(), 1);
-
-        // whirlpool
-        IMixHandler mixHandler = new MixHandler(ecKey, bip47w, appArgs.getPaynymIndex(), Bip47Util.getInstance());
-        MixParams mixParams = new MixParams(utxoHash, utxoIdx, utxoBalance, mixHandler);
-        CliListener listener = new CliListener();
-        whirlpoolClient.whirlpool(poolId, poolDenomination, mixParams, mixs, listener);
-        return listener;
     }
 
     private double satToBtc(long sat) {
