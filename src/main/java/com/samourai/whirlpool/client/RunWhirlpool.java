@@ -67,8 +67,4 @@ public class RunWhirlpool {
         whirlpoolClient.whirlpool(poolId, poolDenomination, mixParams, mixs, listener);
         return listener;
     }
-
-    private double satToBtc(long sat) {
-        return sat / 100000000.0;
-    }
 }
