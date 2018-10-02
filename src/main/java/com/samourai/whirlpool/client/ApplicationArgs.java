@@ -6,11 +6,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.util.Assert;
 
+import java.lang.invoke.MethodHandles;
+
 /**
  * Parsing command-line client arguments.
  */
 public class ApplicationArgs {
-    private static final Logger log = LoggerFactory.getLogger(ApplicationArgs.class);
+    private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final String ARG_DEBUG = "debug";
     private static final String ARG_NETWORK_ID = "network";
@@ -24,6 +26,7 @@ public class ApplicationArgs {
     private static final String ARG_MIXS = "mixs";
     private static final String ARG_POOL_ID = "pool";
     private static final String ARG_TESTMODE = "test-mode";
+    private static final String ARG_VPUB = "vpub";
     public static final String USAGE = "--network={main,test} --utxo= --utxo-key= --utxo-balance= --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug]";
     private static final String UTXO_SEPARATOR = "-";
 
@@ -132,6 +135,10 @@ public class ApplicationArgs {
 
     public boolean isTestMode() {
         return args.containsOption(ARG_TESTMODE);
+    }
+
+    public String getVPub() {
+        return optionalOption(ARG_VPUB);
     }
 
     private String optionalOption(String name) {
