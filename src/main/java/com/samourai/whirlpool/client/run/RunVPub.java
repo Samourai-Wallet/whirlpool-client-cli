@@ -33,6 +33,8 @@ public class RunVPub {
 
     private static final long MINER_FEE_PER_MUSTMIX = 300;
 
+    private static final int SLEEP_LOOPS_SECONDS = 20;
+
     private WhirlpoolClientConfig config;
     private NetworkParameters params;
     private HdWalletFactory hdWalletFactory;
@@ -52,6 +54,16 @@ public class RunVPub {
     public void run(Pool pool, String seedWords, String passphrase, int paynymIndex, String vpub) throws Exception {
         initWallets(seedWords, passphrase);
 
+        while(true) {
+            log.info(" --------------------------------------- ");
+            runLoop(pool, paynymIndex, vpub);
+
+            log.info(" => Next loop in " +  SLEEP_LOOPS_SECONDS + " seconds...");
+            Thread.sleep(SLEEP_LOOPS_SECONDS*1000);
+        }
+    }
+
+    public void runLoop(Pool pool, int paynymIndex, String vpub) throws Exception {
         // fetch unspent utx0s
         log.info(" • Fetching unspent outputs for VPub...");
         List<UnspentResponse.UnspentOutput> utxos = samouraiApi.fetchUtxos(vpub);
@@ -99,7 +111,6 @@ public class RunVPub {
             paynymIndex = new RunMixVPub(config).runMix(mustMixUtxos, bip47w, bip84w, pool, paynymIndex);
             log.info("=> paynymIndex=" + paynymIndex);
         }
-        // TODO LOOP
     }
 
     private void initWallets(String seedWords, String passphrase) throws Exception {

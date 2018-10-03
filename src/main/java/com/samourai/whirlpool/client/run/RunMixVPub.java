@@ -28,6 +28,8 @@ public class RunMixVPub {
     private WhirlpoolClientConfig config;
     private Bip47Util bip47Util = Bip47Util.getInstance();
 
+    private static final int SLEEP_CONNECTING_CLIENTS_SECONDS = 10;
+
     public RunMixVPub(WhirlpoolClientConfig config) {
         this.config = config;
     }
@@ -38,6 +40,9 @@ public class RunMixVPub {
 
         // connect each client
         for (int i=0; i < NB_CLIENTS; i++) {
+            if (multiClientManager.isDone()) {
+                break;
+            }
             UnspentResponse.UnspentOutput premixUtxo = mustMixUtxosPremix.remove(0);
 
             // key
@@ -46,7 +51,7 @@ public class RunMixVPub {
             ECKey premixKey = premixAddress.getECKey();
             int nbMixs = 1;
 
-            log.info("- mustMix[" + i + "]: utxo=" + premixUtxo + ", key=" + premixKey + ", address=" + premixAddressBech32+", path=" + premixAddress.toJSON().get("path") + ", paynymIndex=" + paynymIndex + " (" +premixUtxo.value + "sats)");
+            log.info(" => Connecting client " + i + ": mustMix, utxo=" + premixUtxo + ", key=" + premixKey + ", address=" + premixAddressBech32+", path=" + premixAddress.toJSON().get("path") + ", paynymIndex=" + paynymIndex + " (" +premixUtxo.value + "sats)");
             WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(config);
             IMixHandler mixHandler = new MixHandler(premixKey, bip47w, paynymIndex, bip47Util);
             MixParams mixParams = new MixParams(premixUtxo.tx_hash, premixUtxo.tx_output_n, premixUtxo.value, mixHandler);
@@ -54,8 +59,10 @@ public class RunMixVPub {
             whirlpoolClient.whirlpool(pool.getPoolId(), pool.getDenomination(), mixParams, nbMixs, listener);
 
             paynymIndex++;
+
+            Thread.sleep(SLEEP_CONNECTING_CLIENTS_SECONDS*1000);
         }
-        multiClientManager.waitAllClientsSuccess();
+        multiClientManager.waitMix();
         return paynymIndex;
     }
 

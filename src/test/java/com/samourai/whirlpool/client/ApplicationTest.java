@@ -33,7 +33,7 @@ public class ApplicationTest {
     }
 
     @Test
-    public void listPools() {
+    public void runListPools() {
         String[] args = new String[]{
             "--network=test",
             "--debug"
@@ -49,7 +49,7 @@ public class ApplicationTest {
     }
 
     @Test
-    public void whirlpool() {
+    public void runWhirlpool() {
         String[] args = new String[]{
                 "--network=test",
                 "--utxo=733a1bcb4145e3dd0ea3e6709bef9504fd252c9a26b254508539e3636db659c2-1",
@@ -68,6 +68,25 @@ public class ApplicationTest {
         resetSystem();
 
         Assert.assertTrue(outContent.toString().contains(" • connecting to "));
+        Assert.assertTrue(errContent.toString().isEmpty());
+    }
+
+    @Test
+    public void runVPub() {
+        String[] args = new String[]{
+                "--network=test",
+                "--seed-passphrase=whirlpool",
+                "--seed-words=elite pause shift celery boost regular clay soldier mercy rebuild depth avoid",
+                "--vpub=vpub5Yg9j2zBK4pQEQ779mJwR3GxaQ2NRuvugjL26jZNBWKRDfvU4Dy3tbmuF6gbfssc2XLg8Bz7XA2pwZjkmDmmsBdYJXpnBw3vaVCHAjQwhn2",
+                "--debug",
+                "--pool=0.01btc"
+        };
+        ApplicationArguments appArgs = new DefaultApplicationArguments(args);
+
+        //captureSystem();
+        new Application().run(appArgs); // TODO mock server
+        //resetSystem();
+
         Assert.assertTrue(errContent.toString().isEmpty());
     }
 }
