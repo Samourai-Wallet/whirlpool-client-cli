@@ -42,13 +42,13 @@ public class CliUtils {
     }
 
     public static void printUtxos(List<UnspentResponse.UnspentOutput> utxos) {
-        String lineFormat = "| %7s | %10s | %70s | %16s |\n";
+        String lineFormat = "| %7s | %10s | %70s | %50s | %16s |\n";
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format(lineFormat, "BALANCE", "CONFIRMS", "UTXO", "PATH"));
-        sb.append(String.format(lineFormat, "(btc)", "", "", ""));
+        sb.append(String.format(lineFormat, "BALANCE", "CONFIRMS", "UTXO", "ADDRESS", "PATH"));
+        sb.append(String.format(lineFormat, "(btc)", "", "", "", ""));
         for (UnspentResponse.UnspentOutput o : utxos) {
             String utxo = o.tx_hash + ":" + o.tx_output_n;
-            sb.append(String.format(lineFormat, CliUtils.satToBtc(o.value), o.confirmations, utxo, o.getPath()));
+            sb.append(String.format(lineFormat, CliUtils.satToBtc(o.value), o.confirmations, utxo, o.addr, o.getPath()));
         }
         log.info("\n" + sb.toString());
     }

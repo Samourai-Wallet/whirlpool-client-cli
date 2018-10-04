@@ -52,6 +52,7 @@ public class RunTx0VPub {
     private long computeDestinationValue(Pool pool) throws Exception {
         int feeSatPerByte = samouraiApi.fetchFees();
         long tx0MinerFeePerMustmix = TX_MIX_BYTES_PER_CLIENT * feeSatPerByte;
+        tx0MinerFeePerMustmix = Math.min(tx0MinerFeePerMustmix, pool.getMinerFeeMax());
         if(log.isDebugEnabled()) {
             log.debug("tx0MinerFeePerMustmix=" + tx0MinerFeePerMustmix + "sat ("+feeSatPerByte+"/b * "+TX_MIX_BYTES_PER_CLIENT+")");
         }
@@ -99,7 +100,7 @@ public class RunTx0VPub {
         address.change_index++;
 
         // destination
-        HD_Chain destinationChain = depositAccount.getChain(address.change_index);
+        HD_Chain destinationChain = depositAccount.getChain(RunVPubLoop.CHAIN_DEPOSIT_AND_PREMIX);
         int destinationIndex = address.change_index;
 
         // run tx0

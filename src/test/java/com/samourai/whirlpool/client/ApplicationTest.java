@@ -28,6 +28,7 @@ public class ApplicationTest {
     private static final String VPUB = "vpub5YW6Bhq66LvLJuKPetDwyg83NvrF5i9SYRwXvyWYFXxDjoYXYeFrfpwwcATN9NQSqpqz7kXg7FMVCkn87VuwTKpGzTLSUb6LctfRVpALYHh";
     private static final String SEED_WORDS = "leisure mix glove infant admit multiply rib harbor burden once loop deposit";
     private static final String SEED_PASSPHRASE = "whirlpool";
+    private static final String SERVER = "82.221.131.94:8081";
 
     private void captureSystem() {
         outContent = new ByteArrayOutputStream();
@@ -45,7 +46,8 @@ public class ApplicationTest {
     public void runListPools() {
         String[] args = new String[]{
             "--network=test",
-            "--debug"
+            "--debug",
+            "--server=" + SERVER
         };
         ApplicationArguments appArgs = new DefaultApplicationArguments(args);
 
@@ -68,7 +70,9 @@ public class ApplicationTest {
                 "--seed-words=all all all all all all all all all all all all",
                 "--mixs=5",
                 "--debug",
-                "--pool=1btc"
+                "--pool=1btc",
+                "--test-mode",
+                "--server=" + SERVER
         };
         ApplicationArguments appArgs = new DefaultApplicationArguments(args);
 
@@ -88,7 +92,9 @@ public class ApplicationTest {
                 "--vpub=" + VPUB,
                 "--seed-words=" + SEED_WORDS,
                 "--debug",
-                "--pool=0.01btc"
+                "--pool=0.01btc",
+                "--test-mode",
+                "--server=" + SERVER
         };
         ApplicationArguments appArgs = new DefaultApplicationArguments(args);
 
@@ -108,7 +114,8 @@ public class ApplicationTest {
                 "--seed-words=" + SEED_WORDS,
                 "--tx0",
                 "--debug",
-                "--pool=0.01btc"
+                "--pool=0.01btc",
+                "--server=" + SERVER
         };
         ApplicationArguments appArgs = new DefaultApplicationArguments(args);
 

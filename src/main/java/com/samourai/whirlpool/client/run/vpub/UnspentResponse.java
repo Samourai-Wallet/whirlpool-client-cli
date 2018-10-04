@@ -42,6 +42,11 @@ public class UnspentResponse {
         public static class Xpub {
             public String path;
         }
+
+        @Override
+        public String toString() {
+            return tx_hash+":"+tx_output_n+" ("+value+" sats, "+confirmations+" confirmations, path="+xpub.path+", address="+addr+")";
+        }
     }
 
 }

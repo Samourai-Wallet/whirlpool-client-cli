@@ -32,6 +32,7 @@ public class SamouraiApi {
     private static final String URL_UNSPENT = "/v2/unspent?active=";
     private static final String URL_MULTIADDR = "/v2/multiaddr?active=";
     private static final String URL_FEES = "/v2/fees";
+    private static final int MAX_FEE_PER_BYTE = 500;
 
     private IHttpClient httpClient;
 
@@ -70,6 +71,6 @@ public class SamouraiApi {
     public int fetchFees() throws Exception {
         String url = URL_BACKEND + URL_FEES;
         Map feesResponse = httpClient.parseJson(url, Map.class);
-        return Integer.parseInt(feesResponse.get("2").toString());
+        return Math.min(Integer.parseInt(feesResponse.get("2").toString()), MAX_FEE_PER_BYTE);
     }
 }

@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.client.run;
 
+import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.bip47.rpc.impl.Bip47Util;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Chain;
@@ -53,10 +54,14 @@ public class RunMixVPub {
             // receive address from postmix
             HD_Chain receiveChain = postmixWallet.getBip84w().getAccountAt(RunVPubLoop.ACCOUNT_POSTMIX).getChain(RunVPubLoop.CHAIN_POSTMIX);
             int receiveAddressIndex = postmixWallet.fetchAddress(samouraiApi).account_index;
-            WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(config);
+
+            // one config / StompClient per client
+            WhirlpoolClientConfig clientConfig = new WhirlpoolClientConfig(config);
+            clientConfig.setStompClient(new JavaStompClient());
+            WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(clientConfig);
             IMixHandler mixHandler = new VPubMixHandler(premixKey, receiveChain, receiveAddressIndex, NB_CLIENTS);
 
-            log.info(" => Connecting client " + i + ": mustMix, premixUtxo=" + premixUtxo + ", premixKey=" + premixKey + ", premixAddress=" + premixAddressBech32+", path=" + premixAddress.toJSON().get("path") + " (" +premixUtxo.value + "sats)");
+            log.info(" => Connecting client #" + (i+1) + ": mustMix, premixUtxo=" + premixUtxo + ", premixKey=" + premixKey.getPrivateKeyAsWiF(config.getNetworkParameters()) + ", premixAddress=" + premixAddressBech32+", path=" + premixAddress.toJSON().get("path") + " (" +premixUtxo.value + "sats)");
             MixParams mixParams = new MixParams(premixUtxo.tx_hash, premixUtxo.tx_output_n, premixUtxo.value, mixHandler);
             WhirlpoolClientListener listener = multiClientManager.register(whirlpoolClient);
             whirlpoolClient.whirlpool(pool.getPoolId(), pool.getDenomination(), mixParams, nbMixs, listener);
