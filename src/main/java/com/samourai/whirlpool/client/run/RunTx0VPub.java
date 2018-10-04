@@ -30,7 +30,7 @@ public class RunTx0VPub {
     private static final String XPUB_SAMOURAI_FEES = "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
     private static final int TX0_SIZE = 5; // TODO
     private static final long SAMOURAI_FEES = 10000; // TODO
-    private static final long TX_MIX_BYTES_PER_CLIENT = 300;
+    private static final long TX_MIX_BYTES_PER_CLIENT = 200;
 
     public RunTx0VPub(NetworkParameters params, SamouraiApi samouraiApi) {
         this.params = params;

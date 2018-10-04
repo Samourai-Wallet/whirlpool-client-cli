@@ -20,6 +20,15 @@ public class ApplicationTest {
     private PrintStream outOrig = System.out;
     private PrintStream errOrig = System.err;
 
+    //recipe obtain chunk amused split second disorder budget okay verb border rifle",
+    //vpub5Yw9AZRFizDCncCuuUDr1VgvXzYB6QUQ6bLfbQfp9C8ZVLjs56QvqQ2WbmcaU7FAY2cfcse3NaLyhXn2xVfZo3eec2q6Haxr3o8G796qEYr",
+
+    //elite pause shift celery boost regular clay soldier mercy rebuild depth avoid",
+    //vpub5Yg9j2zBK4pQEQ779mJwR3GxaQ2NRuvugjL26jZNBWKRDfvU4Dy3tbmuF6gbfssc2XLg8Bz7XA2pwZjkmDmmsBdYJXpnBw3vaVCHAjQwhn2",
+    private static final String VPUB = "vpub5YW6Bhq66LvLJuKPetDwyg83NvrF5i9SYRwXvyWYFXxDjoYXYeFrfpwwcATN9NQSqpqz7kXg7FMVCkn87VuwTKpGzTLSUb6LctfRVpALYHh";
+    private static final String SEED_WORDS = "leisure mix glove infant admit multiply rib harbor burden once loop deposit";
+    private static final String SEED_PASSPHRASE = "whirlpool";
+
     private void captureSystem() {
         outContent = new ByteArrayOutputStream();
         errContent = new ByteArrayOutputStream();
@@ -75,14 +84,10 @@ public class ApplicationTest {
     public void runVPubLoop() {
         String[] args = new String[]{
                 "--network=test",
-                "--seed-passphrase=whirlpool",
-                //"--seed-words=recipe obtain chunk amused split second disorder budget okay verb border rifle",
-                //"--vpub=vpub5Yw9AZRFizDCncCuuUDr1VgvXzYB6QUQ6bLfbQfp9C8ZVLjs56QvqQ2WbmcaU7FAY2cfcse3NaLyhXn2xVfZo3eec2q6Haxr3o8G796qEYr",
-                //"--seed-words=elite pause shift celery boost regular clay soldier mercy rebuild depth avoid",
-                //"--vpub=vpub5Yg9j2zBK4pQEQ779mJwR3GxaQ2NRuvugjL26jZNBWKRDfvU4Dy3tbmuF6gbfssc2XLg8Bz7XA2pwZjkmDmmsBdYJXpnBw3vaVCHAjQwhn2",
-                "--vpub=vpub5YW6Bhq66LvLJuKPetDwyg83NvrF5i9SYRwXvyWYFXxDjoYXYeFrfpwwcATN9NQSqpqz7kXg7FMVCkn87VuwTKpGzTLSUb6LctfRVpALYHh",
-                "--seed-words=leisure mix glove infant admit multiply rib harbor burden once loop deposit",
-                 "--debug",
+                "--seed-passphrase=" + SEED_PASSPHRASE,
+                "--vpub=" + VPUB,
+                "--seed-words=" + SEED_WORDS,
+                "--debug",
                 "--pool=0.01btc"
         };
         ApplicationArguments appArgs = new DefaultApplicationArguments(args);
@@ -98,11 +103,9 @@ public class ApplicationTest {
     public void runTx0() {
         String[] args = new String[]{
                 "--network=test",
-                "--seed-passphrase=whirlpool",
-                //"--seed-words=recipe obtain chunk amused split second disorder budget okay verb border rifle",
-                //"--vpub=vpub5Yw9AZRFizDCncCuuUDr1VgvXzYB6QUQ6bLfbQfp9C8ZVLjs56QvqQ2WbmcaU7FAY2cfcse3NaLyhXn2xVfZo3eec2q6Haxr3o8G796qEYr",
-                "--seed-words=elite pause shift celery boost regular clay soldier mercy rebuild depth avoid",
-                "--vpub=vpub5Yg9j2zBK4pQEQ779mJwR3GxaQ2NRuvugjL26jZNBWKRDfvU4Dy3tbmuF6gbfssc2XLg8Bz7XA2pwZjkmDmmsBdYJXpnBw3vaVCHAjQwhn2",
+                "--seed-passphrase=" + SEED_PASSPHRASE,
+                "--vpub=" + VPUB,
+                "--seed-words=" + SEED_WORDS,
                 "--tx0",
                 "--debug",
                 "--pool=0.01btc"
