@@ -79,7 +79,7 @@ public class Application implements ApplicationRunner {
                        String vpub = appArgs.getVPub();
                        if  (vpub != null) {
                            // go whirpool with VPUB
-                           new RunVPub(config).run(pool, seedWords, seedPassphrase, paynymIndex, vpub);
+                           new RunVPub(config).run(pool, appArgs);
                        } else {
                            // go whirlpool with UTXO
                            String utxoHash = appArgs.getUtxoHash();

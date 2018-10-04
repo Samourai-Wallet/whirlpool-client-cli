@@ -27,13 +27,13 @@ public class RunTx0VPub {
     private static final String XPUB_SAMOURAI_FEES = "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
     private static final int TX0_SIZE = 5; // TODO
     private static final long SAMOURAI_FEES = 1000; // TODO
-    private static final long MINER_FEE_TX0 = 20000;
+    private static final long MINER_FEE_TX0 = 22000;
 
     public RunTx0VPub(NetworkParameters params) {
         this.params = params;
     }
 
-    public void runTx0(List<UnspentResponse.UnspentOutput> utxos, MultiAddrResponse.Address address, HD_Wallet bip84w, long destinationValue) throws Exception {
+    public void runTx0(List<UnspentResponse.UnspentOutput> utxos, MultiAddrResponse.Address address, VpubWallet vpubWallet, long destinationValue) throws Exception {
         // find utxo to spend Tx0 from
         long spendFromBalanceMin = TX0_SIZE * (destinationValue + SAMOURAI_FEES);
         List<UnspentResponse.UnspentOutput> tx0SpendFroms = utxos.stream().filter(utxo -> utxo.value >= spendFromBalanceMin).collect(Collectors.toList());
@@ -43,7 +43,7 @@ public class RunTx0VPub {
             CliUtils.printUtxos(tx0SpendFroms);
 
             UnspentResponse.UnspentOutput tx0SpendFrom = tx0SpendFroms.get(0);
-            Tx0 tx0 = runTx0(tx0SpendFrom, address, bip84w, destinationValue);
+            Tx0 tx0 = runTx0(tx0SpendFrom, address, vpubWallet, destinationValue);
 
             final String tx0Hex = new String(Hex.encode(tx0.getTx().bitcoinSerialize()));
             throw new NotifiableException("Please broadcast TX0 and restart script:\ntx0Hash=" + tx0.getTx().getHashAsString() + "\ntx0Hex=" + tx0Hex);
@@ -52,7 +52,7 @@ public class RunTx0VPub {
         }
     }
 
-    private Tx0 runTx0(UnspentResponse.UnspentOutput spendFrom, MultiAddrResponse.Address address, HD_Wallet bip84w, long destinationValue) throws Exception {
+    private Tx0 runTx0(UnspentResponse.UnspentOutput spendFrom, MultiAddrResponse.Address address, VpubWallet vpubWallet, long destinationValue) throws Exception {
         /*
          * SPEND FROM: BIP84[ACCOUNT_0][CHAIN_DEPOSIT][spendFrom.xpub.address]
          */
@@ -60,16 +60,14 @@ public class RunTx0VPub {
         TransactionOutPoint spendFromOutpoint = spendFrom.computeOutpoint(params);
 
         // key
-        HD_Account depositAccount = bip84w.getAccountAt(RunVPub.ACCOUNT_DEPOSIT);
-        HD_Address depositAddress = depositAccount.getChain(RunVPub.CHAIN_DEPOSIT).getAddressAt(spendFrom.computePathAddressIndex());
+        HD_Account depositAccount = vpubWallet.getBip84w().getAccountAt(RunVPub.ACCOUNT_DEPOSIT_AND_PREMIX);
+        HD_Address depositAddress = depositAccount.getChain(RunVPub.CHAIN_DEPOSIT_AND_PREMIX).getAddressAt(spendFrom.computePathAddressIndex());
 
-        // change: BIP44[ACCOUNT_0][CHAIN_DEPOSIT][address.change_index]
-        HD_Address changeAddress = depositAccount.getChain(RunVPub.CHAIN_DEPOSIT).getAddressAt(address.change_index);
+        // change
+        HD_Address changeAddress = depositAccount.getChain(RunVPub.CHAIN_DEPOSIT_AND_PREMIX).getAddressAt(address.change_index);
         address.change_index++;
 
-        // destination: BIP84[ACCOUNT_0][CHAIN_DEPOSIT][address.account_index]
-        //HD_Chain destinationChain = bip84w.getAccountAt(RunVPub.ACCOUNT_PREMIX).getChain(RunVPub.CHAIN_PREMIX);
-        //int destinationIndex = address.account_index;
+        // destination
         HD_Chain destinationChain = depositAccount.getChain(address.change_index);
         int destinationIndex = address.change_index;
 

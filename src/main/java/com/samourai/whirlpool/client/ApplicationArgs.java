@@ -27,7 +27,7 @@ public class ApplicationArgs {
     private static final String ARG_POOL_ID = "pool";
     private static final String ARG_TESTMODE = "test-mode";
     private static final String ARG_VPUB = "vpub";
-    public static final String USAGE = "--network={main,test} --utxo= --utxo-key= --utxo-balance= --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug]";
+    public static final String USAGE = "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub=] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug]";
     private static final String UTXO_SEPARATOR = "-";
 
     private ApplicationArguments args;

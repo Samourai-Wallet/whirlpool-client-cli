@@ -1,8 +1,11 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.wallet.bip47.rpc.BIP47Wallet;
+import com.samourai.wallet.bip47.rpc.PaymentAddress;
+import com.samourai.wallet.bip47.rpc.PaymentCode;
 import com.samourai.wallet.bip47.rpc.impl.Bip47Util;
 import com.samourai.wallet.hd.HD_Address;
+import com.samourai.wallet.hd.HD_Chain;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.segwit.SegwitAddress;
 import com.samourai.whirlpool.client.WhirlpoolClient;
@@ -34,9 +37,9 @@ public class RunMixVPub {
         this.config = config;
     }
 
-    public int runMix(List<UnspentResponse.UnspentOutput> mustMixUtxosPremix, BIP47Wallet bip47w, HD_Wallet bip84w, Pool pool, int paynymIndex) throws Exception {
+    public void runMix(List<UnspentResponse.UnspentOutput> mustMixUtxosPremix, VpubWallet postmixWallet, Pool pool, SamouraiApi samouraiApi) throws Exception {
         final int NB_CLIENTS = pool.getMixAnonymitySet();
-        MultiClientManager multiClientManager = new MultiClientManager(NB_CLIENTS);
+        MultiClientManager multiClientManager = new MultiClientManager();
 
         // connect each client
         for (int i=0; i < NB_CLIENTS; i++) {
@@ -45,25 +48,26 @@ public class RunMixVPub {
             }
             UnspentResponse.UnspentOutput premixUtxo = mustMixUtxosPremix.remove(0);
 
-            // key
-            HD_Address premixAddress = bip84w.getAccountAt(RunVPub.ACCOUNT_PREMIX).getChain(RunVPub.CHAIN_PREMIX).getAddressAt(premixUtxo.computePathAddressIndex());
+            // input key from premix
+            HD_Address premixAddress = postmixWallet.getBip84w().getAccountAt(RunVPub.ACCOUNT_DEPOSIT_AND_PREMIX).getChain(RunVPub.CHAIN_DEPOSIT_AND_PREMIX).getAddressAt(premixUtxo.computePathAddressIndex());
             String premixAddressBech32 = new SegwitAddress(premixAddress.getPubKey(), config.getNetworkParameters()).getBech32AsString();
             ECKey premixKey = premixAddress.getECKey();
             int nbMixs = 1;
 
-            log.info(" => Connecting client " + i + ": mustMix, utxo=" + premixUtxo + ", key=" + premixKey + ", address=" + premixAddressBech32+", path=" + premixAddress.toJSON().get("path") + ", paynymIndex=" + paynymIndex + " (" +premixUtxo.value + "sats)");
+            // receive address from postmix
+            HD_Chain receiveChain = postmixWallet.getBip84w().getAccountAt(RunVPub.ACCOUNT_POSTMIX).getChain(RunVPub.CHAIN_POSTMIX);
+            int receiveAddressIndex = postmixWallet.fetchAddress(samouraiApi).account_index;
             WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(config);
-            IMixHandler mixHandler = new MixHandler(premixKey, bip47w, paynymIndex, bip47Util);
+            IMixHandler mixHandler = new VPubMixHandler(premixKey, receiveChain, receiveAddressIndex, NB_CLIENTS);
+
+            log.info(" => Connecting client " + i + ": mustMix, premixUtxo=" + premixUtxo + ", premixKey=" + premixKey + ", premixAddress=" + premixAddressBech32+", path=" + premixAddress.toJSON().get("path") + " (" +premixUtxo.value + "sats)");
             MixParams mixParams = new MixParams(premixUtxo.tx_hash, premixUtxo.tx_output_n, premixUtxo.value, mixHandler);
             WhirlpoolClientListener listener = multiClientManager.register(whirlpoolClient);
             whirlpoolClient.whirlpool(pool.getPoolId(), pool.getDenomination(), mixParams, nbMixs, listener);
 
-            paynymIndex++;
-
             Thread.sleep(SLEEP_CONNECTING_CLIENTS_SECONDS*1000);
         }
-        multiClientManager.waitMix();
-        return paynymIndex;
+        multiClientManager.waitDone();
     }
 
 }

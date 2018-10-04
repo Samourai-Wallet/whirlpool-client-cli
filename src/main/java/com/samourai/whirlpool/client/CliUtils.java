@@ -1,6 +1,8 @@
 package com.samourai.whirlpool.client;
 
 import com.samourai.whirlpool.client.run.vpub.UnspentResponse;
+import com.samourai.whirlpool.client.whirlpool.beans.Pool;
+import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import org.bitcoinj.crypto.MnemonicCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CliUtils {
     private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -43,4 +46,12 @@ public class CliUtils {
         }
         log.info("\n" + sb.toString());
     }
+
+    public static List<UnspentResponse.UnspentOutput> filterUtxoMustMix(Pool pool, List<UnspentResponse.UnspentOutput> utxos) {
+        long balanceMin = WhirlpoolProtocol.computeInputBalanceMin(pool.getDenomination(), false, pool.getMinerFeeMin());
+        long balanceMax = WhirlpoolProtocol.computeInputBalanceMax(pool.getDenomination(), false, pool.getMinerFeeMax());
+        List<UnspentResponse.UnspentOutput> mustMixUtxos = utxos.stream().filter(utxo -> utxo.value >= balanceMin && utxo.value <= balanceMax).collect(Collectors.toList());
+        return mustMixUtxos;
+    }
+
 }
