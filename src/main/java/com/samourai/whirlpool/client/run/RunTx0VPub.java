@@ -30,7 +30,7 @@ public class RunTx0VPub {
     private static final String XPUB_SAMOURAI_FEES = "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
     private static final int TX0_SIZE = 5; // TODO
     private static final long SAMOURAI_FEES = 10000; // TODO
-    private static final long MINER_FEE_TX0 = 30000;
+    private static final long TX_MIX_BYTES_PER_CLIENT = 300;
 
     public RunTx0VPub(NetworkParameters params, SamouraiApi samouraiApi) {
         this.params = params;
@@ -49,8 +49,13 @@ public class RunTx0VPub {
         runTx0(utxos, vpubWallet, pool);
     }
 
-    private long computeDestinationValue(Pool pool) {
-        return WhirlpoolProtocol.computeInputBalanceMin(pool.getDenomination(), false, RunVPubLoop.MINER_FEE_PER_MUSTMIX);
+    private long computeDestinationValue(Pool pool) throws Exception {
+        int feeSatPerByte = samouraiApi.fetchFees();
+        long tx0MinerFeePerMustmix = TX_MIX_BYTES_PER_CLIENT * feeSatPerByte;
+        if(log.isDebugEnabled()) {
+            log.debug("tx0MinerFeePerMustmix=" + tx0MinerFeePerMustmix + "sat ("+feeSatPerByte+"/b * "+TX_MIX_BYTES_PER_CLIENT+")");
+        }
+        return WhirlpoolProtocol.computeInputBalanceMin(pool.getDenomination(), false, tx0MinerFeePerMustmix);
     }
 
     public void runTx0(List<UnspentResponse.UnspentOutput> utxos, VpubWallet vpubWallet, Pool pool) throws Exception {
@@ -98,9 +103,10 @@ public class RunTx0VPub {
         int destinationIndex = address.change_index;
 
         // run tx0
+        int feeSatPerByte = samouraiApi.fetchFees();
         Tx0 tx0 = new Tx0Service(params).tx0(depositAddress, spendFromOutpoint,
             TX0_SIZE, destinationChain, destinationValue, destinationIndex,
-            changeAddress, MINER_FEE_TX0, XPUB_SAMOURAI_FEES, SAMOURAI_FEES);
+            changeAddress, feeSatPerByte, XPUB_SAMOURAI_FEES, SAMOURAI_FEES);
 
         log.info("Tx0:");
         log.info(tx0.getTx().toString());

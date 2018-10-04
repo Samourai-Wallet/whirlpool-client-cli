@@ -23,8 +23,6 @@ public class RunVPubLoop {
     public static final int ACCOUNT_POSTMIX = Integer.MAX_VALUE;
     public static final int CHAIN_POSTMIX = 0; // with account_index
 
-    public static final long MINER_FEE_PER_MUSTMIX = 450;
-
     private static final int SLEEP_LOOPS_SECONDS = 20;
 
     private WhirlpoolClientConfig config;

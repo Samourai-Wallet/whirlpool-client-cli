@@ -78,8 +78,10 @@ public class ApplicationTest {
                 "--seed-passphrase=whirlpool",
                 //"--seed-words=recipe obtain chunk amused split second disorder budget okay verb border rifle",
                 //"--vpub=vpub5Yw9AZRFizDCncCuuUDr1VgvXzYB6QUQ6bLfbQfp9C8ZVLjs56QvqQ2WbmcaU7FAY2cfcse3NaLyhXn2xVfZo3eec2q6Haxr3o8G796qEYr",
-                "--seed-words=elite pause shift celery boost regular clay soldier mercy rebuild depth avoid",
-                "--vpub=vpub5Yg9j2zBK4pQEQ779mJwR3GxaQ2NRuvugjL26jZNBWKRDfvU4Dy3tbmuF6gbfssc2XLg8Bz7XA2pwZjkmDmmsBdYJXpnBw3vaVCHAjQwhn2",
+                //"--seed-words=elite pause shift celery boost regular clay soldier mercy rebuild depth avoid",
+                //"--vpub=vpub5Yg9j2zBK4pQEQ779mJwR3GxaQ2NRuvugjL26jZNBWKRDfvU4Dy3tbmuF6gbfssc2XLg8Bz7XA2pwZjkmDmmsBdYJXpnBw3vaVCHAjQwhn2",
+                "--vpub=vpub5YW6Bhq66LvLJuKPetDwyg83NvrF5i9SYRwXvyWYFXxDjoYXYeFrfpwwcATN9NQSqpqz7kXg7FMVCkn87VuwTKpGzTLSUb6LctfRVpALYHh",
+                "--seed-words=leisure mix glove infant admit multiply rib harbor burden once loop deposit",
                  "--debug",
                 "--pool=0.01btc"
         };

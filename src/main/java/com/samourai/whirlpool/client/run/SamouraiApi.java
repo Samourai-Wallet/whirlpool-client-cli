@@ -22,6 +22,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SamouraiApi {
@@ -30,6 +31,7 @@ public class SamouraiApi {
     private static final String URL_BACKEND = "https://api.samouraiwallet.com/test";
     private static final String URL_UNSPENT = "/v2/unspent?active=";
     private static final String URL_MULTIADDR = "/v2/multiaddr?active=";
+    private static final String URL_FEES = "/v2/fees";
 
     private IHttpClient httpClient;
 
@@ -63,5 +65,11 @@ public class SamouraiApi {
             throw new Exception("Address count=" + addresses.size());
         }
         return addresses.get(0);
+    }
+
+    public int fetchFees() throws Exception {
+        String url = URL_BACKEND + URL_FEES;
+        Map feesResponse = httpClient.parseJson(url, Map.class);
+        return Integer.parseInt(feesResponse.get("2").toString());
     }
 }

@@ -28,18 +28,19 @@ public class Tx0Service {
     private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final NetworkParameters params;
 
+    private static final int TX0_BYTES_PER_OUTPUT = 200; // average b/output
+
     public Tx0Service(NetworkParameters params) {
         this.params = params;
     }
 
     public Tx0 tx0(HD_Address spendFromAddress, TransactionOutPoint spendFromOutpoint,
                    int nbOutputs, HD_Chain destinationChain, long destinationValue, int destinationIndex,
-                   HD_Address changeAddress, long tx0MinerFee, String xpubSamouraiFees, long samouraiFees) throws Exception {
+                   HD_Address changeAddress, long feeSatPerByte, String xpubSamouraiFees, long samouraiFees) throws Exception {
         boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(params);
         int samouraiFeeIdx  = 0; // TODO address index, in prod get index from Samourai API
 
         long spendFromBalance = spendFromOutpoint.getValue().getValue();
-        long changeValue = spendFromBalance - (destinationValue * nbOutputs) - samouraiFees - tx0MinerFee;
 
         Tx0 tx0Result = new Tx0();
 
@@ -75,6 +76,12 @@ public class Tx0Service {
             outputs.add(txOutSpend);
             destinationIndex++;
         }
+
+        long tx0MinerFee = nbOutputs * feeSatPerByte * TX0_BYTES_PER_OUTPUT;
+        if (log.isDebugEnabled()) {
+            log.debug("tx0MinerFee=" + tx0MinerFee + "sats ("+nbOutputs+" * "+feeSatPerByte+"/b * "+TX0_BYTES_PER_OUTPUT+")");
+        }
+        long changeValue = spendFromBalance - (destinationValue * nbOutputs) - samouraiFees - tx0MinerFee;
 
         //
         // 1 change output
