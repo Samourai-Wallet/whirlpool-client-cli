@@ -27,7 +27,7 @@ public class RunMixVPub {
     private WhirlpoolClientConfig config;
     private Bip47Util bip47Util = Bip47Util.getInstance();
 
-    private static final int SLEEP_CONNECTING_CLIENTS_SECONDS = 10;
+    private static final int SLEEP_CONNECTING_CLIENTS_SECONDS = 15;
 
     public RunMixVPub(WhirlpoolClientConfig config) {
         this.config = config;
@@ -38,6 +38,7 @@ public class RunMixVPub {
         MultiClientManager multiClientManager = new MultiClientManager();
 
         // connect each client
+        int receiveAddressIndex = postmixWallet.fetchAddress(samouraiApi).account_index;
         for (int i=0; i < NB_CLIENTS; i++) {
             if (multiClientManager.isDone()) {
                 break;
@@ -53,13 +54,13 @@ public class RunMixVPub {
 
             // receive address from postmix
             HD_Chain receiveChain = postmixWallet.getBip84w().getAccountAt(RunVPubLoop.ACCOUNT_POSTMIX).getChain(RunVPubLoop.CHAIN_POSTMIX);
-            int receiveAddressIndex = postmixWallet.fetchAddress(samouraiApi).account_index;
 
             // one config / StompClient per client
             WhirlpoolClientConfig clientConfig = new WhirlpoolClientConfig(config);
             clientConfig.setStompClient(new JavaStompClient());
             WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(clientConfig);
             IMixHandler mixHandler = new VPubMixHandler(premixKey, receiveChain, receiveAddressIndex, NB_CLIENTS);
+            receiveAddressIndex++;
 
             log.info(" => Connecting client #" + (i+1) + ": mustMix, premixUtxo=" + premixUtxo + ", premixKey=" + premixKey.getPrivateKeyAsWiF(config.getNetworkParameters()) + ", premixAddress=" + premixAddressBech32+", path=" + premixAddress.toJSON().get("path") + " (" +premixUtxo.value + "sats)");
             MixParams mixParams = new MixParams(premixUtxo.tx_hash, premixUtxo.tx_output_n, premixUtxo.value, mixHandler);
