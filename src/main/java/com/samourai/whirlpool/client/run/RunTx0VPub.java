@@ -28,9 +28,10 @@ public class RunTx0VPub {
     private SamouraiApi samouraiApi;
 
     private static final String XPUB_SAMOURAI_FEES = "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
-    private static final int TX0_SIZE = 5; // TODO
+    private static final int TX0_SIZE = 15; // TODO
     private static final long SAMOURAI_FEES = 10000; // TODO
-    private static final long TX_MIX_BYTES_PER_CLIENT = 200;
+    private static final long TX_MIX_BYTES_INITIAL = 200;
+    private static final long TX_MIX_BYTES_PER_CLIENT = 50;
 
     public RunTx0VPub(NetworkParameters params, SamouraiApi samouraiApi) {
         this.params = params;
@@ -51,7 +52,7 @@ public class RunTx0VPub {
 
     private long computeDestinationValue(Pool pool) throws Exception {
         int feeSatPerByte = samouraiApi.fetchFees();
-        long tx0MinerFeePerMustmix = TX_MIX_BYTES_PER_CLIENT * feeSatPerByte;
+        long tx0MinerFeePerMustmix = (TX_MIX_BYTES_INITIAL + TX_MIX_BYTES_PER_CLIENT * pool.getMixAnonymitySet()) * feeSatPerByte;
         tx0MinerFeePerMustmix = Math.min(tx0MinerFeePerMustmix, pool.getMinerFeeMax());
         if(log.isDebugEnabled()) {
             log.debug("tx0MinerFeePerMustmix=" + tx0MinerFeePerMustmix + "sat ("+feeSatPerByte+"/b * "+TX_MIX_BYTES_PER_CLIENT+")");

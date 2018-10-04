@@ -28,7 +28,8 @@ public class Tx0Service {
     private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final NetworkParameters params;
 
-    private static final int TX0_BYTES_PER_OUTPUT = 200; // average b/output
+    private static final int TX0_BYTES_INITIAL = 200; // average b/output
+    private static final int TX0_BYTES_PER_OUTPUT = 30; // average b/output
 
     public Tx0Service(NetworkParameters params) {
         this.params = params;
@@ -77,7 +78,7 @@ public class Tx0Service {
             destinationIndex++;
         }
 
-        long tx0MinerFee = nbOutputs * feeSatPerByte * TX0_BYTES_PER_OUTPUT;
+        long tx0MinerFee = feeSatPerByte * (TX0_BYTES_INITIAL + TX0_BYTES_PER_OUTPUT * nbOutputs);
         if (log.isDebugEnabled()) {
             log.debug("tx0MinerFee=" + tx0MinerFee + "sats ("+nbOutputs+" * "+feeSatPerByte+"/b * "+TX0_BYTES_PER_OUTPUT+")");
         }
