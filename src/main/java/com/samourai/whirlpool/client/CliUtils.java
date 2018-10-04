@@ -1,9 +1,15 @@
 package com.samourai.whirlpool.client;
 
+import com.samourai.wallet.bip47.rpc.BIP47Wallet;
+import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.whirlpool.client.run.VpubWallet;
+import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
 import com.samourai.whirlpool.client.run.vpub.UnspentResponse;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
+import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.MnemonicCode;
+import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,13 +42,13 @@ public class CliUtils {
     }
 
     public static void printUtxos(List<UnspentResponse.UnspentOutput> utxos) {
-        String lineFormat = "| %7s | %10s | %70s |\n";
+        String lineFormat = "| %7s | %10s | %70s | %16s |\n";
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format(lineFormat, "BALANCE", "CONFIRMS", "UTXO"));
-        sb.append(String.format(lineFormat, "(btc)", "", ""));
+        sb.append(String.format(lineFormat, "BALANCE", "CONFIRMS", "UTXO", "PATH"));
+        sb.append(String.format(lineFormat, "(btc)", "", "", ""));
         for (UnspentResponse.UnspentOutput o : utxos) {
             String utxo = o.tx_hash + ":" + o.tx_output_n;
-            sb.append(String.format(lineFormat, CliUtils.satToBtc(o.value), o.confirmations, utxo));
+            sb.append(String.format(lineFormat, CliUtils.satToBtc(o.value), o.confirmations, utxo, o.getPath()));
         }
         log.info("\n" + sb.toString());
     }
@@ -52,6 +58,14 @@ public class CliUtils {
         long balanceMax = WhirlpoolProtocol.computeInputBalanceMax(pool.getDenomination(), false, pool.getMinerFeeMax());
         List<UnspentResponse.UnspentOutput> mustMixUtxos = utxos.stream().filter(utxo -> utxo.value >= balanceMin && utxo.value <= balanceMax).collect(Collectors.toList());
         return mustMixUtxos;
+    }
+
+    public static VpubWallet computeVpubWallet(String passphrase, String seedWords, String vpub, NetworkParameters params, HdWalletFactory hdWalletFactory) throws Exception {
+        MnemonicCode mc = CliUtils.computeMnemonicCode();
+        HD_Wallet bip44w = hdWalletFactory.restoreWallet(seedWords, passphrase, 1);
+        BIP47Wallet bip47w = new BIP47Wallet(47, mc, params, Hex.decode(bip44w.getSeedHex()), bip44w.getPassphrase(), 1);
+        HD_Wallet bip84w = new HD_Wallet(84, mc, params, Hex.decode(bip44w.getSeedHex()), bip44w.getPassphrase(), 1);
+        return new VpubWallet(bip44w, bip47w, bip84w, vpub);
     }
 
 }

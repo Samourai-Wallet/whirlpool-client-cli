@@ -5,9 +5,8 @@ import com.samourai.http.client.JavaHttpClient;
 import com.samourai.stomp.client.IStompClient;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.run.RunListPools;
-import com.samourai.whirlpool.client.run.RunVPub;
-import com.samourai.whirlpool.client.run.RunWhirlpool;
+import com.samourai.whirlpool.client.run.*;
+import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
@@ -34,6 +33,7 @@ public class Application implements ApplicationRunner {
     private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private ApplicationArgs appArgs;
+    private HdWalletFactory hdWalletFactory;
 
     public static void main(String... args) {
         SpringApplication.run(Application.class, args);
@@ -55,6 +55,7 @@ public class Application implements ApplicationRunner {
         try {
             NetworkParameters params = appArgs.getNetworkParameters();
             new Context(params); // initialize bitcoinj context
+            hdWalletFactory = new HdWalletFactory(params, CliUtils.computeMnemonicCode());
 
             // instanciate client
             String server = appArgs.getServer();
@@ -78,8 +79,16 @@ public class Application implements ApplicationRunner {
 
                        String vpub = appArgs.getVPub();
                        if  (vpub != null) {
-                           // go whirpool with VPUB
-                           new RunVPub(config).run(pool, appArgs);
+                           VpubWallet vpubWallet = CliUtils.computeVpubWallet(appArgs.getSeedPassphrase(), appArgs.getSeedWords(), appArgs.getVPub(), params, hdWalletFactory);
+                           SamouraiApi samouraiApi = new SamouraiApi(config.getHttpClient());
+                           if (appArgs.isTx0()) {
+                               // go tx0 with VPUB
+                               new RunTx0VPub(params, samouraiApi).runTx0(pool, vpubWallet);
+                           }
+                           else {
+                               // go whirpool with VPUB
+                               new RunVPubLoop(config, samouraiApi).run(pool, vpubWallet);
+                           }
                        } else {
                            // go whirlpool with UTXO
                            String utxoHash = appArgs.getUtxoHash();

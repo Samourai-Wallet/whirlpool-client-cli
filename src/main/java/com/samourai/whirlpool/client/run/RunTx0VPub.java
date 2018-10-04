@@ -3,13 +3,14 @@ package com.samourai.whirlpool.client.run;
 import com.samourai.wallet.hd.HD_Account;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Chain;
-import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.vpub.MultiAddrResponse;
 import com.samourai.whirlpool.client.run.vpub.UnspentResponse;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
+import com.samourai.whirlpool.client.whirlpool.beans.Pool;
+import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.TransactionOutPoint;
 import org.bouncycastle.util.encoders.Hex;
@@ -24,16 +25,41 @@ public class RunTx0VPub {
     private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private NetworkParameters params;
+    private SamouraiApi samouraiApi;
+
     private static final String XPUB_SAMOURAI_FEES = "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
     private static final int TX0_SIZE = 5; // TODO
-    private static final long SAMOURAI_FEES = 1000; // TODO
-    private static final long MINER_FEE_TX0 = 22000;
+    private static final long SAMOURAI_FEES = 10000; // TODO
+    private static final long MINER_FEE_TX0 = 30000;
 
-    public RunTx0VPub(NetworkParameters params) {
+    public RunTx0VPub(NetworkParameters params, SamouraiApi samouraiApi) {
         this.params = params;
+        this.samouraiApi = samouraiApi;
     }
 
-    public void runTx0(List<UnspentResponse.UnspentOutput> utxos, MultiAddrResponse.Address address, VpubWallet vpubWallet, long destinationValue) throws Exception {
+    public void runTx0(Pool pool, VpubWallet vpubWallet) throws Exception {
+        List<UnspentResponse.UnspentOutput> utxos = vpubWallet.fetchUtxos(samouraiApi);
+        if (!utxos.isEmpty()) {
+            log.info("Found " + utxos.size() + " utxo from premix:");
+            CliUtils.printUtxos(utxos);
+        } else {
+            log.error("ERROR: No utxo available from VPub.");
+            return;
+        }
+        runTx0(utxos, vpubWallet, pool);
+    }
+
+    private long computeDestinationValue(Pool pool) {
+        return WhirlpoolProtocol.computeInputBalanceMin(pool.getDenomination(), false, RunVPubLoop.MINER_FEE_PER_MUSTMIX);
+    }
+
+    public void runTx0(List<UnspentResponse.UnspentOutput> utxos, VpubWallet vpubWallet, Pool pool) throws Exception {
+        // fetch spend address info
+        log.info(" • Fetching addresses for VPub...");
+        MultiAddrResponse.Address address = vpubWallet.fetchAddress(samouraiApi);
+
+        long destinationValue = computeDestinationValue(pool);
+
         // find utxo to spend Tx0 from
         long spendFromBalanceMin = TX0_SIZE * (destinationValue + SAMOURAI_FEES);
         List<UnspentResponse.UnspentOutput> tx0SpendFroms = utxos.stream().filter(utxo -> utxo.value >= spendFromBalanceMin).collect(Collectors.toList());
@@ -60,11 +86,11 @@ public class RunTx0VPub {
         TransactionOutPoint spendFromOutpoint = spendFrom.computeOutpoint(params);
 
         // key
-        HD_Account depositAccount = vpubWallet.getBip84w().getAccountAt(RunVPub.ACCOUNT_DEPOSIT_AND_PREMIX);
-        HD_Address depositAddress = depositAccount.getChain(RunVPub.CHAIN_DEPOSIT_AND_PREMIX).getAddressAt(spendFrom.computePathAddressIndex());
+        HD_Account depositAccount = vpubWallet.getBip84w().getAccountAt(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX);
+        HD_Address depositAddress = depositAccount.getChain(RunVPubLoop.CHAIN_DEPOSIT_AND_PREMIX).getAddressAt(spendFrom.computePathAddressIndex());
 
         // change
-        HD_Address changeAddress = depositAccount.getChain(RunVPub.CHAIN_DEPOSIT_AND_PREMIX).getAddressAt(address.change_index);
+        HD_Address changeAddress = depositAccount.getChain(RunVPubLoop.CHAIN_DEPOSIT_AND_PREMIX).getAddressAt(address.change_index);
         address.change_index++;
 
         // destination

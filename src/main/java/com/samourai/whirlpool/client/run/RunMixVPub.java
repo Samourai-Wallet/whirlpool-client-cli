@@ -1,17 +1,12 @@
 package com.samourai.whirlpool.client.run;
 
-import com.samourai.wallet.bip47.rpc.BIP47Wallet;
-import com.samourai.wallet.bip47.rpc.PaymentAddress;
-import com.samourai.wallet.bip47.rpc.PaymentCode;
 import com.samourai.wallet.bip47.rpc.impl.Bip47Util;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Chain;
-import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.segwit.SegwitAddress;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.mix.MixParams;
 import com.samourai.whirlpool.client.mix.handler.IMixHandler;
-import com.samourai.whirlpool.client.mix.handler.MixHandler;
 import com.samourai.whirlpool.client.run.vpub.UnspentResponse;
 import com.samourai.whirlpool.client.utils.MultiClientManager;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
@@ -46,16 +41,17 @@ public class RunMixVPub {
             if (multiClientManager.isDone()) {
                 break;
             }
-            UnspentResponse.UnspentOutput premixUtxo = mustMixUtxosPremix.remove(0);
+            // pick last mustMix
+            UnspentResponse.UnspentOutput premixUtxo = mustMixUtxosPremix.remove(mustMixUtxosPremix.size()-1);
 
             // input key from premix
-            HD_Address premixAddress = postmixWallet.getBip84w().getAccountAt(RunVPub.ACCOUNT_DEPOSIT_AND_PREMIX).getChain(RunVPub.CHAIN_DEPOSIT_AND_PREMIX).getAddressAt(premixUtxo.computePathAddressIndex());
+            HD_Address premixAddress = postmixWallet.getBip84w().getAccountAt(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX).getChain(RunVPubLoop.CHAIN_DEPOSIT_AND_PREMIX).getAddressAt(premixUtxo.computePathAddressIndex());
             String premixAddressBech32 = new SegwitAddress(premixAddress.getPubKey(), config.getNetworkParameters()).getBech32AsString();
             ECKey premixKey = premixAddress.getECKey();
             int nbMixs = 1;
 
             // receive address from postmix
-            HD_Chain receiveChain = postmixWallet.getBip84w().getAccountAt(RunVPub.ACCOUNT_POSTMIX).getChain(RunVPub.CHAIN_POSTMIX);
+            HD_Chain receiveChain = postmixWallet.getBip84w().getAccountAt(RunVPubLoop.ACCOUNT_POSTMIX).getChain(RunVPubLoop.CHAIN_POSTMIX);
             int receiveAddressIndex = postmixWallet.fetchAddress(samouraiApi).account_index;
             WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(config);
             IMixHandler mixHandler = new VPubMixHandler(premixKey, receiveChain, receiveAddressIndex, NB_CLIENTS);

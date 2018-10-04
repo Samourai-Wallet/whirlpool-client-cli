@@ -30,6 +30,10 @@ public class UnspentResponse {
             return Integer.parseInt(xpub.path.split(PATH_SEPARATOR)[2]);
         }
 
+        public String getPath() {
+            return xpub.path;
+        }
+
         public TransactionOutPoint computeOutpoint(NetworkParameters params) {
             Sha256Hash sha256Hash = Sha256Hash.wrap(Hex.decode(tx_hash));
             return new TransactionOutPoint(params, tx_output_n, sha256Hash, Coin.valueOf(value));

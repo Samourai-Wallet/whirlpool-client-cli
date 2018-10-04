@@ -72,27 +72,39 @@ public class ApplicationTest {
     }
 
     @Test
-    public void runVPub() {
+    public void runVPubLoop() {
         String[] args = new String[]{
                 "--network=test",
                 "--seed-passphrase=whirlpool",
-                "--seed-words=recipe obtain chunk amused split second disorder budget okay verb border rifle",
-                "--vpub=vpub5Yw9AZRFizDCncCuuUDr1VgvXzYB6QUQ6bLfbQfp9C8ZVLjs56QvqQ2WbmcaU7FAY2cfcse3NaLyhXn2xVfZo3eec2q6Haxr3o8G796qEYr",
+                //"--seed-words=recipe obtain chunk amused split second disorder budget okay verb border rifle",
+                //"--vpub=vpub5Yw9AZRFizDCncCuuUDr1VgvXzYB6QUQ6bLfbQfp9C8ZVLjs56QvqQ2WbmcaU7FAY2cfcse3NaLyhXn2xVfZo3eec2q6Haxr3o8G796qEYr",
+                "--seed-words=elite pause shift celery boost regular clay soldier mercy rebuild depth avoid",
+                "--vpub=vpub5Yg9j2zBK4pQEQ779mJwR3GxaQ2NRuvugjL26jZNBWKRDfvU4Dy3tbmuF6gbfssc2XLg8Bz7XA2pwZjkmDmmsBdYJXpnBw3vaVCHAjQwhn2",
                  "--debug",
                 "--pool=0.01btc"
         };
-        /*
+        ApplicationArguments appArgs = new DefaultApplicationArguments(args);
+
+        //captureSystem();
+        new Application().run(appArgs); // TODO mock server
+        //resetSystem();
+
+        Assert.assertTrue(errContent.toString().isEmpty());
+    }
+
+    @Test
+    public void runTx0() {
         String[] args = new String[]{
                 "--network=test",
-                "--premix-passphrase=whirlpool",
-                "--premix-words=recipe obtain chunk amused split second disorder budget okay verb border rifle",
-                "--premix-vpub=vpub5Yw9AZRFizDCncCuuUDr1VgvXzYB6QUQ6bLfbQfp9C8ZVLjs56QvqQ2WbmcaU7FAY2cfcse3NaLyhXn2xVfZo3eec2q6Haxr3o8G796qEYr",
-                "--postmix-passphrase=whirlpool",
-                "--postmix-words=elite pause shift celery boost regular clay soldier mercy rebuild depth avoid",
-                "--postmix-vpub=vpub5Yg9j2zBK4pQEQ779mJwR3GxaQ2NRuvugjL26jZNBWKRDfvU4Dy3tbmuF6gbfssc2XLg8Bz7XA2pwZjkmDmmsBdYJXpnBw3vaVCHAjQwhn2",
+                "--seed-passphrase=whirlpool",
+                //"--seed-words=recipe obtain chunk amused split second disorder budget okay verb border rifle",
+                //"--vpub=vpub5Yw9AZRFizDCncCuuUDr1VgvXzYB6QUQ6bLfbQfp9C8ZVLjs56QvqQ2WbmcaU7FAY2cfcse3NaLyhXn2xVfZo3eec2q6Haxr3o8G796qEYr",
+                "--seed-words=elite pause shift celery boost regular clay soldier mercy rebuild depth avoid",
+                "--vpub=vpub5Yg9j2zBK4pQEQ779mJwR3GxaQ2NRuvugjL26jZNBWKRDfvU4Dy3tbmuF6gbfssc2XLg8Bz7XA2pwZjkmDmmsBdYJXpnBw3vaVCHAjQwhn2",
+                "--tx0",
                 "--debug",
                 "--pool=0.01btc"
-        };*/
+        };
         ApplicationArguments appArgs = new DefaultApplicationArguments(args);
 
         //captureSystem();
