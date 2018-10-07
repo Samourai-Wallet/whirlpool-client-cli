@@ -34,11 +34,12 @@ public class VPubTest extends AbstractApplicationTest {
                 "--network=test",
                 "--seed-passphrase=" + SEED_PASSPHRASE,
                 "--vpub=" + VPUB,
+                "--rpc-client-url=" + RPC_CLIENT_URL,
                 "--seed-words=" + SEED_WORDS,
                 "--debug",
                 "--pool=0.01btc",
                 "--test-mode",
-                "--server=" + SERVER
+                "--server=" + SERVER,
         };
         ApplicationArguments appArgs = new DefaultApplicationArguments(args);
 
@@ -55,6 +56,7 @@ public class VPubTest extends AbstractApplicationTest {
                 "--network=test",
                 "--seed-passphrase=" + SEED_PASSPHRASE,
                 "--vpub=" + VPUB,
+                "--rpc-client-url=" + RPC_CLIENT_URL,
                 "--seed-words=" + SEED_WORDS,
                 "--tx0=20",
                 "--debug",

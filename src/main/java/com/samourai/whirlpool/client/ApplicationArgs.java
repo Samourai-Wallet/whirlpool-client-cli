@@ -29,7 +29,8 @@ public class ApplicationArgs {
     private static final String ARG_TESTMODE = "test-mode";
     private static final String ARG_VPUB = "vpub";
     private static final String ARG_TX0 = "tx0";
-    public static final String USAGE = "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub=] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0]";
+    private static final String ARG_RPC_CLIENT_URL = "rpc-client-url";
+    public static final String USAGE = "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub= --rpc-client-url] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0]";
     private static final String UTXO_SEPARATOR = "-";
 
     private ApplicationArguments args;
@@ -156,6 +157,10 @@ public class ApplicationArgs {
 
     public String getVPub() {
         return optionalOption(ARG_VPUB);
+    }
+
+    public String getRpcClientUrl() {
+        return requireOption(ARG_RPC_CLIENT_URL);
     }
 
     private String optionalOption(String name) {

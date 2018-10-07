@@ -18,6 +18,7 @@ public class AbstractApplicationTest {
     protected static final String SEED_WORDS = "leisure mix glove infant admit multiply rib harbor burden once loop deposit";
     protected static final String SEED_PASSPHRASE = "whirlpool";
     protected static final String SERVER = "82.221.131.94:8081";
+    protected static final String RPC_CLIENT_URL = "http://user:password@host:port";
 
     private CaptureStream outContent;
     private CaptureStream errContent;

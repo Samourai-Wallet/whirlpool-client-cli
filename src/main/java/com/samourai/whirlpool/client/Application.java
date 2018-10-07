@@ -2,11 +2,15 @@ package com.samourai.whirlpool.client;
 
 import com.samourai.http.client.IHttpClient;
 import com.samourai.http.client.JavaHttpClient;
+import com.samourai.rpc.client.JSONRpcClientServiceImpl;
+import com.samourai.rpc.client.RpcClientService;
 import com.samourai.stomp.client.IStompClient;
 import com.samourai.stomp.client.JavaStompClient;
+import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.*;
 import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
+import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
@@ -14,6 +18,7 @@ import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.beans.Pools;
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.NetworkParameters;
+import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -41,6 +46,7 @@ public class Application implements ApplicationRunner {
     }
 
     private IHttpClient httpClient = new JavaHttpClient();
+    private RpcClientService rpcClientService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -80,16 +86,19 @@ public class Application implements ApplicationRunner {
 
                        String vpub = appArgs.getVPub();
                        if  (vpub != null) {
+                           rpcClientService = computeRpcClientService(appArgs);
+
                            VpubWallet vpubWallet = CliUtils.computeVpubWallet(appArgs.getSeedPassphrase(), appArgs.getSeedWords(), appArgs.getVPub(), params, hdWalletFactory);
                            SamouraiApi samouraiApi = new SamouraiApi(config.getHttpClient());
-                           Optional<Integer> tx0 = appArgs.getTx0();
-                           if (tx0.isPresent()) {
+                           RunTx0VPub runTx0VPub = new RunTx0VPub(params, samouraiApi, rpcClientService);
+                           Optional<Integer> tx0Arg = appArgs.getTx0();
+                           if (tx0Arg.isPresent()) {
                                // go tx0 with VPUB
-                               new RunTx0VPub(params, samouraiApi).runTx0(pool, vpubWallet, tx0.get());
+                               runTx0VPub.runTx0(pool, vpubWallet, tx0Arg.get());
                            }
                            else {
                                // go whirpool with VPUB
-                               new RunVPubLoop(config, samouraiApi).run(pool, vpubWallet);
+                               new RunVPubLoop(config, samouraiApi, runTx0VPub).run(pool, vpubWallet);
                            }
                        } else {
                            // go whirlpool with UTXO
@@ -131,5 +140,12 @@ public class Application implements ApplicationRunner {
             }
         }
         return config;
+    }
+
+    private RpcClientService computeRpcClientService(ApplicationArgs appArgs) throws Exception {
+        NetworkParameters params = appArgs.getNetworkParameters();
+        String rpcClientUrl = appArgs.getRpcClientUrl();
+        boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(params);
+        return new JSONRpcClientServiceImpl(rpcClientUrl, isTestnet);
     }
 }

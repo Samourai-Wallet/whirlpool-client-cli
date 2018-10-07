@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.client.run;
 
+import com.samourai.rpc.client.RpcClientService;
 import com.samourai.wallet.hd.HD_Account;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Chain;
@@ -26,27 +27,28 @@ public class RunTx0VPub {
 
     private NetworkParameters params;
     private SamouraiApi samouraiApi;
+    private RpcClientService rpcClientService;
 
     private static final String XPUB_SAMOURAI_FEES = "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
     private static final long SAMOURAI_FEES = 10000; // TODO
     private static final long TX_MIX_BYTES_INITIAL = 200;
     private static final long TX_MIX_BYTES_PER_CLIENT = 50;
 
-    public RunTx0VPub(NetworkParameters params, SamouraiApi samouraiApi) {
+    public RunTx0VPub(NetworkParameters params, SamouraiApi samouraiApi, RpcClientService rpcClientService) {
         this.params = params;
         this.samouraiApi = samouraiApi;
+        this.rpcClientService = rpcClientService;
     }
 
-    public void runTx0(Pool pool, VpubWallet vpubWallet, int nbOutputs) throws Exception {
+    public Tx0 runTx0(Pool pool, VpubWallet vpubWallet, int nbOutputs) throws Exception {
         List<UnspentResponse.UnspentOutput> utxos = vpubWallet.fetchUtxos(samouraiApi);
         if (!utxos.isEmpty()) {
             log.info("Found " + utxos.size() + " utxo from premix:");
             CliUtils.printUtxos(utxos);
         } else {
-            log.error("ERROR: No utxo available from VPub.");
-            return;
+            throw new NotifiableException("No utxo found from VPub.");
         }
-        runTx0(utxos, vpubWallet, pool, nbOutputs);
+        return runTx0(utxos, vpubWallet, pool, nbOutputs);
     }
 
     private long computeDestinationValue(Pool pool) throws Exception {
@@ -59,7 +61,7 @@ public class RunTx0VPub {
         return WhirlpoolProtocol.computeInputBalanceMin(pool.getDenomination(), false, tx0MinerFeePerMustmix);
     }
 
-    public void runTx0(List<UnspentResponse.UnspentOutput> utxos, VpubWallet vpubWallet, Pool pool, int nbOutputs) throws Exception {
+    public Tx0 runTx0(List<UnspentResponse.UnspentOutput> utxos, VpubWallet vpubWallet, Pool pool, int nbOutputs) throws Exception {
         // fetch spend address info
         log.info(" • Fetching addresses for VPub...");
         MultiAddrResponse.Address address = vpubWallet.fetchAddress(samouraiApi);
@@ -76,9 +78,7 @@ public class RunTx0VPub {
 
             UnspentResponse.UnspentOutput tx0SpendFrom = tx0SpendFroms.get(0);
             Tx0 tx0 = runTx0(tx0SpendFrom, address, vpubWallet, destinationValue, nbOutputs);
-
-            final String tx0Hex = new String(Hex.encode(tx0.getTx().bitcoinSerialize()));
-            throw new NotifiableException("Please broadcast TX0 and restart script:\ntx0Hash=" + tx0.getTx().getHashAsString() + "\ntx0Hex=" + tx0Hex);
+            return tx0;
         } else {
             throw new Exception("ERROR: No utxo available to spend Tx0 from");
         }
@@ -111,6 +111,11 @@ public class RunTx0VPub {
 
         log.info("Tx0:");
         log.info(tx0.getTx().toString());
+
+        // broadcast
+        log.info(" • Broadcasting Tx0...");
+        rpcClientService.broadcastTransaction(tx0.getTx());
+
         return tx0;
     }
 }
