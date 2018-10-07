@@ -27,7 +27,7 @@ public class RunMixVPub {
     private WhirlpoolClientConfig config;
     private Bip47Util bip47Util = Bip47Util.getInstance();
 
-    private static final int SLEEP_CONNECTING_CLIENTS_SECONDS = 15;
+    private static final int SLEEP_CONNECTING_CLIENTS_SECONDS = 30;
 
     public RunMixVPub(WhirlpoolClientConfig config) {
         this.config = config;

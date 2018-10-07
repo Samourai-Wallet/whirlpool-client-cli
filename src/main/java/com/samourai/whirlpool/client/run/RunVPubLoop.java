@@ -25,7 +25,7 @@ public class RunVPubLoop {
     public static final int ACCOUNT_POSTMIX = Integer.MAX_VALUE;
     public static final int CHAIN_POSTMIX = 0; // with account_index
 
-    private static final int SLEEP_LOOPS_SECONDS = 20;
+    private static final int SLEEP_LOOPS_SECONDS = 120;
 
     private WhirlpoolClientConfig config;
     private NetworkParameters params;

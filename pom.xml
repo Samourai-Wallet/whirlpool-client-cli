@@ -18,6 +18,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>com.github.Polve</groupId>
+            <artifactId>JavaBitcoindRpcClient</artifactId>
+            <version>0.17.x-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
             <version>${spring.version}</version>
