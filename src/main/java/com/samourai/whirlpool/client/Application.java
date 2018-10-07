@@ -24,6 +24,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Command-line client.
@@ -81,9 +82,10 @@ public class Application implements ApplicationRunner {
                        if  (vpub != null) {
                            VpubWallet vpubWallet = CliUtils.computeVpubWallet(appArgs.getSeedPassphrase(), appArgs.getSeedWords(), appArgs.getVPub(), params, hdWalletFactory);
                            SamouraiApi samouraiApi = new SamouraiApi(config.getHttpClient());
-                           if (appArgs.isTx0()) {
+                           Optional<Integer> tx0 = appArgs.getTx0();
+                           if (tx0.isPresent()) {
                                // go tx0 with VPUB
-                               new RunTx0VPub(params, samouraiApi).runTx0(pool, vpubWallet);
+                               new RunTx0VPub(params, samouraiApi).runTx0(pool, vpubWallet, tx0.get());
                            }
                            else {
                                // go whirpool with VPUB

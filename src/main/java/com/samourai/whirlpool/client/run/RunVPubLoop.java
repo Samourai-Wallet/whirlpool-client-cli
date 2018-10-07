@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.whirlpool.client.CliUtils;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.vpub.UnspentResponse;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
@@ -79,11 +80,8 @@ public class RunVPubLoop {
         int missingMustMixUtxos = Math.max(missingMustmixs, missingAnonymitySet);
         if (missingMustMixUtxos > 0) {
             // not enough mustMixUtxos => new Tx0
-            log.info(" => I need " + missingMustMixUtxos + " more mustMixUtxo. Preparing new Tx0.");
-
-            // tx0
-            log.info(" • Tx0...");
-            new RunTx0VPub(params, samouraiApi).runTx0(utxos, vpubWallet, pool);
+            log.error(" => I need " + missingMustMixUtxos + " more mustMixUtxo. Please broadcast a new Tx0.");
+            throw new NotifiableException("I need " + missingMustMixUtxos + " more mustMixUtxo. Please broadcast a new Tx0.");
         } else {
             log.info(" • New mix...");
             new RunMixVPub(config).runMix(mustMixUtxos, vpubWallet, pool, samouraiApi);

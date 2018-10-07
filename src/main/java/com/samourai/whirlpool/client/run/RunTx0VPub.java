@@ -28,7 +28,6 @@ public class RunTx0VPub {
     private SamouraiApi samouraiApi;
 
     private static final String XPUB_SAMOURAI_FEES = "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
-    private static final int TX0_SIZE = 15; // TODO
     private static final long SAMOURAI_FEES = 10000; // TODO
     private static final long TX_MIX_BYTES_INITIAL = 200;
     private static final long TX_MIX_BYTES_PER_CLIENT = 50;
@@ -38,7 +37,7 @@ public class RunTx0VPub {
         this.samouraiApi = samouraiApi;
     }
 
-    public void runTx0(Pool pool, VpubWallet vpubWallet) throws Exception {
+    public void runTx0(Pool pool, VpubWallet vpubWallet, int nbOutputs) throws Exception {
         List<UnspentResponse.UnspentOutput> utxos = vpubWallet.fetchUtxos(samouraiApi);
         if (!utxos.isEmpty()) {
             log.info("Found " + utxos.size() + " utxo from premix:");
@@ -47,7 +46,7 @@ public class RunTx0VPub {
             log.error("ERROR: No utxo available from VPub.");
             return;
         }
-        runTx0(utxos, vpubWallet, pool);
+        runTx0(utxos, vpubWallet, pool, nbOutputs);
     }
 
     private long computeDestinationValue(Pool pool) throws Exception {
@@ -60,7 +59,7 @@ public class RunTx0VPub {
         return WhirlpoolProtocol.computeInputBalanceMin(pool.getDenomination(), false, tx0MinerFeePerMustmix);
     }
 
-    public void runTx0(List<UnspentResponse.UnspentOutput> utxos, VpubWallet vpubWallet, Pool pool) throws Exception {
+    public void runTx0(List<UnspentResponse.UnspentOutput> utxos, VpubWallet vpubWallet, Pool pool, int nbOutputs) throws Exception {
         // fetch spend address info
         log.info(" • Fetching addresses for VPub...");
         MultiAddrResponse.Address address = vpubWallet.fetchAddress(samouraiApi);
@@ -68,7 +67,7 @@ public class RunTx0VPub {
         long destinationValue = computeDestinationValue(pool);
 
         // find utxo to spend Tx0 from
-        long spendFromBalanceMin = TX0_SIZE * (destinationValue + SAMOURAI_FEES);
+        long spendFromBalanceMin = nbOutputs * (destinationValue + SAMOURAI_FEES);
         List<UnspentResponse.UnspentOutput> tx0SpendFroms = utxos.stream().filter(utxo -> utxo.value >= spendFromBalanceMin).collect(Collectors.toList());
 
         if (tx0SpendFroms.size() > 0) {
@@ -76,7 +75,7 @@ public class RunTx0VPub {
             CliUtils.printUtxos(tx0SpendFroms);
 
             UnspentResponse.UnspentOutput tx0SpendFrom = tx0SpendFroms.get(0);
-            Tx0 tx0 = runTx0(tx0SpendFrom, address, vpubWallet, destinationValue);
+            Tx0 tx0 = runTx0(tx0SpendFrom, address, vpubWallet, destinationValue, nbOutputs);
 
             final String tx0Hex = new String(Hex.encode(tx0.getTx().bitcoinSerialize()));
             throw new NotifiableException("Please broadcast TX0 and restart script:\ntx0Hash=" + tx0.getTx().getHashAsString() + "\ntx0Hex=" + tx0Hex);
@@ -85,7 +84,7 @@ public class RunTx0VPub {
         }
     }
 
-    private Tx0 runTx0(UnspentResponse.UnspentOutput spendFrom, MultiAddrResponse.Address address, VpubWallet vpubWallet, long destinationValue) throws Exception {
+    private Tx0 runTx0(UnspentResponse.UnspentOutput spendFrom, MultiAddrResponse.Address address, VpubWallet vpubWallet, long destinationValue, int nbOutputs) throws Exception {
         /*
          * SPEND FROM: BIP84[ACCOUNT_0][CHAIN_DEPOSIT][spendFrom.xpub.address]
          */
@@ -107,7 +106,7 @@ public class RunTx0VPub {
         // run tx0
         int feeSatPerByte = samouraiApi.fetchFees();
         Tx0 tx0 = new Tx0Service(params).tx0(depositAddress, spendFromOutpoint,
-            TX0_SIZE, destinationChain, destinationValue, destinationIndex,
+            nbOutputs, destinationChain, destinationValue, destinationIndex,
             changeAddress, feeSatPerByte, XPUB_SAMOURAI_FEES, SAMOURAI_FEES);
 
         log.info("Tx0:");

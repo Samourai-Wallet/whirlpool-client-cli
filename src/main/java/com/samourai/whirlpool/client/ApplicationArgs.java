@@ -7,6 +7,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.util.Assert;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Optional;
 
 /**
  * Parsing command-line client arguments.
@@ -137,8 +138,20 @@ public class ApplicationArgs {
     public boolean isTestMode() {
         return args.containsOption(ARG_TESTMODE);
     }
-    public boolean isTx0() {
-        return args.containsOption(ARG_TX0);
+
+    public Optional<Integer> getTx0() {
+        if (!args.containsOption(ARG_TX0)) {
+            return Optional.empty();
+        }
+        final int tx0;
+        try {
+            tx0 = Integer.parseInt(requireOption(ARG_TX0));
+            Assert.isTrue(tx0 > 0, "tx0 should be > 0");
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException("Numeric value expected for option: "+ ARG_TX0);
+        }
+        return Optional.of(tx0);
     }
 
     public String getVPub() {

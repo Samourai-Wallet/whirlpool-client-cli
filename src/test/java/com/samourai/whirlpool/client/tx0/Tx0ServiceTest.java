@@ -1,8 +1,9 @@
-package com.samourai.whirlpool.client;
+package com.samourai.whirlpool.client.tx0;
 
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Chain;
 import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
