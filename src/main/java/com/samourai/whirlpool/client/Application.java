@@ -54,7 +54,7 @@ public class Application implements ApplicationRunner {
 
         // enable debug logs with --debug
         if (appArgs.isDebug()) {
-            LogbackUtils.setLogLevel("com.samourai.whirlpool.client", Level.DEBUG.toString());
+            LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
         }
 
         log.info("------------ whirlpool-client ------------");
