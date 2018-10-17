@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.run.vpub;
+package com.samourai.api.beans;
 
 public class MultiAddrResponse {
     public Address[] addresses;

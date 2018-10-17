@@ -1,20 +1,20 @@
 package com.samourai.whirlpool.client.run;
 
+import com.samourai.api.SamouraiApi;
 import com.samourai.rpc.client.RpcClientService;
 import com.samourai.wallet.hd.HD_Account;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Chain;
 import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.run.vpub.MultiAddrResponse;
-import com.samourai.whirlpool.client.run.vpub.UnspentResponse;
+import com.samourai.api.beans.MultiAddrResponse;
+import com.samourai.api.beans.UnspentResponse;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.TransactionOutPoint;
-import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

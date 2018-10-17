@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.client;
 
+import com.samourai.api.SamouraiApi;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.http.client.JavaHttpClient;
 import com.samourai.rpc.client.JSONRpcClientServiceImpl;
@@ -10,7 +11,6 @@ import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.*;
 import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
-import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
@@ -18,7 +18,6 @@ import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.beans.Pools;
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.NetworkParameters;
-import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;

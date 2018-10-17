@@ -1,20 +1,8 @@
-package com.samourai.whirlpool.client.run;
+package com.samourai.api;
 
+import com.samourai.api.beans.MultiAddrResponse;
+import com.samourai.api.beans.UnspentResponse;
 import com.samourai.http.client.IHttpClient;
-import com.samourai.wallet.bip47.rpc.BIP47Wallet;
-import com.samourai.wallet.hd.HD_Chain;
-import com.samourai.wallet.hd.HD_Wallet;
-import com.samourai.wallet.segwit.SegwitAddress;
-import com.samourai.whirlpool.client.CliUtils;
-import com.samourai.whirlpool.client.WhirlpoolClient;
-import com.samourai.whirlpool.client.run.vpub.*;
-import com.samourai.whirlpool.client.whirlpool.beans.Pool;
-import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.crypto.MnemonicCode;
-import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class SamouraiApi {
     private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

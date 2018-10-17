@@ -1,7 +1,8 @@
 package com.samourai.whirlpool.client.run;
 
+import com.samourai.api.SamouraiApi;
 import com.samourai.whirlpool.client.CliUtils;
-import com.samourai.whirlpool.client.run.vpub.UnspentResponse;
+import com.samourai.api.beans.UnspentResponse;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import org.apache.commons.lang3.ArrayUtils;

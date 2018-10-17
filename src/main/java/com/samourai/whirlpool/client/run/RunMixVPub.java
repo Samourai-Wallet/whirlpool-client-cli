@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.client.run;
 
+import com.samourai.api.SamouraiApi;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.bip47.rpc.impl.Bip47Util;
 import com.samourai.wallet.hd.HD_Address;
@@ -8,7 +9,7 @@ import com.samourai.wallet.segwit.SegwitAddress;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.mix.MixParams;
 import com.samourai.whirlpool.client.mix.handler.IMixHandler;
-import com.samourai.whirlpool.client.run.vpub.UnspentResponse;
+import com.samourai.api.beans.UnspentResponse;
 import com.samourai.whirlpool.client.utils.MultiClientManager;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;

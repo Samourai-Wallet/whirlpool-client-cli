@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.run.vpub;
+package com.samourai.api.beans;
 
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.NetworkParameters;

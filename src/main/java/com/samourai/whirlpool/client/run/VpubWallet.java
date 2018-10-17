@@ -1,9 +1,10 @@
 package com.samourai.whirlpool.client.run;
 
+import com.samourai.api.SamouraiApi;
 import com.samourai.wallet.bip47.rpc.BIP47Wallet;
 import com.samourai.wallet.hd.HD_Wallet;
-import com.samourai.whirlpool.client.run.vpub.MultiAddrResponse;
-import com.samourai.whirlpool.client.run.vpub.UnspentResponse;
+import com.samourai.api.beans.MultiAddrResponse;
+import com.samourai.api.beans.UnspentResponse;
 
 import java.util.List;
 

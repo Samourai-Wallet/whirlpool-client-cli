@@ -4,7 +4,7 @@ import com.samourai.wallet.bip47.rpc.BIP47Wallet;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.whirlpool.client.run.VpubWallet;
 import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
-import com.samourai.whirlpool.client.run.vpub.UnspentResponse;
+import com.samourai.api.beans.UnspentResponse;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import org.bitcoinj.core.NetworkParameters;
