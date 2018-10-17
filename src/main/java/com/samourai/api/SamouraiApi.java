@@ -58,6 +58,11 @@ public class SamouraiApi {
     public int fetchFees() throws Exception {
         String url = URL_BACKEND + URL_FEES;
         Map feesResponse = httpClient.parseJson(url, Map.class);
-        return Math.min(Integer.parseInt(feesResponse.get("2").toString()), MAX_FEE_PER_BYTE);
+        int fees2 = Integer.parseInt(feesResponse.get("2").toString());
+        if (fees2 < 1) {
+            log.error("Invalid fee response from server: fees2=" + fees2);
+            throw new Exception("Invalid fee response from server");
+        }
+        return Math.min(fees2, MAX_FEE_PER_BYTE);
     }
 }

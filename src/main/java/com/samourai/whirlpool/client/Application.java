@@ -36,6 +36,7 @@ import java.util.Optional;
 @EnableAutoConfiguration
 public class Application implements ApplicationRunner {
     private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final int RUNVPUB_SLEEP_ON_ERROR = 15000;
 
     private ApplicationArgs appArgs;
     private HdWalletFactory hdWalletFactory;
@@ -97,7 +98,16 @@ public class Application implements ApplicationRunner {
                            }
                            else {
                                // go whirpool with VPUB
-                               new RunVPubLoop(config, samouraiApi, runTx0VPub).run(pool, vpubWallet);
+                               while(true) {
+                                   try {
+                                       new RunVPubLoop(config, samouraiApi, runTx0VPub).run(pool, vpubWallet);
+                                   } catch(Exception e) {
+                                       log.error("RunVPubLoop failed, retrying in " + RUNVPUB_SLEEP_ON_ERROR+"ms", e);
+                                       synchronized (this) {
+                                           Thread.sleep(RUNVPUB_SLEEP_ON_ERROR);
+                                       }
+                                   }
+                               }
                            }
                        } else {
                            // go whirlpool with UTXO
