@@ -87,6 +87,7 @@ public class Application implements ApplicationRunner {
                        String vpub = appArgs.getVPub();
                        if  (vpub != null) {
                            rpcClientService = computeRpcClientService(appArgs);
+                           rpcClientService.testConnectivity();
 
                            VpubWallet vpubWallet = CliUtils.computeVpubWallet(appArgs.getSeedPassphrase(), appArgs.getSeedWords(), appArgs.getVPub(), params, hdWalletFactory);
                            SamouraiApi samouraiApi = new SamouraiApi(config.getHttpClient());
