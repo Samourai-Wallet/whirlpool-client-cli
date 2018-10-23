@@ -63,17 +63,14 @@ public class JavaStompClient implements IStompClient {
         if (stompSession != null) {
             try {
                 stompSession.disconnect();
-            } catch (Exception e) {
-                log.error("", e);
-            }
+            } catch (Exception e) {}
+            stompSession = null;
         }
 
         if (stompClient != null) {
             try {
                 stompClient.stop();
-            } catch(Exception e) {
-                log.error("", e);
-            }
+            } catch(Exception e) {}
             stompClient = null;
         }
     }

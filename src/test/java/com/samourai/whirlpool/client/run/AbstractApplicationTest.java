@@ -1,9 +1,8 @@
 package com.samourai.whirlpool.client.run;
 
+import com.samourai.whirlpool.client.utils.CaptureStream;
 import org.springframework.boot.SpringBootConfiguration;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 
 @SpringBootConfiguration
@@ -17,7 +16,7 @@ public class AbstractApplicationTest {
     protected static final String VPUB = "vpub5YW6Bhq66LvLJuKPetDwyg83NvrF5i9SYRwXvyWYFXxDjoYXYeFrfpwwcATN9NQSqpqz7kXg7FMVCkn87VuwTKpGzTLSUb6LctfRVpALYHh";
     protected static final String SEED_WORDS = "leisure mix glove infant admit multiply rib harbor burden once loop deposit";
     protected static final String SEED_PASSPHRASE = "whirlpool";
-    protected static final String SERVER = "82.221.131.94:8081";
+    protected static final String SERVER = "127.0.0.1:8080";
     protected static final String RPC_CLIENT_URL = "http://user:password@host:port";
 
     private CaptureStream outContent;

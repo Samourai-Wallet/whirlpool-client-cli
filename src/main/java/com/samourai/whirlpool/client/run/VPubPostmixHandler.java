@@ -3,36 +3,34 @@ package com.samourai.whirlpool.client.run;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Chain;
 import com.samourai.wallet.segwit.SegwitAddress;
-import com.samourai.whirlpool.client.mix.handler.IMixHandler;
-import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.client.mix.handler.IPostmixHandler;
+import com.samourai.whirlpool.client.mix.handler.IPremixHandler;
+import com.samourai.whirlpool.client.mix.handler.PremixHandler;
+import com.samourai.whirlpool.client.mix.handler.UtxoWithBalance;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.core.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 
-public class VPubMixHandler implements IMixHandler {
+public class VPubPostmixHandler implements IPostmixHandler {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private ECKey utxoKey;
     private HD_Chain receiveChain;
     private int receiveAddressIndex;
-    private int incrementReceiveAddressIndex;
     private HD_Address receiveAddress;
 
-    public VPubMixHandler(ECKey utxoKey, HD_Chain receiveChain, int receiveAddressIndex, int incrementReceiveAddressIndex) {
-        this.utxoKey = utxoKey;
+    public VPubPostmixHandler(HD_Chain receiveChain, int receiveAddressIndex) {
         this.receiveChain = receiveChain;
         this.receiveAddressIndex = receiveAddressIndex;
-        this.incrementReceiveAddressIndex = incrementReceiveAddressIndex;
         this.receiveAddress = null;
     }
 
     @Override
     public String computeReceiveAddress(NetworkParameters params) throws Exception {
         this.receiveAddress = receiveChain.getAddressAt(receiveAddressIndex);
+        receiveAddressIndex++;
 
         String bech32Address = new SegwitAddress(receiveAddress.getPubKey(), params).getBech32AsString();
         log.info("receiveAddress="+bech32Address+", receiveKey="+receiveAddress.getECKey().getPrivateKeyAsWiF(params)+", path="+receiveAddress.toJSON().get("path"));
@@ -40,23 +38,8 @@ public class VPubMixHandler implements IMixHandler {
     }
 
     @Override
-    public void signTransaction(Transaction tx, int inputIndex, long spendAmount, NetworkParameters params) throws Exception {
-        ClientUtils.signSegwitInput(tx, inputIndex, utxoKey, spendAmount, params);
-    }
-
-    @Override
-    public String signMessage(String message) {
-        return utxoKey.signMessage(message);
-    }
-
-    @Override
-    public byte[] getPubkey() {
-        return utxoKey.getPubKey();
-    }
-
-    @Override
-    public IMixHandler computeMixHandlerForNextMix() {
+    public IPremixHandler computeNextPremixHandler(UtxoWithBalance receiveUtxo) {
         ECKey receiveKey = receiveAddress.getECKey();
-        return new VPubMixHandler(receiveKey, receiveChain, receiveAddressIndex+incrementReceiveAddressIndex, incrementReceiveAddressIndex);
+        return new PremixHandler(receiveUtxo, receiveKey);
     }
 }
