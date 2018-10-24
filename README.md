@@ -1,54 +1,90 @@
 # whirlpool-client-cli
 
-Command line Whirlpool client
+Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool) by Samourai-Wallet.
 
-## Usage
-- (run whirlpool-server if not already running)
 
-- run from IDE:
+## General usage
 ```
-com.samourai.whirlpool.client.Application
+java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network={main,test} [--server=host:port] [--debug] [--pool=] [--test-mode] {args...}
 ```
-
-- run from commandline:
-```
-java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network={main,test} --utxo= --utxo-key= --utxo-balance= --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug]
-```
-
-Examples:
-```
-java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --seed-passphrase=all10 --network=test --seed-words="all all all all all all all all all all all all --pool=1btc --paynym-index=5"
-java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --utxo=7ea75da574ebabf8d17979615b059ab53aae3011926426204e730d164a0d0f16-2 --utxo-key=cUwS52vEv4ursFBdGJWgHiZyBNqqSF5nFTsunUpocRBYGLY72z4j --utxo-balance=100001000 --seed-passphrase=all10 --network=test --seed-words="all all all all all all all all all all all all --pool=1btc --paynym-index=5"
-```
-
-Arguments:
-- server: (host:port) server to connect to
 - network: (main,test) bitcoin network to use. Client will abort if server runs on a different network.
-- utxo: (txhash:indice) input to provide
-- utxo-key: ECKey to sign the input
-- utxo-balance: utxo balance in satoshis. Whole utxo-balance balance will be spent.
-- seed-passphrase and seed-words: wallet seed from which to derive the paynym for computing output address to receive the funds
-- paynym-index: paynym index to use for computing output address to receive the funds
-- mixs: (1 to N) number of mixes to complete. Client will keep running (as a liquidity) until completing this number of mixes.
-- pool: id of the pool to join.
-- test-mode: disable tx0 checks (samourai fees) - when server is in testMode
+- server: (host:port) server to connect to
 - debug: display more logs for debugging
+- pool: id of the pool to join
+- test-mode: disable tx0 checks, only available when enabled on server
 
+### List pools
+```
+--network={main,test} [--server=host:port] [--debug]
+```
+
+Example:
+```
+java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server=host:port --pool=0.1btc
+```
+
+### Mix a wallet
+You need a wallet holding funds to mix. The script will run the following automatic process:
+(1) wallet utxo --tx0--> (2) pre-mix utxo (m/0/0) --mix--> (3) post-mix utxo (m/Integer.MAX_VALUE/0)
+1. List wallet utxos
+2. When needed, split existing wallet utxo to pre-mix utxos with a valid tx0. Broadcast it (when rpc-client-url provided) or halt to let you broadcast it manually.
+3. Mix pre-mix utxos, and repeat
+
+```
+--network={main,test} [--server=host:port] [--debug] [--test-mode] --pool=
+--vpub= --seed-passphrase= --seed-words=
+[--rpc-client-url=http://user:password@host:port]
+```
+- vpub: vpub of your wallet
+- seed-passphrase & seed-words: wallet seed
+- rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will stop to let you broadcast it manually.
+
+## Expert usage
+
+### Mix specific utxo
+You need a valid pre-mix utxo (output of a valid tx0) to mix.
+```
+--network={main,test} [--server=host:port] [--debug] [--test-mode] --pool=
+--utxo= --utxo-key= --utxo-balance=
+--seed-passphrase= --seed-words= [--paynym-index=0]
+[--mixs=1]
+```
+
+Example:
+```
+java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --seed-passphrase=all10 --seed-words="all all all all all all all all all all all all --paynym-index=5"
+```
+- utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)
+- utxo-key: ECKey for pre-mix input
+- utxo-balance: pre-mix input balance (in satoshis). Whole utxo-balance balance will be spent.
+- seed-passphrase & seed-words: wallet seed from which to derive the paynym for computing post-mix address to receive the funds
+- paynym-index: paynym index to use for computing post-mix address to receive the funds
+- mixs: (1 to N) number of mixes to complete. Client will keep running until completing this number of mixes.
+
+
+### Tx0
+You need a valid pre-mix utxo (output of a valid tx0).
+```
+--network={main,test} [--server=host:port] [--debug] [--test-mode] --pool=
+--vpub= --seed-passphrase= --seed-words=
+[--rpc-client-url=http://user:password@host:port]
+--tx0=
+```
+- vpub: vpub of your wallet
+- seed-passphrase & seed-words: wallet seed
+- rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will stop to let you broadcast it manually.
+- tx0: number of pre-mix utxo to generate (number of tx0 outputs - change output)
 
 ## Build instructions
-Before using whirlpool-client-cli, install dependencies in this order:
-- whirlpool-protocol
-- whirlpool-client
-- whirlpool-client-cli
+Build with maven:
 
 ```
-cd whirlpool-protocol
-mvn clean install -Dmaven.test.skip=true
-
-cd whirlpool-client
-mvn clean install -Dmaven.test.skip=true
-
 cd whirlpool-client-cli
 mvn clean install -Dmaven.test.skip=true
-
 ```
+
+## Resources
+ * [whirlpool](https://github.com/Samourai-Wallet/Whirlpool)
+ * [whirlpool-protocol](https://github.com/Samourai-Wallet/whirlpool-protocol)
+ * [whirlpool-client](https://github.com/Samourai-Wallet/whirlpool-client)
+ * [whirlpool-server](https://github.com/Samourai-Wallet/whirlpool-server)
