@@ -46,7 +46,6 @@ public class Application implements ApplicationRunner {
     }
 
     private IHttpClient httpClient = new JavaHttpClient();
-    private RpcClientService rpcClientService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -86,9 +85,7 @@ public class Application implements ApplicationRunner {
 
                        String vpub = appArgs.getVPub();
                        if  (vpub != null) {
-                           rpcClientService = computeRpcClientService(appArgs);
-                           rpcClientService.testConnectivity();
-
+                           Optional<RpcClientService> rpcClientService = computeRpcClientService(appArgs);
                            VpubWallet vpubWallet = CliUtils.computeVpubWallet(appArgs.getSeedPassphrase(), appArgs.getSeedWords(), appArgs.getVPub(), params, hdWalletFactory);
                            SamouraiApi samouraiApi = new SamouraiApi(config.getHttpClient());
                            RunTx0VPub runTx0VPub = new RunTx0VPub(params, samouraiApi, rpcClientService);
@@ -152,10 +149,17 @@ public class Application implements ApplicationRunner {
         return config;
     }
 
-    private RpcClientService computeRpcClientService(ApplicationArgs appArgs) throws Exception {
-        NetworkParameters params = appArgs.getNetworkParameters();
+    private Optional<RpcClientService> computeRpcClientService(ApplicationArgs appArgs) throws Exception {
         String rpcClientUrl = appArgs.getRpcClientUrl();
+        if (rpcClientUrl == null) {
+            return Optional.empty();
+        }
+        NetworkParameters params = appArgs.getNetworkParameters();
         boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(params);
-        return new JSONRpcClientServiceImpl(rpcClientUrl, isTestnet);
+        RpcClientService rpcClientService = new JSONRpcClientServiceImpl(rpcClientUrl, isTestnet);
+        if (!rpcClientService.testConnectivity()) {
+            throw new NotifiableException("Unable to connect to rpc-client-url");
+        }
+        return Optional.of(rpcClientService);
     }
 }

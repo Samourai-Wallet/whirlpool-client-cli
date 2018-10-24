@@ -15,11 +15,13 @@ import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.TransactionOutPoint;
+import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class RunTx0VPub {
@@ -27,14 +29,14 @@ public class RunTx0VPub {
 
     private NetworkParameters params;
     private SamouraiApi samouraiApi;
-    private RpcClientService rpcClientService;
+    private Optional<RpcClientService> rpcClientService;
 
     private static final String XPUB_SAMOURAI_FEES = "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
     private static final long SAMOURAI_FEES = 10000; // TODO
     private static final long TX_MIX_BYTES_INITIAL = 200;
     private static final long TX_MIX_BYTES_PER_CLIENT = 50;
 
-    public RunTx0VPub(NetworkParameters params, SamouraiApi samouraiApi, RpcClientService rpcClientService) {
+    public RunTx0VPub(NetworkParameters params, SamouraiApi samouraiApi, Optional<RpcClientService> rpcClientService) {
         this.params = params;
         this.samouraiApi = samouraiApi;
         this.rpcClientService = rpcClientService;
@@ -114,8 +116,13 @@ public class RunTx0VPub {
 
         // broadcast
         log.info(" • Broadcasting Tx0...");
-        rpcClientService.broadcastTransaction(tx0.getTx());
-
+        if (rpcClientService.isPresent()) {
+            rpcClientService.get().broadcastTransaction(tx0.getTx());
+        } else {
+            final String hexTx = new String(Hex.encode(tx0.getTx().bitcoinSerialize()));
+            String message = "A new tx0 is ready. Please broadcast the following transaction and restart the script: " + hexTx;
+            throw new NotifiableException(message);
+        }
         return tx0;
     }
 }

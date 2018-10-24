@@ -160,7 +160,7 @@ public class ApplicationArgs {
     }
 
     public String getRpcClientUrl() {
-        return requireOption(ARG_RPC_CLIENT_URL);
+        return optionalOption(ARG_RPC_CLIENT_URL);
     }
 
     private String optionalOption(String name) {
