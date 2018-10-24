@@ -63,7 +63,7 @@ java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server
 
 
 ### Tx0
-You need a valid pre-mix utxo (output of a valid tx0).
+You need a wallet holding funds to split.
 ```
 --network={main,test} [--server=host:port] [--debug] [--test-mode] --pool=
 --vpub= --seed-passphrase= --seed-words=
