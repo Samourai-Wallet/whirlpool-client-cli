@@ -35,6 +35,11 @@ You need a wallet holding funds to mix. The script will run the following automa
 --vpub= --seed-passphrase= --seed-words=
 [--rpc-client-url=http://user:password@host:port]
 ```
+
+Example:
+```
+java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server=host:port --pool=0.1btc --vpub=vpub5YW6Bhq... --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --tx0=10"
+```
 - vpub: vpub of your wallet
 - seed-passphrase & seed-words: wallet seed
 - rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will stop to let you broadcast it manually.
@@ -52,7 +57,7 @@ You need a valid pre-mix utxo (output of a valid tx0) to mix.
 
 Example:
 ```
-java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --seed-passphrase=all10 --seed-words="all all all all all all all all all all all all --paynym-index=5"
+java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --paynym-index=5"
 ```
 - utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)
 - utxo-key: ECKey for pre-mix input
@@ -69,6 +74,11 @@ You need a wallet holding funds to split.
 --vpub= --seed-passphrase= --seed-words=
 [--rpc-client-url=http://user:password@host:port]
 --tx0=
+```
+
+Example:
+```
+java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server=host:port --pool=0.1btc --vpub=vpub5YW6Bhq... --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --tx0=10"
 ```
 - vpub: vpub of your wallet
 - seed-passphrase & seed-words: wallet seed
