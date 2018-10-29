@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.samouraiwallet</groupId>
+    <groupId>com.github.Samourai-Wallet</groupId>
     <artifactId>whirlpool-client-cli</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>whirlpool-client-cli</name>
@@ -12,9 +12,9 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.samouraiwallet</groupId>
+            <groupId>com.github.Samourai-Wallet</groupId>
             <artifactId>whirlpool-client</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>develop-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
