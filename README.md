@@ -5,7 +5,7 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 
 ## General usage
 ```
-java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network={main,test} [--server=host:port] [--debug] [--pool=] [--test-mode] {args...}
+java -jar target/whirlpool-client-version-run.jar --network={main,test} [--server=host:port] [--debug] [--pool=] [--test-mode] {args...}
 ```
 - network: (main,test) bitcoin network to use. Client will abort if server runs on a different network.
 - server: (host:port) server to connect to
@@ -20,7 +20,7 @@ java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network={main,test} [
 
 Example:
 ```
-java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server=host:port --pool=0.1btc
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc
 ```
 
 ### Mix a wallet
@@ -38,7 +38,7 @@ You need a wallet holding funds to mix. The script will run the following automa
 
 Example:
 ```
-java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server=host:port --pool=0.1btc --vpub=vpub5YW6Bhq... --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --tx0=10"
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --vpub=vpub5YW6Bhq... --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --tx0=10"
 ```
 - vpub: vpub of your wallet
 - seed-passphrase & seed-words: wallet seed
@@ -57,7 +57,7 @@ You need a valid pre-mix utxo (output of a valid tx0) to mix.
 
 Example:
 ```
-java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --paynym-index=5"
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --paynym-index=5"
 ```
 - utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)
 - utxo-key: ECKey for pre-mix input
@@ -78,7 +78,7 @@ You need a wallet holding funds to split.
 
 Example:
 ```
-java -jar target/whirlpool-client-0.0.1-SNAPSHOT-run.jar --network=test --server=host:port --pool=0.1btc --vpub=vpub5YW6Bhq... --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --tx0=10"
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --vpub=vpub5YW6Bhq... --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --tx0=10"
 ```
 - vpub: vpub of your wallet
 - seed-passphrase & seed-words: wallet seed
