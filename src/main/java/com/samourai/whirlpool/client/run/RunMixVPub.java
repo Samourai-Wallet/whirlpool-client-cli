@@ -3,7 +3,6 @@ package com.samourai.whirlpool.client.run;
 import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.stomp.client.JavaStompClient;
-import com.samourai.wallet.bip47.rpc.impl.Bip47Util;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Chain;
 import com.samourai.wallet.segwit.SegwitAddress;
@@ -28,7 +27,6 @@ public class RunMixVPub {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private WhirlpoolClientConfig config;
-  private Bip47Util bip47Util = Bip47Util.getInstance();
 
   private static final int SLEEP_CONNECTING_CLIENTS_SECONDS = 30;
 
@@ -47,6 +45,7 @@ public class RunMixVPub {
 
     // fetch receiveAddress index
     int receiveAddressIndex = postmixWallet.fetchAddress(samouraiApi).account_index;
+    // receive address from postmix
     HD_Chain receiveChain =
         postmixWallet
             .getBip84w()
@@ -56,9 +55,6 @@ public class RunMixVPub {
 
     // connect each client
     for (int i = 0; i < NB_CLIENTS; i++) {
-      if (multiClientManager.isDone()) {
-        break;
-      }
       // pick last mustMix
       UnspentResponse.UnspentOutput premixUtxo =
           mustMixUtxosPremix.remove(mustMixUtxosPremix.size() - 1);
@@ -77,8 +73,6 @@ public class RunMixVPub {
               .getBech32AsString();
       ECKey premixKey = premixAddress.getECKey();
       IPremixHandler premixHandler = new PremixHandler(premixUtxoWithBalance, premixKey);
-
-      // receive address from postmix
 
       // one config / StompClient per client
       WhirlpoolClientConfig clientConfig = new WhirlpoolClientConfig(config);
