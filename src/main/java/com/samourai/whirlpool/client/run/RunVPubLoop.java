@@ -3,6 +3,7 @@ package com.samourai.whirlpool.client.run;
 import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.whirlpool.client.CliUtils;
+import com.samourai.whirlpool.client.mix.handler.IPostmixHandler;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
@@ -31,19 +32,28 @@ public class RunVPubLoop {
   private NetworkParameters params;
   private SamouraiApi samouraiApi;
   private RunTx0VPub runTx0VPub;
-
   private VpubWallet vpubWallet;
 
-  public RunVPubLoop(WhirlpoolClientConfig config, SamouraiApi samouraiApi, RunTx0VPub runTx0VPub) {
+  private RunMixVPub runMixVPub;
+  private IPostmixHandler postmixHandler;
+
+  public RunVPubLoop(
+      WhirlpoolClientConfig config,
+      SamouraiApi samouraiApi,
+      RunTx0VPub runTx0VPub,
+      VpubWallet vpubWallet)
+      throws Exception {
     this.config = config;
     this.params = config.getNetworkParameters();
     this.samouraiApi = samouraiApi;
     this.runTx0VPub = runTx0VPub;
-  }
-
-  public void run(Pool pool, VpubWallet vpubWallet) throws Exception {
     this.vpubWallet = vpubWallet;
 
+    this.runMixVPub = new RunMixVPub(config);
+    this.postmixHandler = runMixVPub.computePostmixHandler(vpubWallet, samouraiApi);
+  }
+
+  public void run(Pool pool) throws Exception {
     while (true) {
       log.info(" --------------------------------------- ");
       runLoop(pool);
@@ -104,7 +114,7 @@ public class RunVPubLoop {
       runTx0VPub.runTx0(utxos, vpubWallet, pool, missingMustMixUtxos);
     } else {
       log.info(" • New mix...");
-      new RunMixVPub(config).runMix(mustMixUtxos, vpubWallet, pool, samouraiApi);
+      runMixVPub.runMix(mustMixUtxos, pool, vpubWallet, postmixHandler);
     }
   }
 

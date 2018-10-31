@@ -27,19 +27,22 @@ public class VPubPostmixHandler implements IPostmixHandler {
   }
 
   @Override
-  public String computeReceiveAddress(NetworkParameters params) throws Exception {
+  public synchronized String computeReceiveAddress(NetworkParameters params) throws Exception {
     this.receiveAddress = receiveChain.getAddressAt(receiveAddressIndex);
-    receiveAddressIndex++;
 
     String bech32Address =
         new SegwitAddress(receiveAddress.getPubKey(), params).getBech32AsString();
     log.info(
-        "receiveAddress="
+        "receiveAddressIndex="
+            + receiveAddressIndex
+            + ", receiveAddress="
             + bech32Address
             + ", receiveKey="
             + receiveAddress.getECKey().getPrivateKeyAsWiF(params)
             + ", path="
             + receiveAddress.toJSON().get("path"));
+
+    receiveAddressIndex++;
     return bech32Address;
   }
 

@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory;
 public class RunMixVPub {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private VpubWallet postmixWallet;
+  private SamouraiApi samouraiApi;
   private WhirlpoolClientConfig config;
 
   private static final int SLEEP_CONNECTING_CLIENTS_SECONDS = 30;
@@ -36,22 +38,12 @@ public class RunMixVPub {
 
   public void runMix(
       List<UnspentResponse.UnspentOutput> mustMixUtxosPremix,
-      VpubWallet postmixWallet,
       Pool pool,
-      SamouraiApi samouraiApi)
+      VpubWallet postmixWallet,
+      IPostmixHandler postmixHandler)
       throws Exception {
     final int NB_CLIENTS = pool.getMixAnonymitySet();
     MultiClientManager multiClientManager = new MultiClientManager();
-
-    // fetch receiveAddress index
-    int receiveAddressIndex = postmixWallet.fetchAddress(samouraiApi).account_index;
-    // receive address from postmix
-    HD_Chain receiveChain =
-        postmixWallet
-            .getBip84w()
-            .getAccountAt(RunVPubLoop.ACCOUNT_POSTMIX)
-            .getChain(RunVPubLoop.CHAIN_POSTMIX);
-    IPostmixHandler postmixHandler = new VPubPostmixHandler(receiveChain, receiveAddressIndex);
 
     // connect each client
     for (int i = 0; i < NB_CLIENTS; i++) {
@@ -101,5 +93,18 @@ public class RunMixVPub {
       Thread.sleep(SLEEP_CONNECTING_CLIENTS_SECONDS * 1000);
     }
     multiClientManager.waitDone();
+  }
+
+  public IPostmixHandler computePostmixHandler(VpubWallet postmixWallet, SamouraiApi samouraiApi)
+      throws Exception {
+    // fetch receiveAddress index
+    int receiveAddressIndex = postmixWallet.fetchAddress(samouraiApi).account_index;
+    // receive address from postmix
+    HD_Chain receiveChain =
+        postmixWallet
+            .getBip84w()
+            .getAccountAt(RunVPubLoop.ACCOUNT_POSTMIX)
+            .getChain(RunVPubLoop.CHAIN_POSTMIX);
+    return new VPubPostmixHandler(receiveChain, receiveAddressIndex);
   }
 }

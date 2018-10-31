@@ -100,7 +100,7 @@ public class Application implements ApplicationRunner {
                 // go whirpool with VPUB
                 while (true) {
                   try {
-                    new RunVPubLoop(config, samouraiApi, runTx0VPub).run(pool, vpubWallet);
+                    new RunVPubLoop(config, samouraiApi, runTx0VPub, vpubWallet).run(pool);
                   } catch (Exception e) {
                     log.error(
                         "RunVPubLoop failed, retrying in " + RUNVPUB_SLEEP_ON_ERROR + "ms", e);
