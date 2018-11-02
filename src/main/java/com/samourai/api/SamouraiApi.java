@@ -28,6 +28,9 @@ public class SamouraiApi {
 
   public List<UnspentResponse.UnspentOutput> fetchUtxos(String vpub) throws Exception {
     String url = URL_BACKEND + URL_UNSPENT + vpub;
+    if (log.isDebugEnabled()) {
+      log.debug("fetchUtxos: " + url);
+    }
     UnspentResponse unspentResponse = httpClient.parseJson(url, UnspentResponse.class);
     List<UnspentResponse.UnspentOutput> unspentOutputs = new ArrayList<>();
     if (unspentResponse.unspent_outputs != null) {
@@ -38,6 +41,9 @@ public class SamouraiApi {
 
   public List<MultiAddrResponse.Address> fetchAddresses(String vpub) throws Exception {
     String url = URL_BACKEND + URL_MULTIADDR + vpub;
+    if (log.isDebugEnabled()) {
+      log.debug("fetchAddress: " + url);
+    }
     MultiAddrResponse multiAddrResponse = httpClient.parseJson(url, MultiAddrResponse.class);
     List<MultiAddrResponse.Address> addresses = new ArrayList<>();
     if (multiAddrResponse.addresses != null) {
@@ -51,7 +57,18 @@ public class SamouraiApi {
     if (addresses.size() != 1) { // TODO find addres by ????
       throw new Exception("Address count=" + addresses.size());
     }
-    return addresses.get(0);
+    MultiAddrResponse.Address address = addresses.get(0);
+
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "fetchAddress "
+              + vpub
+              + ": account_index="
+              + address.account_index
+              + ", change_index="
+              + address.change_index);
+    }
+    return address;
   }
 
   public int fetchFees() throws Exception {
