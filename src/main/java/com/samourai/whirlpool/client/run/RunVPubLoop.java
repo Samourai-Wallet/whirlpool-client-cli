@@ -1,6 +1,5 @@
 package com.samourai.whirlpool.client.run;
 
-import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.mix.handler.IPostmixHandler;
@@ -11,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
-import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,29 +26,19 @@ public class RunVPubLoop {
 
   private static final int SLEEP_LOOPS_SECONDS = 120;
 
-  private WhirlpoolClientConfig config;
-  private NetworkParameters params;
-  private SamouraiApi samouraiApi;
   private RunTx0VPub runTx0VPub;
   private VpubWallet vpubWallet;
 
   private RunMixVPub runMixVPub;
   private IPostmixHandler postmixHandler;
 
-  public RunVPubLoop(
-      WhirlpoolClientConfig config,
-      SamouraiApi samouraiApi,
-      RunTx0VPub runTx0VPub,
-      VpubWallet vpubWallet)
+  public RunVPubLoop(WhirlpoolClientConfig config, RunTx0VPub runTx0VPub, VpubWallet vpubWallet)
       throws Exception {
-    this.config = config;
-    this.params = config.getNetworkParameters();
-    this.samouraiApi = samouraiApi;
     this.runTx0VPub = runTx0VPub;
     this.vpubWallet = vpubWallet;
 
     this.runMixVPub = new RunMixVPub(config);
-    this.postmixHandler = runMixVPub.computePostmixHandler(vpubWallet, samouraiApi);
+    this.postmixHandler = runMixVPub.computePostmixHandler(vpubWallet);
   }
 
   public void run(Pool pool) throws Exception {
@@ -68,7 +56,7 @@ public class RunVPubLoop {
     log.info(" • Fetching unspent outputs from premix...");
     List<UnspentResponse.UnspentOutput> utxos =
         vpubWallet
-            .fetchUtxos(samouraiApi)
+            .fetchUtxos(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX)
             .stream()
             .filter(utxo -> !isIgnoredUtxo(utxo))
             .collect(Collectors.toList());

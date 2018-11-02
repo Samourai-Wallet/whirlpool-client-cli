@@ -24,8 +24,8 @@ public class ApplicationArgs {
   private static final String ARG_MIXS = "mixs";
   private static final String ARG_POOL_ID = "pool";
   private static final String ARG_TESTMODE = "test-mode";
-  private static final String ARG_VPUB = "vpub";
   private static final String ARG_TX0 = "tx0";
+  private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
   private static final String ARG_RPC_CLIENT_URL = "rpc-client-url";
   public static final String USAGE =
       "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub= --rpc-client-url] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0]";
@@ -62,6 +62,10 @@ public class ApplicationArgs {
     String utxo = requireOption(ARG_UTXO);
     Assert.notNull(utxo, "utxo is null");
     return utxo;
+  }
+
+  public boolean isUtxo() {
+    return args.containsOption(ARG_UTXO);
   }
 
   public String getUtxoHash() {
@@ -148,8 +152,8 @@ public class ApplicationArgs {
     return Optional.of(tx0);
   }
 
-  public String getVPub() {
-    return optionalOption(ARG_VPUB);
+  public boolean isAggregatePostmix() {
+    return args.containsOption(ARG_AGGREGATE_POSTMIX);
   }
 
   public String getRpcClientUrl() {

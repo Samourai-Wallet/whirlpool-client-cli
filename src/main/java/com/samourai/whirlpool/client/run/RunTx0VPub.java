@@ -46,7 +46,8 @@ public class RunTx0VPub {
   }
 
   public Tx0 runTx0(Pool pool, VpubWallet vpubWallet, int nbOutputs) throws Exception {
-    List<UnspentResponse.UnspentOutput> utxos = vpubWallet.fetchUtxos(samouraiApi);
+    List<UnspentResponse.UnspentOutput> utxos =
+        vpubWallet.fetchUtxos(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX);
     if (!utxos.isEmpty()) {
       log.info("Found " + utxos.size() + " utxo from premix:");
       CliUtils.printUtxos(utxos);
@@ -81,7 +82,8 @@ public class RunTx0VPub {
       throws Exception {
     // fetch spend address info
     log.info(" • Fetching addresses for VPub...");
-    MultiAddrResponse.Address address = vpubWallet.fetchAddress(samouraiApi);
+    MultiAddrResponse.Address address =
+        vpubWallet.fetchAddress(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX);
 
     long destinationValue = computeDestinationValue(pool);
 

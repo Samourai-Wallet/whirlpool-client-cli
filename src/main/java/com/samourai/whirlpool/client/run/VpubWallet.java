@@ -2,7 +2,7 @@ package com.samourai.whirlpool.client.run;
 
 import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.MultiAddrResponse;
-import com.samourai.api.beans.UnspentResponse;
+import com.samourai.api.beans.UnspentResponse.UnspentOutput;
 import com.samourai.wallet.bip47.rpc.BIP47Wallet;
 import com.samourai.wallet.hd.HD_Wallet;
 import java.util.List;
@@ -11,21 +11,24 @@ public class VpubWallet {
   private HD_Wallet bip44w;
   private BIP47Wallet bip47w;
   private HD_Wallet bip84w;
-  private String vpub;
+  private SamouraiApi samouraiApi;
 
-  public VpubWallet(HD_Wallet bip44w, BIP47Wallet bip47w, HD_Wallet bip84w, String vpub) {
+  public VpubWallet(
+      HD_Wallet bip44w, BIP47Wallet bip47w, HD_Wallet bip84w, SamouraiApi samouraiApi) {
     this.bip44w = bip44w;
     this.bip47w = bip47w;
     this.bip84w = bip84w;
-    this.vpub = vpub;
+    this.samouraiApi = samouraiApi;
   }
 
-  public List<UnspentResponse.UnspentOutput> fetchUtxos(SamouraiApi samouraiApi) throws Exception {
-    return samouraiApi.fetchUtxos(vpub);
+  public List<UnspentOutput> fetchUtxos(int accountIdx) throws Exception {
+    String zpub = bip84w.getAccountAt(accountIdx).zpubstr();
+    return samouraiApi.fetchUtxos(zpub);
   }
 
-  public MultiAddrResponse.Address fetchAddress(SamouraiApi samouraiApi) throws Exception {
-    MultiAddrResponse.Address address = samouraiApi.findAddress(vpub);
+  public MultiAddrResponse.Address fetchAddress(int accountIdx) throws Exception {
+    String zpub = bip84w.getAccountAt(accountIdx).zpubstr();
+    MultiAddrResponse.Address address = samouraiApi.findAddress(zpub);
     if (address == null) {
       throw new Exception("Address not found");
     }
@@ -42,9 +45,5 @@ public class VpubWallet {
 
   public HD_Wallet getBip84w() {
     return bip84w;
-  }
-
-  public String getVpub() {
-    return vpub;
   }
 }

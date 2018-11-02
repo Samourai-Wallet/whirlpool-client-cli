@@ -80,37 +80,7 @@ public class Application implements ApplicationRunner {
             String seedPassphrase = appArgs.getSeedPassphrase();
             int paynymIndex = appArgs.getPaynymIndex();
 
-            String vpub = appArgs.getVPub();
-            if (vpub != null) {
-              Optional<RpcClientService> rpcClientService = computeRpcClientService(appArgs);
-              VpubWallet vpubWallet =
-                  CliUtils.computeVpubWallet(
-                      appArgs.getSeedPassphrase(),
-                      appArgs.getSeedWords(),
-                      appArgs.getVPub(),
-                      params,
-                      hdWalletFactory);
-              SamouraiApi samouraiApi = new SamouraiApi(config.getHttpClient());
-              RunTx0VPub runTx0VPub = new RunTx0VPub(params, samouraiApi, rpcClientService);
-              Optional<Integer> tx0Arg = appArgs.getTx0();
-              if (tx0Arg.isPresent()) {
-                // go tx0 with VPUB
-                runTx0VPub.runTx0(pool, vpubWallet, tx0Arg.get());
-              } else {
-                // go whirpool with VPUB
-                while (true) {
-                  try {
-                    new RunVPubLoop(config, samouraiApi, runTx0VPub, vpubWallet).run(pool);
-                  } catch (Exception e) {
-                    log.error(
-                        "RunVPubLoop failed, retrying in " + RUNVPUB_SLEEP_ON_ERROR + "ms", e);
-                    synchronized (this) {
-                      Thread.sleep(RUNVPUB_SLEEP_ON_ERROR);
-                    }
-                  }
-                }
-              }
-            } else {
+            if (appArgs.isUtxo()) {
               // go whirlpool with UTXO
               String utxoHash = appArgs.getUtxoHash();
               long utxoIdx = appArgs.getUtxoIdx();
@@ -131,6 +101,39 @@ public class Application implements ApplicationRunner {
                       seedPassphrase,
                       paynymIndex,
                       mixs);
+            } else {
+              Optional<RpcClientService> rpcClientService = computeRpcClientService(appArgs);
+              SamouraiApi samouraiApi = new SamouraiApi(config.getHttpClient());
+              VpubWallet vpubWallet =
+                  CliUtils.computeVpubWallet(
+                      appArgs.getSeedPassphrase(),
+                      appArgs.getSeedWords(),
+                      params,
+                      hdWalletFactory,
+                      samouraiApi);
+              RunTx0VPub runTx0VPub = new RunTx0VPub(params, samouraiApi, rpcClientService);
+              Optional<Integer> tx0Arg = appArgs.getTx0();
+              if (tx0Arg.isPresent()) {
+                // go tx0
+                runTx0VPub.runTx0(pool, vpubWallet, tx0Arg.get());
+              }
+              if (appArgs.isAggregatePostmix()) {
+                // go aggregate postmix to premix
+                new RunAggregatePostmix(params, rpcClientService).run(vpubWallet);
+              } else {
+                // go whirpool with VPUB
+                while (true) {
+                  try {
+                    new RunVPubLoop(config, runTx0VPub, vpubWallet).run(pool);
+                  } catch (Exception e) {
+                    log.error(
+                        "RunVPubLoop failed, retrying in " + RUNVPUB_SLEEP_ON_ERROR + "ms", e);
+                    synchronized (this) {
+                      Thread.sleep(RUNVPUB_SLEEP_ON_ERROR);
+                    }
+                  }
+                }
+              }
             }
           } else {
             log.error("Pool not found: " + poolId);

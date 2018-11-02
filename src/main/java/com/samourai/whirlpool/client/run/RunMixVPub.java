@@ -1,6 +1,5 @@
 package com.samourai.whirlpool.client.run;
 
-import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.hd.HD_Address;
@@ -26,8 +25,6 @@ import org.slf4j.LoggerFactory;
 public class RunMixVPub {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private VpubWallet postmixWallet;
-  private SamouraiApi samouraiApi;
   private WhirlpoolClientConfig config;
 
   private static final int SLEEP_CONNECTING_CLIENTS_SECONDS = 30;
@@ -95,10 +92,9 @@ public class RunMixVPub {
     multiClientManager.waitDone();
   }
 
-  public IPostmixHandler computePostmixHandler(VpubWallet postmixWallet, SamouraiApi samouraiApi)
-      throws Exception {
+  public IPostmixHandler computePostmixHandler(VpubWallet postmixWallet) throws Exception {
     // fetch receiveAddress index
-    int receiveAddressIndex = postmixWallet.fetchAddress(samouraiApi).account_index;
+    int receiveAddressIndex = postmixWallet.fetchAddress(RunVPubLoop.ACCOUNT_POSTMIX).account_index;
     // receive address from postmix
     HD_Chain receiveChain =
         postmixWallet

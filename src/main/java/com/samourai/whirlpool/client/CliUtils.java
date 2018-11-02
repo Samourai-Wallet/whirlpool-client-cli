@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.client;
 
+import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.wallet.bip47.rpc.BIP47Wallet;
 import com.samourai.wallet.hd.HD_Wallet;
@@ -22,10 +23,6 @@ public class CliUtils {
 
   public static final String BIP39_ENGLISH_SHA256 =
       "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db";
-
-  private static final int DEPOSIT_ACCOUNT = 0;
-  private static final int WHIRLPOOL_PREMIX_ACCOUNT = Integer.MAX_VALUE - 1;
-  private static final int WHIRLPOOL_POSTMIX = Integer.MAX_VALUE;
 
   public static double satToBtc(long sat) {
     return sat / 100000000.0;
@@ -74,9 +71,9 @@ public class CliUtils {
   public static VpubWallet computeVpubWallet(
       String passphrase,
       String seedWords,
-      String vpub,
       NetworkParameters params,
-      HdWalletFactory hdWalletFactory)
+      HdWalletFactory hdWalletFactory,
+      SamouraiApi samouraiApi)
       throws Exception {
     MnemonicCode mc = CliUtils.computeMnemonicCode();
     HD_Wallet bip44w = hdWalletFactory.restoreWallet(seedWords, passphrase, 1);
@@ -84,6 +81,6 @@ public class CliUtils {
         new BIP47Wallet(47, mc, params, Hex.decode(bip44w.getSeedHex()), bip44w.getPassphrase(), 1);
     HD_Wallet bip84w =
         new HD_Wallet(84, mc, params, Hex.decode(bip44w.getSeedHex()), bip44w.getPassphrase(), 1);
-    return new VpubWallet(bip44w, bip47w, bip84w, vpub);
+    return new VpubWallet(bip44w, bip47w, bip84w, samouraiApi);
   }
 }
