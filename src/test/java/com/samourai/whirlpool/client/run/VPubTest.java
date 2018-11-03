@@ -4,6 +4,7 @@ import com.samourai.whirlpool.client.Application;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.ApplicationArguments;
@@ -13,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Ignore
 public class VPubTest extends AbstractApplicationTest {
 
   @Before
@@ -76,6 +78,26 @@ public class VPubTest extends AbstractApplicationTest {
           "--vpub=" + VPUB,
           "--seed-words=" + SEED_WORDS,
           "--tx0=20",
+          "--debug",
+          "--pool=0.01btc",
+          "--server=" + SERVER
+        };
+    ApplicationArguments appArgs = new DefaultApplicationArguments(args);
+    new Application().run(appArgs);
+
+    Assert.assertTrue(getErr().isEmpty());
+  }
+
+  @Test
+  public void runVpubAggregatePostmix() {
+    String[] args =
+        new String[] {
+          "--network=test",
+          "--seed-passphrase=" + SEED_PASSPHRASE,
+          "--vpub=" + VPUB,
+          "--rpc-client-url=" + RPC_CLIENT_URL,
+          "--seed-words=" + SEED_WORDS,
+          "--aggregate-postmix",
           "--debug",
           "--pool=0.01btc",
           "--server=" + SERVER

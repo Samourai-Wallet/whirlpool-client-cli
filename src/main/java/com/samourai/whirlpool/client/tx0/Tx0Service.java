@@ -92,7 +92,8 @@ public class Tx0Service {
               + destinationValue
               + " sats)");
 
-      TransactionOutput txOutSpend = bech32Util.getTransactionOutput(toAddressBech32, destinationValue, params);
+      TransactionOutput txOutSpend =
+          bech32Util.getTransactionOutput(toAddressBech32, destinationValue, params);
       outputs.add(txOutSpend);
       destinationIndex++;
     }
@@ -118,7 +119,8 @@ public class Tx0Service {
     //
     String changeAddressBech32 =
         new SegwitAddress(changeAddress.getPubKey(), params).getBech32AsString();
-    TransactionOutput txChange = bech32Util.getTransactionOutput(changeAddressBech32, changeValue, params);
+    TransactionOutput txChange =
+        bech32Util.getTransactionOutput(changeAddressBech32, changeValue, params);
     outputs.add(txChange);
     log.info(
         "Tx0 out (change): address="
@@ -141,7 +143,8 @@ public class Tx0Service {
     String samouraiFeeAddressBech32 =
         new SegwitAddress(samouraiFeePubkey.getPubKey(), params).getBech32AsString();
 
-    TransactionOutput txSWFee = bech32Util.getTransactionOutput(samouraiFeeAddressBech32, samouraiFees, params);
+    TransactionOutput txSWFee =
+        bech32Util.getTransactionOutput(samouraiFeeAddressBech32, samouraiFees, params);
     outputs.add(txSWFee);
     log.info(
         "Tx0 out (samouraiFees): address="
