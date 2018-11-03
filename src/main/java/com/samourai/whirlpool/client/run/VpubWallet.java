@@ -4,6 +4,7 @@ import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.MultiAddrResponse;
 import com.samourai.api.beans.UnspentResponse.UnspentOutput;
 import com.samourai.wallet.bip47.rpc.BIP47Wallet;
+import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Wallet;
 import java.util.List;
 
@@ -45,5 +46,18 @@ public class VpubWallet {
 
   public HD_Wallet getBip84w() {
     return bip84w;
+  }
+
+  public HD_Address getAddressBip84(int account, int chain, int index) {
+    return bip84w.getAccountAt(account).getChain(chain).getAddressAt(index);
+  }
+
+  public HD_Address getAddressDepositAndPremix(int index) {
+    return getAddressBip84(
+        RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX, RunVPubLoop.CHAIN_DEPOSIT_AND_PREMIX, index);
+  }
+
+  public HD_Address getAddressPostmix(int index) {
+    return getAddressBip84(RunVPubLoop.ACCOUNT_POSTMIX, RunVPubLoop.CHAIN_POSTMIX, index);
   }
 }

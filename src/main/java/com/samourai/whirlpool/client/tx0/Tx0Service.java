@@ -6,6 +6,7 @@ import com.samourai.wallet.hd.HD_Chain;
 import com.samourai.wallet.segwit.SegwitAddress;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.util.FormatsUtilGeneric;
+import com.samourai.whirlpool.client.CliUtils;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -31,9 +32,6 @@ public class Tx0Service {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final NetworkParameters params;
   private final Bech32UtilGeneric bech32Util = Bech32UtilGeneric.getInstance();
-
-  private static final int TX0_BYTES_INITIAL = 200; // average b/output
-  private static final int TX0_BYTES_PER_OUTPUT = 30; // average b/output
 
   public Tx0Service(NetworkParameters params) {
     this.params = params;
@@ -98,18 +96,9 @@ public class Tx0Service {
       destinationIndex++;
     }
 
-    long tx0MinerFee = feeSatPerByte * (TX0_BYTES_INITIAL + TX0_BYTES_PER_OUTPUT * nbOutputs);
+    long tx0MinerFee = CliUtils.computeMinerFee(1, nbOutputs + 2, feeSatPerByte);
     if (log.isDebugEnabled()) {
-      log.debug(
-          "tx0MinerFee="
-              + tx0MinerFee
-              + "sats ("
-              + nbOutputs
-              + " * "
-              + feeSatPerByte
-              + "/b * "
-              + TX0_BYTES_PER_OUTPUT
-              + ")");
+      log.debug("tx0MinerFee=" + tx0MinerFee);
     }
     long changeValue =
         spendFromBalance - (destinationValue * nbOutputs) - samouraiFees - tx0MinerFee;

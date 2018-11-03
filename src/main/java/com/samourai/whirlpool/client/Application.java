@@ -119,7 +119,7 @@ public class Application implements ApplicationRunner {
               }
               if (appArgs.isAggregatePostmix()) {
                 // go aggregate postmix to premix
-                new RunAggregatePostmix(params, rpcClientService).run(vpubWallet);
+                new RunAggregatePostmix(params, samouraiApi, rpcClientService).run(vpubWallet);
               } else {
                 // go whirpool with VPUB
                 while (true) {

@@ -2,8 +2,10 @@ package com.samourai.whirlpool.client;
 
 import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
+import com.samourai.rpc.client.RpcClientService;
 import com.samourai.wallet.bip47.rpc.BIP47Wallet;
 import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.VpubWallet;
 import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
@@ -11,8 +13,10 @@ import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.Transaction;
 import org.bitcoinj.crypto.MnemonicCode;
 import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
@@ -23,6 +27,9 @@ public class CliUtils {
 
   public static final String BIP39_ENGLISH_SHA256 =
       "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db";
+  private static final long TX_BYTES_INITIAL = 100;
+  private static final long TX_BYTES_PER_INPUT_OUTPUT = 100;
+  private static final long MIN_RELAY_FEE = 35000;
 
   public static double satToBtc(long sat) {
     return sat / 100000000.0;
@@ -82,5 +89,31 @@ public class CliUtils {
     HD_Wallet bip84w =
         new HD_Wallet(84, mc, params, Hex.decode(bip44w.getSeedHex()), bip44w.getPassphrase(), 1);
     return new VpubWallet(bip44w, bip47w, bip84w, samouraiApi);
+  }
+
+  public static void broadcastOrNotify(Optional<RpcClientService> rpcClientService, Transaction tx)
+      throws Exception {
+    if (rpcClientService.isPresent()) {
+      rpcClientService.get().broadcastTransaction(tx);
+    } else {
+      final String hexTx = new String(Hex.encode(tx.bitcoinSerialize()));
+      String message =
+          "Please broadcast the following transaction and restart the script: " + hexTx;
+      throw new NotifiableException(message);
+    }
+  }
+
+  public static long estimateTxBytes(int nbInputs, int nbOutputs) {
+    return TX_BYTES_INITIAL + TX_BYTES_PER_INPUT_OUTPUT * (nbInputs + nbOutputs);
+  }
+
+  public static long computeMinerFee(int nbInputs, int nbOutputs, long feePerByte) {
+    long bytes = estimateTxBytes(nbInputs, nbOutputs);
+    return computeMinerFee(bytes, feePerByte);
+  }
+
+  public static long computeMinerFee(long bytes, long feePerByte) {
+    long minerFee = bytes * feePerByte;
+    return Math.max(minerFee, MIN_RELAY_FEE);
   }
 }

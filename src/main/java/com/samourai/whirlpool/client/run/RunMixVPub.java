@@ -52,11 +52,7 @@ public class RunMixVPub {
 
       // input key from premix
       HD_Address premixAddress =
-          postmixWallet
-              .getBip84w()
-              .getAccountAt(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX)
-              .getChain(RunVPubLoop.CHAIN_DEPOSIT_AND_PREMIX)
-              .getAddressAt(premixUtxo.computePathAddressIndex());
+          postmixWallet.getAddressDepositAndPremix(premixUtxo.computePathAddressIndex());
       String premixAddressBech32 =
           new SegwitAddress(premixAddress.getPubKey(), config.getNetworkParameters())
               .getBech32AsString();

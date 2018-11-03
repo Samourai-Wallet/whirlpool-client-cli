@@ -4,7 +4,6 @@ import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.MultiAddrResponse;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
-import com.samourai.wallet.hd.HD_Account;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Chain;
 import com.samourai.whirlpool.client.CliUtils;
@@ -19,7 +18,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.TransactionOutPoint;
-import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +31,6 @@ public class RunTx0VPub {
   private static final String XPUB_SAMOURAI_FEES =
       "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
   private static final long SAMOURAI_FEES = 10000; // TODO
-  private static final long TX_MIX_BYTES_INITIAL = 200;
-  private static final long TX_MIX_BYTES_PER_CLIENT = 50;
 
   public RunTx0VPub(
       NetworkParameters params,
@@ -57,24 +53,18 @@ public class RunTx0VPub {
     return runTx0(utxos, vpubWallet, pool, nbOutputs);
   }
 
-  private long computeDestinationValue(Pool pool) throws Exception {
+  private long computeDestinationValue(Pool pool) {
     int feeSatPerByte = samouraiApi.fetchFees();
-    long tx0MinerFeePerMustmix =
-        (TX_MIX_BYTES_INITIAL + TX_MIX_BYTES_PER_CLIENT * pool.getMixAnonymitySet())
-            * feeSatPerByte;
-    tx0MinerFeePerMustmix = Math.min(tx0MinerFeePerMustmix, pool.getMinerFeeMax());
+    long txFeesEstimate = CliUtils.computeMinerFee(pool.getMixAnonymitySet(), pool.getMixAnonymitySet(), feeSatPerByte);
+    long minerFeePerMustmix = txFeesEstimate / pool.getMixAnonymitySet();
+    minerFeePerMustmix = Math.min(minerFeePerMustmix, pool.getMinerFeeMax());
     if (log.isDebugEnabled()) {
-      log.debug(
-          "tx0MinerFeePerMustmix="
-              + tx0MinerFeePerMustmix
-              + "sat ("
-              + feeSatPerByte
-              + "/b * "
-              + TX_MIX_BYTES_PER_CLIENT
-              + ")");
+      log.debug("minerFeePerMustmix="+ minerFeePerMustmix
+              + ", txFeesEstimate="
+              + txFeesEstimate);
     }
     return WhirlpoolProtocol.computeInputBalanceMin(
-        pool.getDenomination(), false, tx0MinerFeePerMustmix);
+        pool.getDenomination(), false, pool.getMinerFeeMin()); // TODO A VERIFIER PAS LOGIQUE
   }
 
   public Tx0 runTx0(
@@ -121,22 +111,19 @@ public class RunTx0VPub {
     TransactionOutPoint spendFromOutpoint = spendFrom.computeOutpoint(params);
 
     // key
-    HD_Account depositAccount =
-        vpubWallet.getBip84w().getAccountAt(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX);
     HD_Address depositAddress =
-        depositAccount
-            .getChain(RunVPubLoop.CHAIN_DEPOSIT_AND_PREMIX)
-            .getAddressAt(spendFrom.computePathAddressIndex());
+        vpubWallet.getAddressDepositAndPremix(spendFrom.computePathAddressIndex());
 
     // change
-    HD_Address changeAddress =
-        depositAccount
-            .getChain(RunVPubLoop.CHAIN_DEPOSIT_AND_PREMIX)
-            .getAddressAt(address.change_index);
+    HD_Address changeAddress = vpubWallet.getAddressDepositAndPremix(address.change_index);
     address.change_index++;
 
     // destination
-    HD_Chain destinationChain = depositAccount.getChain(RunVPubLoop.CHAIN_DEPOSIT_AND_PREMIX);
+    HD_Chain destinationChain =
+        vpubWallet
+            .getBip84w()
+            .getAccount(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX)
+            .getChain(RunVPubLoop.CHAIN_DEPOSIT_AND_PREMIX);
     int destinationIndex = address.change_index;
 
     // run tx0
@@ -160,15 +147,7 @@ public class RunTx0VPub {
 
     // broadcast
     log.info(" • Broadcasting Tx0...");
-    if (rpcClientService.isPresent()) {
-      rpcClientService.get().broadcastTransaction(tx0.getTx());
-    } else {
-      final String hexTx = new String(Hex.encode(tx0.getTx().bitcoinSerialize()));
-      String message =
-          "A new tx0 is ready. Please broadcast the following transaction and restart the script: "
-              + hexTx;
-      throw new NotifiableException(message);
-    }
+    CliUtils.broadcastOrNotify(rpcClientService, tx0.getTx());
     return tx0;
   }
 }
