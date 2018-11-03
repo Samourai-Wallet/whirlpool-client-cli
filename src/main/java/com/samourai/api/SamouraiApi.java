@@ -19,6 +19,7 @@ public class SamouraiApi {
   private static final String URL_MULTIADDR = "/v2/multiaddr?active=";
   private static final String URL_FEES = "/v2/fees";
   private static final int MAX_FEE_PER_BYTE = 500;
+  private static final int FAILOVER_FEE_PER_BYTE = 400;
 
   private IHttpClient httpClient;
 
@@ -54,7 +55,7 @@ public class SamouraiApi {
 
   public MultiAddrResponse.Address findAddress(String vpub) throws Exception {
     List<MultiAddrResponse.Address> addresses = fetchAddresses(vpub);
-    if (addresses.size() != 1) { // TODO find addres by ????
+    if (addresses.size() != 1) {
       throw new Exception("Address count=" + addresses.size());
     }
     MultiAddrResponse.Address address = addresses.get(0);
@@ -71,13 +72,24 @@ public class SamouraiApi {
     return address;
   }
 
-  public int fetchFees() throws Exception {
+  public int fetchFees() {
+    return fetchFees(true);
+  }
+
+  private int fetchFees(boolean retry) {
     String url = URL_BACKEND + URL_FEES;
-    Map feesResponse = httpClient.parseJson(url, Map.class);
-    int fees2 = Integer.parseInt(feesResponse.get("2").toString());
+    int fees2 = 0;
+    try {
+      Map feesResponse = httpClient.parseJson(url, Map.class);
+      fees2 = Integer.parseInt(feesResponse.get("2").toString());
+    } catch (Exception e) {
+      log.error("Invalid fee response from server", e);
+    }
     if (fees2 < 1) {
-      log.error("Invalid fee response from server: fees2=" + fees2);
-      throw new Exception("Invalid fee response from server");
+      if (retry) {
+        return fetchFees(false);
+      }
+      return FAILOVER_FEE_PER_BYTE;
     }
     return Math.min(fees2, MAX_FEE_PER_BYTE);
   }
