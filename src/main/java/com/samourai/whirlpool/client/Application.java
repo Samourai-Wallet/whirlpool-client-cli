@@ -33,7 +33,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 @EnableAutoConfiguration
 public class Application implements ApplicationRunner {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static final int RUNVPUB_SLEEP_ON_ERROR = 15000;
+  private static final int RUNVPUB_SLEEP_ON_ERROR = 30000;
 
   private ApplicationArgs appArgs;
   private HdWalletFactory hdWalletFactory;

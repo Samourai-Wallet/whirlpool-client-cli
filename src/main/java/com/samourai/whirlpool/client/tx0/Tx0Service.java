@@ -4,15 +4,19 @@ import com.samourai.wallet.bip69.BIP69OutputComparator;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Chain;
 import com.samourai.wallet.segwit.SegwitAddress;
-import com.samourai.wallet.segwit.bech32.Bech32Segwit;
+import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
-import org.bitcoinj.core.*;
+import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.TransactionOutPoint;
+import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.crypto.ChildNumber;
 import org.bitcoinj.crypto.DeterministicKey;
 import org.bitcoinj.crypto.HDKeyDerivation;
@@ -26,6 +30,7 @@ import org.slf4j.LoggerFactory;
 public class Tx0Service {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final NetworkParameters params;
+  private final Bech32UtilGeneric bech32Util = Bech32UtilGeneric.getInstance();
 
   private static final int TX0_BYTES_INITIAL = 200; // average b/output
   private static final int TX0_BYTES_PER_OUTPUT = 30; // average b/output
@@ -87,11 +92,7 @@ public class Tx0Service {
               + destinationValue
               + " sats)");
 
-      Pair<Byte, byte[]> pair = Bech32Segwit.decode(isTestnet ? "tb" : "bc", toAddressBech32);
-      byte[] scriptPubKey = Bech32Segwit.getScriptPubkey(pair.getLeft(), pair.getRight());
-
-      TransactionOutput txOutSpend =
-          new TransactionOutput(params, null, Coin.valueOf(destinationValue), scriptPubKey);
+      TransactionOutput txOutSpend = bech32Util.getTransactionOutput(toAddressBech32, destinationValue, params);
       outputs.add(txOutSpend);
       destinationIndex++;
     }
@@ -117,10 +118,7 @@ public class Tx0Service {
     //
     String changeAddressBech32 =
         new SegwitAddress(changeAddress.getPubKey(), params).getBech32AsString();
-    Pair<Byte, byte[]> pair = Bech32Segwit.decode(isTestnet ? "tb" : "bc", changeAddressBech32);
-    byte[] _scriptPubKey = Bech32Segwit.getScriptPubkey(pair.getLeft(), pair.getRight());
-    TransactionOutput txChange =
-        new TransactionOutput(params, null, Coin.valueOf(changeValue), _scriptPubKey);
+    TransactionOutput txChange = bech32Util.getTransactionOutput(changeAddressBech32, changeValue, params);
     outputs.add(txChange);
     log.info(
         "Tx0 out (change): address="
@@ -143,9 +141,7 @@ public class Tx0Service {
     String samouraiFeeAddressBech32 =
         new SegwitAddress(samouraiFeePubkey.getPubKey(), params).getBech32AsString();
 
-    Script outputScript = ScriptBuilder.createP2WPKHOutputScript(samouraiFeePubkey);
-    TransactionOutput txSWFee =
-        new TransactionOutput(params, null, Coin.valueOf(samouraiFees), outputScript.getProgram());
+    TransactionOutput txSWFee = bech32Util.getTransactionOutput(samouraiFeeAddressBech32, samouraiFees, params);
     outputs.add(txSWFee);
     log.info(
         "Tx0 out (samouraiFees): address="
