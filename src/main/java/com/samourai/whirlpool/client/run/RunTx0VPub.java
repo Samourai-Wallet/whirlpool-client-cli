@@ -54,17 +54,26 @@ public class RunTx0VPub {
   }
 
   private long computeDestinationValue(Pool pool) {
+    // compute minerFeePerMustmix
     int feeSatPerByte = samouraiApi.fetchFees();
-    long txFeesEstimate = CliUtils.computeMinerFee(pool.getMixAnonymitySet(), pool.getMixAnonymitySet(), feeSatPerByte);
+    long txFeesEstimate =
+        CliUtils.computeMinerFee(
+            pool.getMixAnonymitySet(), pool.getMixAnonymitySet(), feeSatPerByte);
     long minerFeePerMustmix = txFeesEstimate / pool.getMixAnonymitySet();
-    minerFeePerMustmix = Math.min(minerFeePerMustmix, pool.getMinerFeeMax());
+    long destinationValue = pool.getDenomination() + minerFeePerMustmix;
+
+    // make sure destinationValue is acceptable for pool
+    long balanceMin = WhirlpoolProtocol.computeInputBalanceMin(
+        pool.getDenomination(), false, pool.getMinerFeeMin());
+    long balanceMax = WhirlpoolProtocol.computeInputBalanceMax(
+        pool.getDenomination(), false, pool.getMinerFeeMax());
+    destinationValue = Math.min(destinationValue, balanceMax);
+    destinationValue = Math.max(destinationValue, balanceMin);
+
     if (log.isDebugEnabled()) {
-      log.debug("minerFeePerMustmix="+ minerFeePerMustmix
-              + ", txFeesEstimate="
-              + txFeesEstimate);
+      log.debug("destinationValue=" + destinationValue + ", minerFeePerMustmix=" + minerFeePerMustmix + ", txFeesEstimate=" + txFeesEstimate);
     }
-    return WhirlpoolProtocol.computeInputBalanceMin(
-        pool.getDenomination(), false, pool.getMinerFeeMin()); // TODO A VERIFIER PAS LOGIQUE
+    return destinationValue;
   }
 
   public Tx0 runTx0(
