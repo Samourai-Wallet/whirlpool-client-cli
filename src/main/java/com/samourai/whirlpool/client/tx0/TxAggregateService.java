@@ -64,7 +64,7 @@ public class TxAggregateService {
 
     // prepare N inputs
     List<TransactionInput> inputs = new ArrayList<>();
-    Map<TransactionInput,ECKey> keysByInput = new HashMap<>();
+    Map<TransactionInput, ECKey> keysByInput = new HashMap<>();
     for (int i = 0; i < spendFromOutpoints.size(); i++) {
       TransactionOutPoint spendFromOutpoint = spendFromOutpoints.get(i);
       HD_Address spendFromAddress = spendFromAddresses.get(i);
@@ -103,8 +103,10 @@ public class TxAggregateService {
     for (TransactionInput txInput : inputs) {
       ECKey spendFromKey = keysByInput.get(txInput);
       TransactionOutPoint txo = txInput.getOutpoint();
-      int inputIndex = TxUtil.getInstance().findInputIndex(tx, txo.getHash().toString(), txo.getIndex());
-      TxUtil.getInstance().signInputSegwit(tx, inputIndex, spendFromKey, txInput.getValue().getValue(), params);
+      int inputIndex =
+          TxUtil.getInstance().findInputIndex(tx, txo.getHash().toString(), txo.getIndex());
+      TxUtil.getInstance()
+          .signInputSegwit(tx, inputIndex, spendFromKey, txInput.getValue().getValue(), params);
     }
 
     final String hexTx = new String(Hex.encode(tx.bitcoinSerialize()));

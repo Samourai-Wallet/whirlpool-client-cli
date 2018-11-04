@@ -1,12 +1,9 @@
 package com.samourai.whirlpool.client;
 
-import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
-import com.samourai.wallet.bip47.rpc.BIP47Wallet;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.run.VpubWallet;
 import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
@@ -75,20 +72,19 @@ public class CliUtils {
     return mustMixUtxos;
   }
 
-  public static VpubWallet computeVpubWallet(
+  public static HD_Wallet computeBip84Wallet(
       String passphrase,
       String seedWords,
       NetworkParameters params,
-      HdWalletFactory hdWalletFactory,
-      SamouraiApi samouraiApi)
+      HdWalletFactory hdWalletFactory)
       throws Exception {
     MnemonicCode mc = CliUtils.computeMnemonicCode();
     HD_Wallet bip44w = hdWalletFactory.restoreWallet(seedWords, passphrase, 1);
-    BIP47Wallet bip47w =
-        new BIP47Wallet(47, mc, params, Hex.decode(bip44w.getSeedHex()), bip44w.getPassphrase(), 1);
+    // BIP47Wallet bip47w = new BIP47Wallet(47, mc, params, Hex.decode(bip44w.getSeedHex()),
+    // bip44w.getPassphrase(), 1);
     HD_Wallet bip84w =
         new HD_Wallet(84, mc, params, Hex.decode(bip44w.getSeedHex()), bip44w.getPassphrase(), 1);
-    return new VpubWallet(bip44w, bip47w, bip84w, samouraiApi);
+    return bip84w;
   }
 
   public static void broadcastOrNotify(Optional<RpcClientService> rpcClientService, Transaction tx)
@@ -106,7 +102,7 @@ public class CliUtils {
   public static long estimateTxBytes(int nbInputs, int nbOutputs) {
     long bytes = TX_BYTES_INITIAL + TX_BYTES_PER_INPUT_OUTPUT * (nbInputs + nbOutputs);
     if (log.isDebugEnabled()) {
-      log.debug("tx size estimation: " + bytes+"b");
+      log.debug("tx size estimation: " + bytes + "b");
     }
     return bytes;
   }

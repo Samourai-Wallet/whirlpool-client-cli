@@ -25,22 +25,25 @@ public class RunAggregatePostmix {
   private NetworkParameters params;
   private SamouraiApi samouraiApi;
   private Optional<RpcClientService> rpcClientService;
+  private Bip84Wallet depositAndPremixWallet;
+  private Bip84ApiWallet postmixWallet;
 
   public RunAggregatePostmix(
       NetworkParameters params,
       SamouraiApi samouraiApi,
-      Optional<RpcClientService> rpcClientService) {
+      Optional<RpcClientService> rpcClientService,
+      Bip84Wallet depositAndPremixWallet,
+      Bip84ApiWallet postmixWallet) {
     this.params = params;
     this.samouraiApi = samouraiApi;
     this.rpcClientService = rpcClientService;
+    this.depositAndPremixWallet = depositAndPremixWallet;
+    this.postmixWallet = postmixWallet;
   }
 
-  public void run(VpubWallet vpubWallet) throws Exception {
-    if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
-      throw new Exception("AggregatePostmix cannot be run on mainnet for privacy reasons.");
-    }
+  public void run() throws Exception {
 
-    List<UnspentResponse.UnspentOutput> utxos = vpubWallet.fetchUtxos(RunVPubLoop.ACCOUNT_POSTMIX);
+    List<UnspentResponse.UnspentOutput> utxos = postmixWallet.fetchUtxos();
     if (utxos.isEmpty()) {
       // maybe you need to declare vpub as bip84 with /multiaddr?bip84=
       throw new NotifiableException("AggregatePostmix failed: no utxo found from postmix");
@@ -56,25 +59,26 @@ public class RunAggregatePostmix {
       for (int i = offset; i < (offset + AGGREGATED_UTXOS_PER_TX) && i < utxos.size(); i++) {
         subsetUtxos.add(utxos.get(i));
       }
-      log.info("Aggregating " + subsetUtxos.size() + " utxos from postmix (pass #" + round + ")");
-      runAggregate(vpubWallet, subsetUtxos);
+      if (subsetUtxos.size() > 0) {
+        log.info("Aggregating " + subsetUtxos.size() + " utxos from postmix (pass #" + round + ")");
+        runAggregate(subsetUtxos);
+      }
       round++;
     }
   }
 
-  private void runAggregate(VpubWallet vpubWallet, List<UnspentResponse.UnspentOutput> postmixUtxos)
-      throws Exception {
+  private void runAggregate(List<UnspentResponse.UnspentOutput> postmixUtxos) throws Exception {
     List<TransactionOutPoint> spendFromOutPoints = new ArrayList<>();
     List<HD_Address> spendFromAddresses = new ArrayList<>();
 
-    postmixUtxos.forEach(
-        utxo -> {
-          spendFromOutPoints.add(utxo.computeOutpoint(params));
-          spendFromAddresses.add(vpubWallet.getAddressPostmix(utxo.computePathAddressIndex()));
-        }
-    );
-    int addressIndex = vpubWallet.fetchAddress(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX).change_index;
-    HD_Address toAddress = vpubWallet.getAddressDepositAndPremix(addressIndex);
+    // spend from postmix
+    for (UnspentResponse.UnspentOutput utxo : postmixUtxos) {
+      spendFromOutPoints.add(utxo.computeOutpoint(params));
+      spendFromAddresses.add(postmixWallet.getAddressAt(utxo.computePathAddressIndex()));
+    }
+
+    // to depositAndPremix
+    HD_Address toAddress = depositAndPremixWallet.getNextAddress();
     int feeSatPerByte = samouraiApi.fetchFees();
 
     // tx

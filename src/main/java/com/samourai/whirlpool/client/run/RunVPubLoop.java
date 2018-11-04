@@ -2,14 +2,11 @@ package com.samourai.whirlpool.client.run;
 
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.whirlpool.client.CliUtils;
-import com.samourai.whirlpool.client.mix.handler.IPostmixHandler;
-import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,27 +15,18 @@ public class RunVPubLoop {
 
   private static final int MIN_MUST_MIX = 3;
 
-  public static final int ACCOUNT_DEPOSIT_AND_PREMIX = 0;
-  public static final int CHAIN_DEPOSIT_AND_PREMIX = 0; // with change_index
-
-  public static final int ACCOUNT_POSTMIX = Integer.MAX_VALUE;
-  public static final int CHAIN_POSTMIX = 0; // with account_index
-
   private static final int SLEEP_LOOPS_SECONDS = 120;
 
   private RunTx0VPub runTx0VPub;
-  private VpubWallet vpubWallet;
+  private Bip84ApiWallet depositAndPremixWallet;
 
   private RunMixVPub runMixVPub;
-  private IPostmixHandler postmixHandler;
 
-  public RunVPubLoop(WhirlpoolClientConfig config, RunTx0VPub runTx0VPub, VpubWallet vpubWallet)
-      throws Exception {
+  public RunVPubLoop(
+      RunTx0VPub runTx0VPub, RunMixVPub runMixVPub, Bip84ApiWallet depositAndPremixWallet) {
     this.runTx0VPub = runTx0VPub;
-    this.vpubWallet = vpubWallet;
-
-    this.runMixVPub = new RunMixVPub(config);
-    this.postmixHandler = runMixVPub.computePostmixHandler(vpubWallet);
+    this.runMixVPub = runMixVPub;
+    this.depositAndPremixWallet = depositAndPremixWallet;
   }
 
   public void run(Pool pool) throws Exception {
@@ -55,11 +43,7 @@ public class RunVPubLoop {
     // fetch unspent utx0s
     log.info(" • Fetching unspent outputs from premix...");
     List<UnspentResponse.UnspentOutput> utxos =
-        vpubWallet
-            .fetchUtxos(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX)
-            .stream()
-            .filter(utxo -> !isIgnoredUtxo(utxo))
-            .collect(Collectors.toList());
+        depositAndPremixWallet.fetchUtxos().stream().collect(Collectors.toList());
     if (!utxos.isEmpty()) {
       log.info("Found " + utxos.size() + " utxo from premix:");
       CliUtils.printUtxos(utxos);
@@ -99,20 +83,10 @@ public class RunVPubLoop {
 
       // tx0
       log.info(" • Tx0...");
-      runTx0VPub.runTx0(utxos, vpubWallet, pool, missingMustMixUtxos);
+      runTx0VPub.runTx0(utxos, pool, missingMustMixUtxos);
     } else {
       log.info(" • New mix...");
-      runMixVPub.runMix(mustMixUtxos, pool, vpubWallet, postmixHandler);
+      runMixVPub.runMix(mustMixUtxos, pool);
     }
-  }
-
-  private boolean isIgnoredUtxo(UnspentResponse.UnspentOutput utxo) {
-    String[] ignores =
-        new String[] {
-          "96cc9f78b1df14c6baeb361e115e405862594a56dc82c060552b187a37d2050e",
-          "79ed0dc5774843931c7d664ad9298b1139e8e4c2a08f7ec6333a0f1d6730d604",
-          "ef67c991a728fc03ed904c20aafbd4bdc37a8264d221404b0fceea94da1b1dcf"
-        };
-    return ArrayUtils.contains(ignores, utxo.tx_hash);
   }
 }

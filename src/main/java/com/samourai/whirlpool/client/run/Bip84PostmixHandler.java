@@ -1,7 +1,6 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.wallet.hd.HD_Address;
-import com.samourai.wallet.hd.HD_Chain;
 import com.samourai.wallet.segwit.SegwitAddress;
 import com.samourai.whirlpool.client.mix.handler.IPostmixHandler;
 import com.samourai.whirlpool.client.mix.handler.IPremixHandler;
@@ -13,36 +12,30 @@ import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class VPubPostmixHandler implements IPostmixHandler {
+public class Bip84PostmixHandler implements IPostmixHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private HD_Chain receiveChain;
-  private int receiveAddressIndex;
+  private Bip84Wallet postmixWallet;
   private HD_Address receiveAddress;
 
-  public VPubPostmixHandler(HD_Chain receiveChain, int receiveAddressIndex) {
-    this.receiveChain = receiveChain;
-    this.receiveAddressIndex = receiveAddressIndex;
+  public Bip84PostmixHandler(Bip84Wallet postmixWallet) {
+    this.postmixWallet = postmixWallet;
     this.receiveAddress = null;
   }
 
   @Override
   public synchronized String computeReceiveAddress(NetworkParameters params) throws Exception {
-    this.receiveAddress = receiveChain.getAddressAt(receiveAddressIndex);
+    this.receiveAddress = postmixWallet.getNextAddress();
 
     String bech32Address =
         new SegwitAddress(receiveAddress.getPubKey(), params).getBech32AsString();
     log.info(
-        "receiveAddressIndex="
-            + receiveAddressIndex
-            + ", receiveAddress="
+        "receiveAddress="
             + bech32Address
             + ", receiveKey="
             + receiveAddress.getECKey().getPrivateKeyAsWiF(params)
             + ", path="
             + receiveAddress.toJSON().get("path"));
-
-    receiveAddressIndex++;
     return bech32Address;
   }
 

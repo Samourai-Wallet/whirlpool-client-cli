@@ -2,11 +2,11 @@ package com.samourai.whirlpool.client.tx0;
 
 import com.samourai.wallet.bip69.BIP69OutputComparator;
 import com.samourai.wallet.hd.HD_Address;
-import com.samourai.wallet.hd.HD_Chain;
 import com.samourai.wallet.segwit.SegwitAddress;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.CliUtils;
+import com.samourai.whirlpool.client.run.Bip84Wallet;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -41,15 +41,12 @@ public class Tx0Service {
       HD_Address spendFromAddress,
       TransactionOutPoint spendFromOutpoint,
       int nbOutputs,
-      HD_Chain destinationChain,
+      Bip84Wallet depositAndPremixWallet,
       long destinationValue,
-      int destinationIndex,
-      HD_Address changeAddress,
       long feeSatPerByte,
       String xpubSamouraiFees,
       long samouraiFees)
       throws Exception {
-    boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(params);
     int samouraiFeeIdx = 0; // TODO address index, in prod get index from Samourai API
 
     long spendFromBalance = spendFromOutpoint.getValue().getValue();
@@ -75,7 +72,7 @@ public class Tx0Service {
     //
     for (int j = 0; j < nbOutputs; j++) {
       // send to PREMIX
-      HD_Address toAddress = destinationChain.getAddressAt(destinationIndex);
+      HD_Address toAddress = depositAndPremixWallet.getNextAddress();
       String toAddressBech32 = new SegwitAddress(toAddress.getPubKey(), params).getBech32AsString();
       ECKey toAddressKey = toAddress.getECKey();
       tx0Result.getToKeys().put(toAddressBech32, toAddressKey);
@@ -93,7 +90,6 @@ public class Tx0Service {
       TransactionOutput txOutSpend =
           bech32Util.getTransactionOutput(toAddressBech32, destinationValue, params);
       outputs.add(txOutSpend);
-      destinationIndex++;
     }
 
     long tx0MinerFee = CliUtils.computeMinerFee(1, nbOutputs + 2, feeSatPerByte);
@@ -106,6 +102,7 @@ public class Tx0Service {
     //
     // 1 change output
     //
+    HD_Address changeAddress = depositAndPremixWallet.getNextAddress();
     String changeAddressBech32 =
         new SegwitAddress(changeAddress.getPubKey(), params).getBech32AsString();
     TransactionOutput txChange =

@@ -7,6 +7,7 @@ import com.samourai.rpc.client.JSONRpcClientServiceImpl;
 import com.samourai.rpc.client.RpcClientService;
 import com.samourai.stomp.client.IStompClient;
 import com.samourai.stomp.client.JavaStompClient;
+import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.*;
@@ -33,6 +34,9 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 @EnableAutoConfiguration
 public class Application implements ApplicationRunner {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private static final int ACCOUNT_DEPOSIT_AND_PREMIX = 0;
+  private static final int ACCOUNT_POSTMIX = Integer.MAX_VALUE - 1;
   private static final int RUNVPUB_SLEEP_ON_ERROR = 30000;
 
   private ApplicationArgs appArgs;
@@ -104,27 +108,40 @@ public class Application implements ApplicationRunner {
             } else {
               Optional<RpcClientService> rpcClientService = computeRpcClientService(appArgs);
               SamouraiApi samouraiApi = new SamouraiApi(config.getHttpClient());
-              VpubWallet vpubWallet =
-                  CliUtils.computeVpubWallet(
-                      appArgs.getSeedPassphrase(),
-                      appArgs.getSeedWords(),
-                      params,
-                      hdWalletFactory,
-                      samouraiApi);
-              RunTx0VPub runTx0VPub = new RunTx0VPub(params, samouraiApi, rpcClientService);
+              HD_Wallet bip84w =
+                  CliUtils.computeBip84Wallet(
+                      appArgs.getSeedPassphrase(), appArgs.getSeedWords(), params, hdWalletFactory);
+              Bip84ApiWallet depositAndPremixWallet =
+                  new Bip84ApiWallet(bip84w, ACCOUNT_DEPOSIT_AND_PREMIX, samouraiApi);
+              Bip84ApiWallet postmixWallet =
+                  new Bip84ApiWallet(bip84w, ACCOUNT_POSTMIX, samouraiApi);
+              RunTx0VPub runTx0VPub =
+                  new RunTx0VPub(params, samouraiApi, rpcClientService, depositAndPremixWallet);
               Optional<Integer> tx0Arg = appArgs.getTx0();
               if (tx0Arg.isPresent()) {
                 // go tx0
-                runTx0VPub.runTx0(pool, vpubWallet, tx0Arg.get());
+                runTx0VPub.runTx0(pool, tx0Arg.get());
               }
               if (appArgs.isAggregatePostmix()) {
+                if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
+                  throw new NotifiableException("AggregatePostmix cannot be run on mainnet for privacy reasons.");
+                }
+
                 // go aggregate postmix to premix
-                new RunAggregatePostmix(params, samouraiApi, rpcClientService).run(vpubWallet);
+                new RunAggregatePostmix(
+                        params,
+                        samouraiApi,
+                        rpcClientService,
+                        depositAndPremixWallet,
+                        postmixWallet)
+                    .run();
               } else {
                 // go whirpool with VPUB
                 while (true) {
                   try {
-                    new RunVPubLoop(config, runTx0VPub, vpubWallet).run(pool);
+                    RunMixVPub runMixVPub =
+                        new RunMixVPub(config, depositAndPremixWallet, postmixWallet);
+                    new RunVPubLoop(runTx0VPub, runMixVPub, depositAndPremixWallet).run(pool);
                   } catch (Exception e) {
                     log.error(
                         "RunVPubLoop failed, retrying in " + RUNVPUB_SLEEP_ON_ERROR + "ms", e);
