@@ -12,7 +12,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutPoint;
@@ -21,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 public class RunAggregatePostmix {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static final int AGGREGATED_UTXOS_PER_TX = 2;
+  private static final int AGGREGATED_UTXOS_PER_TX = 500;
 
   private NetworkParameters params;
   private SamouraiApi samouraiApi;
@@ -59,22 +58,21 @@ public class RunAggregatePostmix {
       }
       log.info("Aggregating " + subsetUtxos.size() + " utxos from postmix (pass #" + round + ")");
       runAggregate(vpubWallet, subsetUtxos);
-      round++;break;
+      round++;
     }
   }
 
   private void runAggregate(VpubWallet vpubWallet, List<UnspentResponse.UnspentOutput> postmixUtxos)
       throws Exception {
-    List<TransactionOutPoint> spendFromOutPoints =
-        postmixUtxos
-            .stream()
-            .map(utxo -> utxo.computeOutpoint(params))
-            .collect(Collectors.toList());
-    List<HD_Address> spendFromAddresses =
-        postmixUtxos
-            .stream()
-            .map(utxo -> vpubWallet.getAddressPostmix(utxo.computePathAddressIndex()))
-            .collect(Collectors.toList());
+    List<TransactionOutPoint> spendFromOutPoints = new ArrayList<>();
+    List<HD_Address> spendFromAddresses = new ArrayList<>();
+
+    postmixUtxos.forEach(
+        utxo -> {
+          spendFromOutPoints.add(utxo.computeOutpoint(params));
+          spendFromAddresses.add(vpubWallet.getAddressPostmix(utxo.computePathAddressIndex()));
+        }
+    );
     int addressIndex = vpubWallet.fetchAddress(RunVPubLoop.ACCOUNT_DEPOSIT_AND_PREMIX).change_index;
     HD_Address toAddress = vpubWallet.getAddressDepositAndPremix(addressIndex);
     int feeSatPerByte = samouraiApi.fetchFees();

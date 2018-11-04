@@ -28,7 +28,7 @@ public class CliUtils {
   public static final String BIP39_ENGLISH_SHA256 =
       "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db";
   private static final long TX_BYTES_INITIAL = 100;
-  private static final long TX_BYTES_PER_INPUT_OUTPUT = 100;
+  private static final long TX_BYTES_PER_INPUT_OUTPUT = 50;
   private static final long MIN_RELAY_FEE = 35000;
 
   public static double satToBtc(long sat) {
@@ -104,7 +104,11 @@ public class CliUtils {
   }
 
   public static long estimateTxBytes(int nbInputs, int nbOutputs) {
-    return TX_BYTES_INITIAL + TX_BYTES_PER_INPUT_OUTPUT * (nbInputs + nbOutputs);
+    long bytes = TX_BYTES_INITIAL + TX_BYTES_PER_INPUT_OUTPUT * (nbInputs + nbOutputs);
+    if (log.isDebugEnabled()) {
+      log.debug("tx size estimation: " + bytes+"b");
+    }
+    return bytes;
   }
 
   public static long computeMinerFee(int nbInputs, int nbOutputs, long feePerByte) {
