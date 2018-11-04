@@ -84,7 +84,7 @@ public class RunTx0VPub {
     // spend from
     TransactionOutPoint spendFromOutpoint = spendFrom.computeOutpoint(params);
     HD_Address spendFromAddress =
-        depositAndPremixWallet.getAddressAt(spendFrom.computePathAddressIndex());
+        depositAndPremixWallet.getAddressAt(spendFrom);
 
     // run tx0
     int feeSatPerByte = samouraiApi.fetchFees();

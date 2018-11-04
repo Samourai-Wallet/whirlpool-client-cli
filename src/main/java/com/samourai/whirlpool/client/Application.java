@@ -122,18 +122,29 @@ public class Application implements ApplicationRunner {
                 // go tx0
                 runTx0VPub.runTx0(pool, tx0Arg.get());
               }
-              if (appArgs.isAggregatePostmix()) {
+              else if (appArgs.isAggregatePostmix()) {
                 if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
                   throw new NotifiableException("AggregatePostmix cannot be run on mainnet for privacy reasons.");
                 }
 
                 // go aggregate postmix to premix
-                new RunAggregatePostmix(
+                log.info(" • Aggregating postmix wallet to premix");
+                new RunAggregateWallet(
                         params,
                         samouraiApi,
                         rpcClientService,
-                        depositAndPremixWallet,
-                        postmixWallet)
+                        postmixWallet,
+                        depositAndPremixWallet)
+                    .run();
+
+                // consolidate premix
+                log.info(" • Consolidating premix wallet");
+                new RunAggregateWallet(
+                    params,
+                    samouraiApi,
+                    rpcClientService,
+                    depositAndPremixWallet,
+                    depositAndPremixWallet)
                     .run();
               } else {
                 // go whirpool with VPUB

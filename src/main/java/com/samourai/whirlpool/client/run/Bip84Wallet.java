@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.client.run;
 
+import com.samourai.api.beans.UnspentResponse;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Wallet;
 
@@ -15,16 +16,20 @@ public class Bip84Wallet {
     this.nextAddressIndex = nextAddressIndex;
   }
 
-  public HD_Address getNextAddress() throws Exception {
+  public HD_Address getNextAddress() {
     int nextAddressIndex = getNextAddressIndex();
-    return getAddressAt(nextAddressIndex);
+    return getAddressAt(CHAIN, nextAddressIndex);
   }
 
-  public HD_Address getAddressAt(int addressIndex) throws Exception {
-    return getAddressBip84(accountIndex, CHAIN, addressIndex);
+  public HD_Address getAddressAt(int chainIndex, int addressIndex) {
+    return getAddressBip84(accountIndex, chainIndex, addressIndex);
   }
 
-  private int getNextAddressIndex() throws Exception {
+  public HD_Address getAddressAt(UnspentResponse.UnspentOutput utxo) {
+    return getAddressAt(utxo.computePathChainIndex(), utxo.computePathAddressIndex());
+  }
+
+  private int getNextAddressIndex() {
     // increment on each call
     nextAddressIndex++;
     return nextAddressIndex - 1;
