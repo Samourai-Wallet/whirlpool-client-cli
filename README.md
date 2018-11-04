@@ -85,6 +85,25 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 - rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will stop to let you broadcast it manually.
 - tx0: number of pre-mix utxo to generate (number of tx0 outputs - change output)
 
+### Aggregate postmix
+Move all postmix funds back to premix wallet and consolidate to a single UTXO.
+Only allowed on testnet for testing purpose.
+```
+--network={main,test} [--server=host:port] [--debug] [--test-mode] --pool=
+--vpub= --seed-passphrase= --seed-words=
+[--rpc-client-url=http://user:password@host:port]
+--aggregate-postmix
+```
+
+Example:
+```
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --vpub=vpub5YW6Bhq... --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --aggregate-postmix"
+```
+- vpub: vpub of your wallet
+- seed-passphrase & seed-words: wallet seed
+- rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will stop to let you broadcast it manually.
+
+
 ## Build instructions
 Build with maven:
 
