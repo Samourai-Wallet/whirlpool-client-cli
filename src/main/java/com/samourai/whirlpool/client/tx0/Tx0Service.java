@@ -2,11 +2,10 @@ package com.samourai.whirlpool.client.tx0;
 
 import com.samourai.wallet.bip69.BIP69OutputComparator;
 import com.samourai.wallet.hd.HD_Address;
-import com.samourai.wallet.segwit.SegwitAddress;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.CliUtils;
-import com.samourai.whirlpool.client.run.Bip84Wallet;
+import com.samourai.whirlpool.client.utils.Bip84Wallet;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -30,8 +29,9 @@ import org.slf4j.LoggerFactory;
 
 public class Tx0Service {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private final NetworkParameters params;
   private final Bech32UtilGeneric bech32Util = Bech32UtilGeneric.getInstance();
+
+  private final NetworkParameters params;
 
   public Tx0Service(NetworkParameters params) {
     this.params = params;
@@ -73,7 +73,7 @@ public class Tx0Service {
     for (int j = 0; j < nbOutputs; j++) {
       // send to PREMIX
       HD_Address toAddress = depositAndPremixWallet.getNextAddress();
-      String toAddressBech32 = new SegwitAddress(toAddress.getPubKey(), params).getBech32AsString();
+      String toAddressBech32 = bech32Util.toBech32(toAddress, params);
       ECKey toAddressKey = toAddress.getECKey();
       tx0Result.getToKeys().put(toAddressBech32, toAddressKey);
       log.info(
@@ -103,8 +103,7 @@ public class Tx0Service {
     // 1 change output
     //
     HD_Address changeAddress = depositAndPremixWallet.getNextAddress();
-    String changeAddressBech32 =
-        new SegwitAddress(changeAddress.getPubKey(), params).getBech32AsString();
+    String changeAddressBech32 = bech32Util.toBech32(changeAddress, params);
     TransactionOutput txChange =
         bech32Util.getTransactionOutput(changeAddressBech32, changeValue, params);
     outputs.add(txChange);
@@ -126,8 +125,7 @@ public class Tx0Service {
     DeterministicKey adk =
         HDKeyDerivation.deriveChildKey(cKey, new ChildNumber(samouraiFeeIdx, false));
     ECKey samouraiFeePubkey = ECKey.fromPublicOnly(adk.getPubKey());
-    String samouraiFeeAddressBech32 =
-        new SegwitAddress(samouraiFeePubkey.getPubKey(), params).getBech32AsString();
+    String samouraiFeeAddressBech32 = bech32Util.toBech32(samouraiFeePubkey.getPubKey(), params);
 
     TransactionOutput txSWFee =
         bech32Util.getTransactionOutput(samouraiFeeAddressBech32, samouraiFees, params);
@@ -155,8 +153,7 @@ public class Tx0Service {
     }
 
     // input
-    String spendFromAddressBech32 =
-        new SegwitAddress(spendFromAddress.getPubKey(), params).getBech32AsString();
+    String spendFromAddressBech32 = bech32Util.toBech32(spendFromAddress, params);
     ECKey spendFromKey = spendFromAddress.getECKey();
 
     final Script segwitPubkeyScript = ScriptBuilder.createP2WPKHOutputScript(spendFromKey);

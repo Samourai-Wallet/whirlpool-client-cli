@@ -2,6 +2,7 @@ package com.samourai.whirlpool.client.run;
 
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.whirlpool.client.CliUtils;
+import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;

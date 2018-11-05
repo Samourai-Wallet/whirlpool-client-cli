@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.run;
+package com.samourai.whirlpool.client.utils;
 
 import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.MultiAddrResponse;
@@ -17,12 +17,12 @@ public class Bip84ApiWallet extends Bip84Wallet {
   }
 
   public List<UnspentOutput> fetchUtxos() throws Exception {
-    String zpub = bip84w.getAccountAt(accountIndex).zpubstr();
+    String zpub = getZpub();
     return samouraiApi.fetchUtxos(zpub);
   }
 
   private int fetchNextAddressIndex() throws Exception {
-    String zpub = bip84w.getAccountAt(accountIndex).zpubstr();
+    String zpub = getZpub();
     MultiAddrResponse.Address address = samouraiApi.findAddress(zpub);
     if (address == null) {
       throw new Exception("Address not found");

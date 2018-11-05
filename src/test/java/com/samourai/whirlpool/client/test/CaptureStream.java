@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.utils;
+package com.samourai.whirlpool.client.test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;

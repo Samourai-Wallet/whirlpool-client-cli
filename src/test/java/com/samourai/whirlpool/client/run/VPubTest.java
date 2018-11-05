@@ -1,10 +1,10 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.whirlpool.client.Application;
+import com.samourai.whirlpool.client.test.AbstractApplicationTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.ApplicationArguments;
@@ -14,18 +14,21 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Ignore
 public class VPubTest extends AbstractApplicationTest {
+  protected static final String SEED_WORDS = "mix mix mix mix mix mix mix mix mix mix mix mix";
+  protected static final String SEED_PASSPHRASE = "mix";
+  protected static final String SERVER = "127.0.0.1:8080";
+  protected static final String RPC_CLIENT_URL = "http://user:password@host:port";
 
   @Before
   @Override
-  public void setup() {
+  public void setup() throws Exception {
     super.setup();
   }
 
   @After
   @Override
-  public void tearDown() {
+  public void tearDown() throws Exception {
     super.tearDown();
   }
 
@@ -35,7 +38,6 @@ public class VPubTest extends AbstractApplicationTest {
         new String[] {
           "--network=test",
           "--seed-passphrase=" + SEED_PASSPHRASE,
-          "--vpub=" + VPUB,
           "--rpc-client-url=" + RPC_CLIENT_URL,
           "--seed-words=" + SEED_WORDS,
           "--debug",
@@ -55,7 +57,6 @@ public class VPubTest extends AbstractApplicationTest {
         new String[] {
           "--network=test",
           "--seed-passphrase=" + SEED_PASSPHRASE,
-          "--vpub=" + VPUB,
           "--rpc-client-url=" + RPC_CLIENT_URL,
           "--seed-words=" + SEED_WORDS,
           "--tx0=20",
@@ -75,7 +76,6 @@ public class VPubTest extends AbstractApplicationTest {
         new String[] {
           "--network=test",
           "--seed-passphrase=" + SEED_PASSPHRASE,
-          "--vpub=" + VPUB,
           "--seed-words=" + SEED_WORDS,
           "--tx0=20",
           "--debug",
@@ -94,7 +94,6 @@ public class VPubTest extends AbstractApplicationTest {
         new String[] {
           "--network=test",
           "--seed-passphrase=" + SEED_PASSPHRASE,
-          "--vpub=" + VPUB,
           "--rpc-client-url=" + RPC_CLIENT_URL,
           "--seed-words=" + SEED_WORDS,
           "--aggregate-postmix",

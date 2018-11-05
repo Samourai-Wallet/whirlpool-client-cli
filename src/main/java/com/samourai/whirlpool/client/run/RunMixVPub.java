@@ -3,13 +3,14 @@ package com.samourai.whirlpool.client.run;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.hd.HD_Address;
-import com.samourai.wallet.segwit.SegwitAddress;
+import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.mix.MixParams;
 import com.samourai.whirlpool.client.mix.handler.IPostmixHandler;
 import com.samourai.whirlpool.client.mix.handler.IPremixHandler;
 import com.samourai.whirlpool.client.mix.handler.PremixHandler;
 import com.samourai.whirlpool.client.mix.handler.UtxoWithBalance;
+import com.samourai.whirlpool.client.utils.Bip84Wallet;
 import com.samourai.whirlpool.client.utils.MultiClientManager;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
@@ -27,6 +28,7 @@ public class RunMixVPub {
   private WhirlpoolClientConfig config;
   private Bip84Wallet depositAndPremixWallet;
   private Bip84Wallet postmixWallet;
+  private Bech32UtilGeneric bech32Util = Bech32UtilGeneric.getInstance();
 
   private static final int SLEEP_CONNECTING_CLIENTS_SECONDS = 30;
 
@@ -51,11 +53,9 @@ public class RunMixVPub {
           new UtxoWithBalance(premixUtxo.tx_hash, premixUtxo.tx_output_n, premixUtxo.value);
 
       // input key from premix
-      HD_Address premixAddress =
-          depositAndPremixWallet.getAddressAt(premixUtxo);
+      HD_Address premixAddress = depositAndPremixWallet.getAddressAt(premixUtxo);
       String premixAddressBech32 =
-          new SegwitAddress(premixAddress.getPubKey(), config.getNetworkParameters())
-              .getBech32AsString();
+          bech32Util.toBech32(premixAddress, config.getNetworkParameters());
       ECKey premixKey = premixAddress.getECKey();
       IPremixHandler premixHandler = new PremixHandler(premixUtxoWithBalance, premixKey);
 

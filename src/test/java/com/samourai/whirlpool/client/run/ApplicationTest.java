@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.whirlpool.client.Application;
+import com.samourai.whirlpool.client.test.AbstractApplicationTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,16 +17,18 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 @Ignore
 public class ApplicationTest extends AbstractApplicationTest {
+  protected static final String SERVER = "127.0.0.1:8080";
+
 
   @Before
   @Override
-  public void setup() {
+  public void setup() throws Exception {
     super.setup();
   }
 
   @After
   @Override
-  public void tearDown() {
+  public void tearDown() throws Exception {
     super.tearDown();
   }
 

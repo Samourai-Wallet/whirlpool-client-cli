@@ -8,6 +8,7 @@ import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
+import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.lang.invoke.MethodHandles;
@@ -83,8 +84,7 @@ public class RunTx0VPub {
 
     // spend from
     TransactionOutPoint spendFromOutpoint = spendFrom.computeOutpoint(params);
-    HD_Address spendFromAddress =
-        depositAndPremixWallet.getAddressAt(spendFrom);
+    HD_Address spendFromAddress = depositAndPremixWallet.getAddressAt(spendFrom);
 
     // run tx0
     int feeSatPerByte = samouraiApi.fetchFees();

@@ -12,6 +12,7 @@ import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.*;
 import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
+import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
@@ -121,10 +122,10 @@ public class Application implements ApplicationRunner {
               if (tx0Arg.isPresent()) {
                 // go tx0
                 runTx0VPub.runTx0(pool, tx0Arg.get());
-              }
-              else if (appArgs.isAggregatePostmix()) {
+              } else if (appArgs.isAggregatePostmix()) {
                 if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
-                  throw new NotifiableException("AggregatePostmix cannot be run on mainnet for privacy reasons.");
+                  throw new NotifiableException(
+                      "AggregatePostmix cannot be run on mainnet for privacy reasons.");
                 }
 
                 // go aggregate postmix to premix
@@ -140,11 +141,11 @@ public class Application implements ApplicationRunner {
                 // consolidate premix
                 log.info(" • Consolidating premix wallet");
                 new RunAggregateWallet(
-                    params,
-                    samouraiApi,
-                    rpcClientService,
-                    depositAndPremixWallet,
-                    depositAndPremixWallet)
+                        params,
+                        samouraiApi,
+                        rpcClientService,
+                        depositAndPremixWallet,
+                        depositAndPremixWallet)
                     .run();
               } else {
                 // go whirpool with VPUB

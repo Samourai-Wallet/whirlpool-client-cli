@@ -2,7 +2,6 @@ package com.samourai.whirlpool.client.tx0;
 
 import com.samourai.wallet.bip69.BIP69InputComparator;
 import com.samourai.wallet.hd.HD_Address;
-import com.samourai.wallet.segwit.SegwitAddress;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.util.TxUtil;
 import com.samourai.whirlpool.client.CliUtils;
@@ -45,7 +44,7 @@ public class TxAggregateService {
     long destinationValue = inputsValue - minerFee;
 
     // 1 output
-    String toAddressBech32 = new SegwitAddress(toAddress.getPubKey(), params).getBech32AsString();
+    String toAddressBech32 = bech32Util.toBech32(toAddress, params);
     ECKey toAddressKey = toAddress.getECKey();
     log.info(
         "Tx out: address="
@@ -68,8 +67,7 @@ public class TxAggregateService {
     for (int i = 0; i < spendFromOutpoints.size(); i++) {
       TransactionOutPoint spendFromOutpoint = spendFromOutpoints.get(i);
       HD_Address spendFromAddress = spendFromAddresses.get(i);
-      String spendFromAddressBech32 =
-          new SegwitAddress(spendFromAddress.getPubKey(), params).getBech32AsString();
+      String spendFromAddressBech32 = bech32Util.toBech32(spendFromAddress, params);
       ECKey spendFromKey = spendFromAddress.getECKey();
 
       // final Script segwitPubkeyScript = ScriptBuilder.createP2WPKHOutputScript(spendFromKey);
