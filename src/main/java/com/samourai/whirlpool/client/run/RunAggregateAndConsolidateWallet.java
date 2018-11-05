@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 public class RunAggregateAndConsolidateWallet {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static final int SLEEP_BEFORE_CONSOLIDATE = 10000;
 
   private NetworkParameters params;
   private SamouraiApi samouraiApi;
@@ -40,10 +39,8 @@ public class RunAggregateAndConsolidateWallet {
         .run();
 
     // delay to let API detect the broadcasted tx
-    log.info("Refreshing utxos, please wait...");
-    synchronized (this) {
-      Thread.sleep(SLEEP_BEFORE_CONSOLIDATE);
-    }
+    log.info("Refreshing utxos...");
+    Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
 
     // consolidate premix
     log.info(" • Consolidating premix wallet...");

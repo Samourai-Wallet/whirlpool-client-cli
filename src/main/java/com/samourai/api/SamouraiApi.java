@@ -20,6 +20,7 @@ public class SamouraiApi {
   private static final String URL_FEES = "/v2/fees";
   private static final int MAX_FEE_PER_BYTE = 500;
   private static final int FAILOVER_FEE_PER_BYTE = 400;
+  public static final int SLEEP_REFRESH_UTXOS = 10000;
 
   private IHttpClient httpClient;
 

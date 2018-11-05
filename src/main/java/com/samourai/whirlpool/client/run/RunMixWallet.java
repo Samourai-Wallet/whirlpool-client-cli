@@ -29,26 +29,28 @@ public class RunMixWallet {
   private Bip84Wallet depositAndPremixWallet;
   private Bip84Wallet postmixWallet;
   private int clientDelay;
+  private int nbClients;
   private Bech32UtilGeneric bech32Util = Bech32UtilGeneric.getInstance();
 
   public RunMixWallet(
       WhirlpoolClientConfig config,
       Bip84Wallet depositAndPremixWallet,
       Bip84Wallet postmixWallet,
-      int clientDelay) {
+      int clientDelay,
+      int nbClients) {
     this.config = config;
     this.depositAndPremixWallet = depositAndPremixWallet;
     this.postmixWallet = postmixWallet;
     this.clientDelay = clientDelay;
+    this.nbClients = nbClients;
   }
 
   public boolean runMix(List<UnspentResponse.UnspentOutput> mustMixUtxosPremix, Pool pool)
       throws Exception {
-    final int NB_CLIENTS = pool.getMixAnonymitySet();
     MultiClientManager multiClientManager = new MultiClientManager();
 
     // connect each client
-    for (int i = 0; i < NB_CLIENTS; i++) {
+    for (int i = 0; i < nbClients; i++) {
       // pick last mustMix
       UnspentResponse.UnspentOutput premixUtxo =
           mustMixUtxosPremix.remove(mustMixUtxosPremix.size() - 1);

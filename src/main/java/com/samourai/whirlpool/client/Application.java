@@ -140,18 +140,22 @@ public class Application implements ApplicationRunner {
               } else {
                 // go loop wallet
                 int iterationDelay = appArgs.getIterationDelay();
-                iterationDelay = Math.max(10, iterationDelay); // wait for API to refresh
+                iterationDelay =
+                    Math.max(
+                        SamouraiApi.SLEEP_REFRESH_UTXOS / 1000,
+                        iterationDelay); // wait for API to refresh
                 int clientDelay = appArgs.getClientDelay();
+                int clients = appArgs.getClients();
                 RunMixWallet runMixWallet =
                     new RunMixWallet(
-                        config, depositAndPremixWallet, postmixWallet, clientDelay * 1000);
+                        config, depositAndPremixWallet, postmixWallet, clientDelay * 1000, clients);
                 RunLoopWallet runLoopWallet =
                     new RunLoopWallet(runTx0, runMixWallet, depositAndPremixWallet);
                 int i = 1;
                 int errors = 0;
                 while (true) {
                   try {
-                    boolean success = runLoopWallet.run(pool);
+                    boolean success = runLoopWallet.run(pool, clients);
                     if (!success) {
                       throw new NotifiableException("Iteration failed");
                     }
@@ -159,9 +163,13 @@ public class Application implements ApplicationRunner {
                     log.info(
                         " => Iteration #"
                             + i
-                            + " SUCCESS. Next iteration in "
+                            + " SUCCESS: "
+                            + clients
+                            + " utxo(s) mixed. Next iteration in "
                             + iterationDelay
-                            + "s...  (total errors: "
+                            + "s...  (total mixed: "
+                            + (clients * (i - errors))
+                            + " utxos, total errors: "
                             + errors
                             + ")");
                     if (iterationDelay > 0) {

@@ -32,7 +32,7 @@ You need a wallet holding funds to mix. The script will run the following automa
 ```
 --network={main,test} [--server=host:port] [--debug] [--test-mode] --pool=
 --seed-passphrase= --seed-words=
-[--iteration-delay=0] [--client-delay=0]
+[--clients=1] [--iteration-delay=0] [--client-delay=0]
 [--rpc-client-url=http://user:password@host:port]
 ```
 
@@ -41,6 +41,7 @@ Example:
 java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --tx0=10"
 ```
 - seed-passphrase & seed-words: wallet seed
+- clients: number of simultaneous clients to connect
 - iteration-delay: delay (in seconds) to wait between mixs
 - client-delay: delay (in seconds) between each client connexion
 - rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will stop to let you broadcast it manually.

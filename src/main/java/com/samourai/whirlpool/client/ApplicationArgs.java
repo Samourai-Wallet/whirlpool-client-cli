@@ -25,6 +25,7 @@ public class ApplicationArgs {
   private static final String ARG_POOL_ID = "pool";
   private static final String ARG_TESTMODE = "test-mode";
   private static final String ARG_TX0 = "tx0";
+  private static final String ARG_CLIENTS = "clients";
   private static final String ARG_ITERATION_DELAY = "iteration-delay";
   private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
@@ -152,6 +153,20 @@ public class ApplicationArgs {
       throw new IllegalArgumentException("Numeric value expected for option: " + ARG_TX0);
     }
     return Optional.of(tx0);
+  }
+
+  public int getClients() {
+    int clients;
+    try {
+      String valueStr = requireOption(ARG_CLIENTS, "1");
+      clients = Integer.parseInt(valueStr);
+      if (clients <= 0) {
+        throw new IllegalArgumentException("Positive value expected for option: " + ARG_CLIENTS);
+      }
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_CLIENTS);
+    }
+    return clients;
   }
 
   public int getIterationDelay() {

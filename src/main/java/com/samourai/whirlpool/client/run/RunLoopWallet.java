@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.client.run;
 
+import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
@@ -28,7 +29,7 @@ public class RunLoopWallet {
     this.depositAndPremixWallet = depositAndPremixWallet;
   }
 
-  public boolean run(Pool pool) throws Exception {
+  public boolean run(Pool pool, int nbClients) throws Exception {
     // fetch unspent utx0s
     log.info(" • Fetching unspent outputs from premix...");
     List<UnspentResponse.UnspentOutput> utxos =
@@ -50,11 +51,10 @@ public class RunLoopWallet {
 
     // how many utxos do we need for mix?
     int missingMustmixs = MIN_MUST_MIX - mustMixUtxos.size();
-    int missingAnonymitySet =
-        pool.getMixAnonymitySet() - (mustMixUtxos.size() + liquidityUtxos.size());
+    int missingAnonymitySet = nbClients - (mustMixUtxos.size() + liquidityUtxos.size());
     log.info(
         "Next mix needs "
-            + pool.getMixAnonymitySet()
+            + nbClients
             + " utxos (minMustMix="
             + MIN_MUST_MIX
             + " mustMix). I have "
@@ -73,7 +73,12 @@ public class RunLoopWallet {
       // tx0
       log.info(" • Tx0...");
       runTx0.runTx0(pool, missingMustMixUtxos);
-      return true;
+
+      log.info("Refreshing utxos...");
+      Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
+
+      // recursive
+      return run(pool, nbClients);
     } else {
       log.info(" • New mix...");
       return runMixWallet.runMix(mustMixUtxos, pool);
