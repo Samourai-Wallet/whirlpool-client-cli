@@ -140,13 +140,14 @@ public class Application implements ApplicationRunner {
               } else {
                 // go loop wallet
                 int iterationDelay = appArgs.getIterationDelay();
-                iterationDelay = Math.max(5, iterationDelay); // wait for API to refresh
+                iterationDelay = Math.max(10, iterationDelay); // wait for API to refresh
                 int clientDelay = appArgs.getClientDelay();
                 RunMixWallet runMixWallet =
                     new RunMixWallet(config, depositAndPremixWallet, postmixWallet, clientDelay*1000);
                 RunLoopWallet runLoopWallet =
                     new RunLoopWallet(runTx0, runMixWallet, depositAndPremixWallet);
-                int i = 0;
+                int i = 1;
+                int errors = 0;
                 while (true) {
                   try {
                     runLoopWallet.run(pool);
@@ -156,17 +157,18 @@ public class Application implements ApplicationRunner {
                             + i
                             + " SUCCESS. Next iteration in "
                             + iterationDelay
-                            + "s...");
+                            + "s...  (total errors: "+errors+")");
                     if (iterationDelay > 0) {
                       Thread.sleep(iterationDelay*1000);
                     }
                   } catch (Exception e) {
+                    errors++;
                     log.error(
                         " => Iteration #"
                             + i
                             + " FAILED, retrying in "
                             + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
-                            + "s",
+                            + "s (total errors: "+errors+")",
                         e);
                     Thread.sleep(SLEEP_LOOPWALLET_ON_ERROR);
                   }
