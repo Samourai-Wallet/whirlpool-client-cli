@@ -1,5 +1,7 @@
-package com.samourai.whirlpool.client.test;
+package com.samourai.whirlpool.client.run;
 
+import com.samourai.whirlpool.client.test.AbstractTest;
+import com.samourai.whirlpool.client.test.CaptureStream;
 import java.io.PrintStream;
 import org.springframework.boot.SpringBootConfiguration;
 
