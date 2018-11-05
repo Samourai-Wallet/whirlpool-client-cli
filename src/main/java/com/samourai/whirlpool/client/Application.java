@@ -129,24 +129,13 @@ public class Application implements ApplicationRunner {
                       "AggregatePostmix cannot be run on mainnet for privacy reasons.");
                 }
 
-                // go aggregate postmix to premix
-                log.info(" • Aggregating postmix wallet to premix");
-                new RunAggregateWallet(
-                        params,
-                        samouraiApi,
-                        rpcClientService,
-                        postmixWallet,
-                        depositAndPremixWallet)
-                    .run();
-
-                // consolidate premix
-                log.info(" • Consolidating premix wallet");
-                new RunAggregateWallet(
+                // go aggregate and consolidate
+                new RunAggregateAndConsolidateWallet(
                         params,
                         samouraiApi,
                         rpcClientService,
                         depositAndPremixWallet,
-                        depositAndPremixWallet)
+                        postmixWallet)
                     .run();
               } else {
                 // go loop wallet
