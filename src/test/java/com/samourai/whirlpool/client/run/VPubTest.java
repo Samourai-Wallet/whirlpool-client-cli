@@ -15,8 +15,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class VPubTest extends AbstractApplicationTest {
-  protected static final String SEED_WORDS = "mix mix mix mix mix mix mix mix mix mix mix mix";
-  protected static final String SEED_PASSPHRASE = "mix";
+  private static final String SEED_WORDS =
+    "hub casual home drift winter such economy wage waste wagon essay torch";
+  private static final String SEED_PASSPHRASE = "whirlpool";
   protected static final String SERVER = "127.0.0.1:8080";
   protected static final String RPC_CLIENT_URL = "http://user:password@host:port";
 
