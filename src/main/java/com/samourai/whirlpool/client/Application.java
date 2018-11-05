@@ -143,33 +143,54 @@ public class Application implements ApplicationRunner {
                 iterationDelay = Math.max(10, iterationDelay); // wait for API to refresh
                 int clientDelay = appArgs.getClientDelay();
                 RunMixWallet runMixWallet =
-                    new RunMixWallet(config, depositAndPremixWallet, postmixWallet, clientDelay*1000);
+                    new RunMixWallet(
+                        config, depositAndPremixWallet, postmixWallet, clientDelay * 1000);
                 RunLoopWallet runLoopWallet =
                     new RunLoopWallet(runTx0, runMixWallet, depositAndPremixWallet);
                 int i = 1;
                 int errors = 0;
                 while (true) {
                   try {
-                    runLoopWallet.run(pool);
+                    boolean success = runLoopWallet.run(pool);
+                    if (!success) {
+                      throw new NotifiableException("Iteration failed");
+                    }
 
                     log.info(
                         " => Iteration #"
                             + i
                             + " SUCCESS. Next iteration in "
                             + iterationDelay
-                            + "s...  (total errors: "+errors+")");
+                            + "s...  (total errors: "
+                            + errors
+                            + ")");
                     if (iterationDelay > 0) {
-                      Thread.sleep(iterationDelay*1000);
+                      Thread.sleep(iterationDelay * 1000);
                     }
                   } catch (Exception e) {
                     errors++;
-                    log.error(
-                        " => Iteration #"
-                            + i
-                            + " FAILED, retrying in "
-                            + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
-                            + "s (total errors: "+errors+")",
-                        e);
+                    if (e instanceof NotifiableException) {
+                      // don't log exception
+                      log.error(
+                          " => Iteration #"
+                              + i
+                              + " FAILED, retrying in "
+                              + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
+                              + "s (total errors: "
+                              + errors
+                              + ")");
+                    } else {
+                      // log exception
+                      log.error(
+                          " => Iteration #"
+                              + i
+                              + " FAILED, retrying in "
+                              + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
+                              + "s (total errors: "
+                              + errors
+                              + ")",
+                          e);
+                    }
                     Thread.sleep(SLEEP_LOOPWALLET_ON_ERROR);
                   }
                   i++;

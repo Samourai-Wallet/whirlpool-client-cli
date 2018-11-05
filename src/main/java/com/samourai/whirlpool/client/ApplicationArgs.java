@@ -159,10 +159,12 @@ public class ApplicationArgs {
     try {
       delay = Integer.parseInt(requireOption(ARG_ITERATION_DELAY, "0"));
       if (delay < 0) {
-        throw new IllegalArgumentException("Positive value expected for option: " + ARG_ITERATION_DELAY);
+        throw new IllegalArgumentException(
+            "Positive value expected for option: " + ARG_ITERATION_DELAY);
       }
     } catch (Exception e) {
-      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_ITERATION_DELAY);
+      throw new IllegalArgumentException(
+          "Numeric value expected for option: " + ARG_ITERATION_DELAY);
     }
     return delay;
   }
@@ -172,7 +174,8 @@ public class ApplicationArgs {
     try {
       delay = Integer.parseInt(requireOption(ARG_CLIENT_DELAY, "0"));
       if (delay < 0) {
-        throw new IllegalArgumentException("Positive value expected for option: " + ARG_CLIENT_DELAY);
+        throw new IllegalArgumentException(
+            "Positive value expected for option: " + ARG_CLIENT_DELAY);
       }
     } catch (Exception e) {
       throw new IllegalArgumentException("Numeric value expected for option: " + ARG_CLIENT_DELAY);

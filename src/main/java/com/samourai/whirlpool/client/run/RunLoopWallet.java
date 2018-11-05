@@ -28,7 +28,7 @@ public class RunLoopWallet {
     this.depositAndPremixWallet = depositAndPremixWallet;
   }
 
-  public void run(Pool pool) throws Exception {
+  public boolean run(Pool pool) throws Exception {
     // fetch unspent utx0s
     log.info(" • Fetching unspent outputs from premix...");
     List<UnspentResponse.UnspentOutput> utxos =
@@ -38,7 +38,7 @@ public class RunLoopWallet {
       CliUtils.printUtxos(utxos);
     } else {
       log.error("ERROR: No utxo available from premix.");
-      return;
+      return false;
     }
 
     // find mustMixUtxos
@@ -73,9 +73,10 @@ public class RunLoopWallet {
       // tx0
       log.info(" • Tx0...");
       runTx0.runTx0(pool, missingMustMixUtxos);
+      return true;
     } else {
       log.info(" • New mix...");
-      runMixWallet.runMix(mustMixUtxos, pool);
+      return runMixWallet.runMix(mustMixUtxos, pool);
     }
   }
 }

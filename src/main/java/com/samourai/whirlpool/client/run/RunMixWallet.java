@@ -32,14 +32,17 @@ public class RunMixWallet {
   private Bech32UtilGeneric bech32Util = Bech32UtilGeneric.getInstance();
 
   public RunMixWallet(
-      WhirlpoolClientConfig config, Bip84Wallet depositAndPremixWallet, Bip84Wallet postmixWallet, int clientDelay) {
+      WhirlpoolClientConfig config,
+      Bip84Wallet depositAndPremixWallet,
+      Bip84Wallet postmixWallet,
+      int clientDelay) {
     this.config = config;
     this.depositAndPremixWallet = depositAndPremixWallet;
     this.postmixWallet = postmixWallet;
     this.clientDelay = clientDelay;
   }
 
-  public void runMix(List<UnspentResponse.UnspentOutput> mustMixUtxosPremix, Pool pool)
+  public boolean runMix(List<UnspentResponse.UnspentOutput> mustMixUtxosPremix, Pool pool)
       throws Exception {
     final int NB_CLIENTS = pool.getMixAnonymitySet();
     MultiClientManager multiClientManager = new MultiClientManager();
@@ -85,10 +88,10 @@ public class RunMixWallet {
       whirlpoolClient.whirlpool(mixParams, 1, listener);
 
       if (clientDelay > 0) {
-        log.info("Waiting client-delay: " + (clientDelay/1000) + "s");
+        log.info("Waiting client-delay: " + (clientDelay / 1000) + "s");
         Thread.sleep(clientDelay);
       }
     }
-    multiClientManager.waitDone();
+    return multiClientManager.waitDone();
   }
 }
