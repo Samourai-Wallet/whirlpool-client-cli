@@ -39,7 +39,7 @@ public class Application implements ApplicationRunner {
 
   private static final int ACCOUNT_DEPOSIT_AND_PREMIX = 0;
   private static final int ACCOUNT_POSTMIX = Integer.MAX_VALUE - 1;
-  private static final int RUNVPUB_SLEEP_ON_ERROR = 30000;
+  private static final int SLEEP_LOOPWALLET_ON_ERROR = 30000;
 
   private ApplicationArgs appArgs;
   private HdWalletFactory hdWalletFactory;
@@ -139,18 +139,38 @@ public class Application implements ApplicationRunner {
                     .run();
               } else {
                 // go loop wallet
+                int iterationDelay = appArgs.getIterationDelay();
+                iterationDelay = Math.max(5, iterationDelay); // wait for API to refresh
+                int clientDelay = appArgs.getClientDelay();
+                RunMixWallet runMixWallet =
+                    new RunMixWallet(config, depositAndPremixWallet, postmixWallet, clientDelay*1000);
+                RunLoopWallet runLoopWallet =
+                    new RunLoopWallet(runTx0, runMixWallet, depositAndPremixWallet);
+                int i = 0;
                 while (true) {
                   try {
-                    RunMixWallet runMixWallet =
-                        new RunMixWallet(config, depositAndPremixWallet, postmixWallet);
-                    new RunLoopWallet(runTx0, runMixWallet, depositAndPremixWallet).run(pool);
+                    runLoopWallet.run(pool);
+
+                    log.info(
+                        " => Iteration #"
+                            + i
+                            + " SUCCESS. Next iteration in "
+                            + iterationDelay
+                            + "s...");
+                    if (iterationDelay > 0) {
+                      Thread.sleep(iterationDelay*1000);
+                    }
                   } catch (Exception e) {
                     log.error(
-                        "RunMixWallet failed, retrying in " + RUNVPUB_SLEEP_ON_ERROR + "ms", e);
-                    synchronized (this) {
-                      Thread.sleep(RUNVPUB_SLEEP_ON_ERROR);
-                    }
+                        " => Iteration #"
+                            + i
+                            + " FAILED, retrying in "
+                            + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
+                            + "s",
+                        e);
+                    Thread.sleep(SLEEP_LOOPWALLET_ON_ERROR);
                   }
+                  i++;
                 }
               }
             }

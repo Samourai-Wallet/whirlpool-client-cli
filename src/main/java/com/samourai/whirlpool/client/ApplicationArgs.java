@@ -25,6 +25,8 @@ public class ApplicationArgs {
   private static final String ARG_POOL_ID = "pool";
   private static final String ARG_TESTMODE = "test-mode";
   private static final String ARG_TX0 = "tx0";
+  private static final String ARG_ITERATION_DELAY = "iteration-delay";
+  private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
   private static final String ARG_RPC_CLIENT_URL = "rpc-client-url";
   public static final String USAGE =
@@ -150,6 +152,32 @@ public class ApplicationArgs {
       throw new IllegalArgumentException("Numeric value expected for option: " + ARG_TX0);
     }
     return Optional.of(tx0);
+  }
+
+  public int getIterationDelay() {
+    int delay;
+    try {
+      delay = Integer.parseInt(requireOption(ARG_ITERATION_DELAY, "0"));
+      if (delay < 0) {
+        throw new IllegalArgumentException("Positive value expected for option: " + ARG_ITERATION_DELAY);
+      }
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_ITERATION_DELAY);
+    }
+    return delay;
+  }
+
+  public int getClientDelay() {
+    int delay;
+    try {
+      delay = Integer.parseInt(requireOption(ARG_CLIENT_DELAY, "0"));
+      if (delay < 0) {
+        throw new IllegalArgumentException("Positive value expected for option: " + ARG_CLIENT_DELAY);
+      }
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_CLIENT_DELAY);
+    }
+    return delay;
   }
 
   public boolean isAggregatePostmix() {

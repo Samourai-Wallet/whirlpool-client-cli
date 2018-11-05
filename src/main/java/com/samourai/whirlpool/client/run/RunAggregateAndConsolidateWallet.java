@@ -36,11 +36,7 @@ public class RunAggregateAndConsolidateWallet {
     // go aggregate postmix to premix
     log.info(" • Aggregating postmix wallet to premix...");
     new RunAggregateWallet(
-        params,
-        samouraiApi,
-        rpcClientService,
-        postmixWallet,
-        depositAndPremixWallet)
+            params, samouraiApi, rpcClientService, postmixWallet, depositAndPremixWallet)
         .run();
 
     // delay to let API detect the broadcasted tx
@@ -52,11 +48,7 @@ public class RunAggregateAndConsolidateWallet {
     // consolidate premix
     log.info(" • Consolidating premix wallet...");
     new RunAggregateWallet(
-        params,
-        samouraiApi,
-        rpcClientService,
-        depositAndPremixWallet,
-        depositAndPremixWallet)
+            params, samouraiApi, rpcClientService, depositAndPremixWallet, depositAndPremixWallet)
         .run();
   }
 }

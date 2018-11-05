@@ -16,8 +16,6 @@ public class RunLoopWallet {
 
   private static final int MIN_MUST_MIX = 3;
 
-  private static final int SLEEP_LOOPS_SECONDS = 120;
-
   private RunTx0 runTx0;
   private Bip84ApiWallet depositAndPremixWallet;
 
@@ -31,16 +29,6 @@ public class RunLoopWallet {
   }
 
   public void run(Pool pool) throws Exception {
-    while (true) {
-      log.info(" --------------------------------------- ");
-      runLoop(pool);
-
-      log.info(" => Next loop in " + SLEEP_LOOPS_SECONDS + " seconds...");
-      Thread.sleep(SLEEP_LOOPS_SECONDS * 1000);
-    }
-  }
-
-  public void runLoop(Pool pool) throws Exception {
     // fetch unspent utx0s
     log.info(" • Fetching unspent outputs from premix...");
     List<UnspentResponse.UnspentOutput> utxos =
