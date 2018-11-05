@@ -22,7 +22,7 @@ import org.bitcoinj.core.ECKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RunMixVPub {
+public class RunMixWallet {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private WhirlpoolClientConfig config;
@@ -32,7 +32,7 @@ public class RunMixVPub {
 
   private static final int SLEEP_CONNECTING_CLIENTS_SECONDS = 30;
 
-  public RunMixVPub(
+  public RunMixWallet(
       WhirlpoolClientConfig config, Bip84Wallet depositAndPremixWallet, Bip84Wallet postmixWallet) {
     this.config = config;
     this.depositAndPremixWallet = depositAndPremixWallet;

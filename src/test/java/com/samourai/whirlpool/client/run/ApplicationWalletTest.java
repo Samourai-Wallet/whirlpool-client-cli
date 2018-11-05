@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class VPubTest extends AbstractApplicationTest {
+public class ApplicationWalletTest extends AbstractApplicationTest {
   private static final String SEED_WORDS =
       "hub casual home drift winter such economy wage waste wagon essay torch";
   private static final String SEED_PASSPHRASE = "whirlpool";
@@ -33,7 +33,7 @@ public class VPubTest extends AbstractApplicationTest {
   }
 
   @Test
-  public void runVPubLoop() {
+  public void runLoopWallet() {
     String[] args =
         new String[] {
           "--network=test",
@@ -52,7 +52,7 @@ public class VPubTest extends AbstractApplicationTest {
   }
 
   @Test
-  public void runVpubTx0WithRpcClientUrl() {
+  public void runTx0WithRpcClientUrl() {
     String[] args =
         new String[] {
           "--network=test",
@@ -71,7 +71,7 @@ public class VPubTest extends AbstractApplicationTest {
   }
 
   @Test
-  public void runVpubTx0WithoutRpcClientUrl() {
+  public void runTx0WithoutRpcClientUrl() {
     String[] args =
         new String[] {
           "--network=test",
@@ -89,7 +89,7 @@ public class VPubTest extends AbstractApplicationTest {
   }
 
   @Test
-  public void runVpubAggregatePostmix() {
+  public void runAggregatePostmix() {
     String[] args =
         new String[] {
           "--network=test",

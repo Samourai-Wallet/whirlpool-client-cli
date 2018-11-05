@@ -2,9 +2,9 @@ package com.samourai.whirlpool.client.tx0;
 
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Wallet;
-import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.test.AbstractTest;
 import com.samourai.whirlpool.client.utils.Bip84Wallet;
+import com.samourai.whirlpool.client.utils.CliUtils;
 import java.lang.invoke.MethodHandles;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Sha256Hash;

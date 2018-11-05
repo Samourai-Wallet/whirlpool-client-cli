@@ -4,11 +4,11 @@ import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
 import com.samourai.wallet.hd.HD_Address;
-import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
+import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.lang.invoke.MethodHandles;
@@ -20,7 +20,7 @@ import org.bitcoinj.core.TransactionOutPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RunTx0VPub {
+public class RunTx0 {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private NetworkParameters params;
@@ -32,7 +32,7 @@ public class RunTx0VPub {
       "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
   private static final long SAMOURAI_FEES = 10000; // TODO
 
-  public RunTx0VPub(
+  public RunTx0(
       NetworkParameters params,
       SamouraiApi samouraiApi,
       Optional<RpcClientService> rpcClientService,
@@ -46,7 +46,7 @@ public class RunTx0VPub {
   public Tx0 runTx0(Pool pool, int nbOutputs) throws Exception {
     List<UnspentResponse.UnspentOutput> utxos = depositAndPremixWallet.fetchUtxos();
     if (utxos.isEmpty()) {
-      throw new NotifiableException("No utxo found from VPub.");
+      throw new NotifiableException("No utxo found from premix.");
     }
 
     log.info("Found " + utxos.size() + " utxo from premix:");
@@ -54,7 +54,7 @@ public class RunTx0VPub {
     return runTx0(utxos, pool, nbOutputs);
   }
 
-  public Tx0 runTx0(List<UnspentResponse.UnspentOutput> utxos, Pool pool, int nbOutputs)
+  private Tx0 runTx0(List<UnspentResponse.UnspentOutput> utxos, Pool pool, int nbOutputs)
       throws Exception {
 
     // fetch spend address info

@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.client.run;
 
-import com.samourai.whirlpool.client.CliUtils;
+import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.beans.Pools;
 import java.lang.invoke.MethodHandles;

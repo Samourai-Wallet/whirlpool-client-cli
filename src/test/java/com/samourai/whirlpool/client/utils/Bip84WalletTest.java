@@ -2,7 +2,6 @@ package com.samourai.whirlpool.client.utils;
 
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Wallet;
-import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.test.AbstractTest;
 import org.junit.Assert;
 import org.junit.Test;

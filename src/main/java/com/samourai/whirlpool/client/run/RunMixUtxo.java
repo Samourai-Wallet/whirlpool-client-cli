@@ -4,10 +4,10 @@ import com.samourai.wallet.bip47.rpc.BIP47Wallet;
 import com.samourai.wallet.bip47.rpc.impl.Bip47Util;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.whirlpool.client.CliListener;
-import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.mix.MixParams;
 import com.samourai.whirlpool.client.mix.handler.*;
+import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
@@ -20,10 +20,10 @@ import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RunWhirlpool {
+public class RunMixUtxo {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public RunWhirlpool() {}
+  public RunMixUtxo() {}
 
   public void run(
       WhirlpoolClient whirlpoolClient,

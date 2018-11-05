@@ -11,8 +11,9 @@ import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.*;
-import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
+import com.samourai.whirlpool.client.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.HdWalletFactory;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
@@ -93,7 +94,7 @@ public class Application implements ApplicationRunner {
               long utxoBalance = appArgs.getUtxoBalance();
               final int mixs = appArgs.getMixs();
 
-              new RunWhirlpool()
+              new RunMixUtxo()
                   .run(
                       whirlpoolClient,
                       pool,
@@ -116,12 +117,12 @@ public class Application implements ApplicationRunner {
                   new Bip84ApiWallet(bip84w, ACCOUNT_DEPOSIT_AND_PREMIX, samouraiApi);
               Bip84ApiWallet postmixWallet =
                   new Bip84ApiWallet(bip84w, ACCOUNT_POSTMIX, samouraiApi);
-              RunTx0VPub runTx0VPub =
-                  new RunTx0VPub(params, samouraiApi, rpcClientService, depositAndPremixWallet);
+              RunTx0 runTx0 =
+                  new RunTx0(params, samouraiApi, rpcClientService, depositAndPremixWallet);
               Optional<Integer> tx0Arg = appArgs.getTx0();
               if (tx0Arg.isPresent()) {
                 // go tx0
-                runTx0VPub.runTx0(pool, tx0Arg.get());
+                runTx0.runTx0(pool, tx0Arg.get());
               } else if (appArgs.isAggregatePostmix()) {
                 if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
                   throw new NotifiableException(
@@ -148,15 +149,15 @@ public class Application implements ApplicationRunner {
                         depositAndPremixWallet)
                     .run();
               } else {
-                // go whirpool with VPUB
+                // go loop wallet
                 while (true) {
                   try {
-                    RunMixVPub runMixVPub =
-                        new RunMixVPub(config, depositAndPremixWallet, postmixWallet);
-                    new RunVPubLoop(runTx0VPub, runMixVPub, depositAndPremixWallet).run(pool);
+                    RunMixWallet runMixWallet =
+                        new RunMixWallet(config, depositAndPremixWallet, postmixWallet);
+                    new RunLoopWallet(runTx0, runMixWallet, depositAndPremixWallet).run(pool);
                   } catch (Exception e) {
                     log.error(
-                        "RunVPubLoop failed, retrying in " + RUNVPUB_SLEEP_ON_ERROR + "ms", e);
+                        "RunMixWallet failed, retrying in " + RUNVPUB_SLEEP_ON_ERROR + "ms", e);
                     synchronized (this) {
                       Thread.sleep(RUNVPUB_SLEEP_ON_ERROR);
                     }

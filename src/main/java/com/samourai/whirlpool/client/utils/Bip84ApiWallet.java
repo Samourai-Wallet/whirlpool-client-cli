@@ -23,7 +23,7 @@ public class Bip84ApiWallet extends Bip84Wallet {
 
   private int fetchNextAddressIndex() throws Exception {
     String zpub = getZpub();
-    MultiAddrResponse.Address address = samouraiApi.findAddress(zpub);
+    MultiAddrResponse.Address address = samouraiApi.fetchAddress(zpub);
     if (address == null) {
       throw new Exception("Address not found");
     }

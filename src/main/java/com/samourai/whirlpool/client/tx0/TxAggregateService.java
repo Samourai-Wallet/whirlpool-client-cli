@@ -4,7 +4,7 @@ import com.samourai.wallet.bip69.BIP69InputComparator;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.util.TxUtil;
-import com.samourai.whirlpool.client.CliUtils;
+import com.samourai.whirlpool.client.utils.CliUtils;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;

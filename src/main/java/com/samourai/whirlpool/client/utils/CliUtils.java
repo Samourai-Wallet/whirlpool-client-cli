@@ -1,10 +1,9 @@
-package com.samourai.whirlpool.client;
+package com.samourai.whirlpool.client.utils;
 
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.io.InputStream;

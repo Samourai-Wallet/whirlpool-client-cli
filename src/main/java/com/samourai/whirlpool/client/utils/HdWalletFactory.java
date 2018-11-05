@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.run.vpub;
+package com.samourai.whirlpool.client.utils;
 
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.util.FormatsUtilGeneric;

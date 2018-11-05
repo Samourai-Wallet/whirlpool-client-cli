@@ -1,8 +1,8 @@
 package com.samourai.whirlpool.client.test;
 
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
-import com.samourai.whirlpool.client.CliUtils;
-import com.samourai.whirlpool.client.run.vpub.HdWalletFactory;
+import com.samourai.whirlpool.client.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.HdWalletFactory;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.TestNet3Params;
 import org.junit.After;

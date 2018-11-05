@@ -1,8 +1,8 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.api.beans.UnspentResponse;
-import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
+import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -11,22 +11,22 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RunVPubLoop {
+public class RunLoopWallet {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int MIN_MUST_MIX = 3;
 
   private static final int SLEEP_LOOPS_SECONDS = 120;
 
-  private RunTx0VPub runTx0VPub;
+  private RunTx0 runTx0;
   private Bip84ApiWallet depositAndPremixWallet;
 
-  private RunMixVPub runMixVPub;
+  private RunMixWallet runMixWallet;
 
-  public RunVPubLoop(
-      RunTx0VPub runTx0VPub, RunMixVPub runMixVPub, Bip84ApiWallet depositAndPremixWallet) {
-    this.runTx0VPub = runTx0VPub;
-    this.runMixVPub = runMixVPub;
+  public RunLoopWallet(
+      RunTx0 runTx0, RunMixWallet runMixWallet, Bip84ApiWallet depositAndPremixWallet) {
+    this.runTx0 = runTx0;
+    this.runMixWallet = runMixWallet;
     this.depositAndPremixWallet = depositAndPremixWallet;
   }
 
@@ -49,7 +49,7 @@ public class RunVPubLoop {
       log.info("Found " + utxos.size() + " utxo from premix:");
       CliUtils.printUtxos(utxos);
     } else {
-      log.error("ERROR: No utxo available from VPub.");
+      log.error("ERROR: No utxo available from premix.");
       return;
     }
 
@@ -84,10 +84,10 @@ public class RunVPubLoop {
 
       // tx0
       log.info(" • Tx0...");
-      runTx0VPub.runTx0(utxos, pool, missingMustMixUtxos);
+      runTx0.runTx0(pool, missingMustMixUtxos);
     } else {
       log.info(" • New mix...");
-      runMixVPub.runMix(mustMixUtxos, pool);
+      runMixWallet.runMix(mustMixUtxos, pool);
     }
   }
 }

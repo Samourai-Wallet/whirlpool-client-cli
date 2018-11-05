@@ -4,10 +4,10 @@ import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
 import com.samourai.wallet.hd.HD_Address;
-import com.samourai.whirlpool.client.CliUtils;
 import com.samourai.whirlpool.client.tx0.TxAggregateService;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.Bip84Wallet;
+import com.samourai.whirlpool.client.utils.CliUtils;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ public class RunAggregateWallet {
   public void run() throws Exception {
     List<UnspentResponse.UnspentOutput> utxos = sourceWallet.fetchUtxos();
     if (utxos.isEmpty()) {
-      // maybe you need to declare vpub as bip84 with /multiaddr?bip84=
+      // maybe you need to declare zpub as bip84 with /multiaddr?bip84=
       log.info("AggregateWallet result: no utxo to aggregate");
       return;
     }

@@ -27,8 +27,8 @@ public class SamouraiApi {
     this.httpClient = httpClient;
   }
 
-  public List<UnspentResponse.UnspentOutput> fetchUtxos(String vpub) throws Exception {
-    String url = URL_BACKEND + URL_UNSPENT + vpub;
+  public List<UnspentResponse.UnspentOutput> fetchUtxos(String zpub) throws Exception {
+    String url = URL_BACKEND + URL_UNSPENT + zpub;
     if (log.isDebugEnabled()) {
       log.debug("fetchUtxos: " + url);
     }
@@ -40,8 +40,8 @@ public class SamouraiApi {
     return unspentOutputs;
   }
 
-  public List<MultiAddrResponse.Address> fetchAddresses(String vpub) throws Exception {
-    String url = URL_BACKEND + URL_MULTIADDR + vpub;
+  public List<MultiAddrResponse.Address> fetchAddresses(String zpub) throws Exception {
+    String url = URL_BACKEND + URL_MULTIADDR + zpub;
     if (log.isDebugEnabled()) {
       log.debug("fetchAddress: " + url);
     }
@@ -53,8 +53,8 @@ public class SamouraiApi {
     return addresses;
   }
 
-  public MultiAddrResponse.Address findAddress(String vpub) throws Exception {
-    List<MultiAddrResponse.Address> addresses = fetchAddresses(vpub);
+  public MultiAddrResponse.Address fetchAddress(String zpub) throws Exception {
+    List<MultiAddrResponse.Address> addresses = fetchAddresses(zpub);
     if (addresses.size() != 1) {
       throw new Exception("Address count=" + addresses.size());
     }
@@ -63,7 +63,7 @@ public class SamouraiApi {
     if (log.isDebugEnabled()) {
       log.debug(
           "fetchAddress "
-              + vpub
+              + zpub
               + ": account_index="
               + address.account_index
               + ", change_index="
