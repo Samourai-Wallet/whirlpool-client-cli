@@ -118,6 +118,9 @@ public class JavaStompClient implements IStompClient {
           onDisconnect.onMessage(exception);
         } else {
           log.error(" ! transportError : " + exception.getMessage());
+          if (log.isDebugEnabled()) {
+            log.error("", exception);
+          }
         }
       }
     };
