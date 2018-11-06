@@ -94,6 +94,10 @@ public class RunMixWallet {
         Thread.sleep(clientDelay);
       }
     }
-    return multiClientManager.waitDone();
+
+    // quit as soon as we mixed at least 1 utxo
+    boolean success = multiClientManager.waitDone(1, 1);
+    multiClientManager.exit();
+    return success;
   }
 }
