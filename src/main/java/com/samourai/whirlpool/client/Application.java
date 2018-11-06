@@ -235,6 +235,8 @@ public class Application implements ApplicationRunner {
         log.debug("--test-mode: tx0 verifications will be skiped (if server allows it)");
       }
     }
+    boolean ssl = appArgs.isSsl();
+    config.setSsl(ssl);
     return config;
   }
 

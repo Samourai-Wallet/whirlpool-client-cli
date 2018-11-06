@@ -21,6 +21,7 @@ public class ApplicationArgs {
   private static final String ARG_SEED_WORDS = "seed-words";
   private static final String ARG_PAYNYM_INDEX = "paynym-index";
   private static final String ARG_SERVER = "server";
+  private static final String ARG_SSL = "ssl";
   private static final String ARG_MIXS = "mixs";
   private static final String ARG_POOL_ID = "pool";
   private static final String ARG_TESTMODE = "test-mode";
@@ -48,6 +49,10 @@ public class ApplicationArgs {
     String server = requireOption(ARG_SERVER, "127.0.0.1:8080");
     Assert.notNull(server, "server is null");
     return server;
+  }
+
+  public boolean isSsl() {
+    return Boolean.parseBoolean(requireOption(ARG_SSL, "true"));
   }
 
   public NetworkParameters getNetworkParameters() {

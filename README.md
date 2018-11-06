@@ -5,22 +5,30 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 
 ## General usage
 ```
-java -jar target/whirlpool-client-version-run.jar --network={main,test} [--server=host:port] [--debug] [--pool=] [--test-mode] {args...}
+java -jar target/whirlpool-client-version-run.jar --network={main,test} --server=host:port
+[--ssl=true] [--debug] [--pool=] [--test-mode]
+[--rpc-client-url=http://user:password@host:port] {args...}
 ```
+
+### Required arguments:
 - network: (main,test) bitcoin network to use. Client will abort if server runs on a different network.
 - server: (host:port) server to connect to
+
+### Optional arguments:
+- ssl: enable or disable SSL
 - debug: display more logs for debugging
 - pool: id of the pool to join
 - test-mode: disable tx0 checks, only available when enabled on server
+- rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 or aggregate transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will show rawtx and stop to let you broadcast it manually.
 
 ### List pools
 ```
---network={main,test} [--server=host:port] [--debug]
+--network={main,test} --server=host:port
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port
 ```
 
 ### Mix a wallet
@@ -30,28 +38,26 @@ You need a wallet holding funds to mix. The script will run the following automa
 3. Mix pre-mix utxos, and repeat
 
 ```
---network={main,test} [--server=host:port] [--debug] [--test-mode] --pool=
+--network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
 --seed-passphrase= --seed-words=
 [--clients=1] [--iteration-delay=0] [--client-delay=0]
-[--rpc-client-url=http://user:password@host:port]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --tx0=10"
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all" --rpc-client-url=http://user:password@host:port
 ```
 - seed-passphrase & seed-words: wallet seed
 - clients: number of simultaneous clients to connect
 - iteration-delay: delay (in seconds) to wait between mixs
 - client-delay: delay (in seconds) between each client connexion
-- rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will stop to let you broadcast it manually.
 
 ## Expert usage
 
 ### Mix specific utxo
 You need a valid pre-mix utxo (output of a valid tx0) to mix.
 ```
---network={main,test} [--server=host:port] [--debug] [--test-mode] --pool=
+--network={main,test} --server=host:port --pool=
 --utxo= --utxo-key= --utxo-balance=
 --seed-passphrase= --seed-words= [--paynym-index=0]
 [--mixs=1]
@@ -59,7 +65,7 @@ You need a valid pre-mix utxo (output of a valid tx0) to mix.
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --paynym-index=5"
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --seed-passphrase=foo --seed-words="all all all all all all all all all all all all" --paynym-index=5
 ```
 - utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)
 - utxo-key: ECKey for pre-mix input
@@ -72,25 +78,24 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 ### Tx0
 You need a wallet holding funds to split.
 ```
---network={main,test} [--server=host:port] [--debug] [--test-mode] --pool=
+--network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
 --seed-passphrase= --seed-words=
-[--rpc-client-url=http://user:password@host:port]
 --tx0=
+[--rpc-client-url=http://user:password@host:port]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --tx0=10"
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all" --tx0=10 --rpc-client-url=http://user:password@host:port
 ```
 - seed-passphrase & seed-words: wallet seed
-- rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will stop to let you broadcast it manually.
 - tx0: number of pre-mix utxo to generate
 
 ### Aggregate postmix
 Move all postmix funds back to premix wallet and consolidate to a single UTXO.
 Only allowed on testnet for testing purpose.
 ```
---network={main,test} [--server=host:port] [--debug] [--test-mode] --pool=
+--network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
 --seed-passphrase= --seed-words=
 [--rpc-client-url=http://user:password@host:port]
 --aggregate-postmix
@@ -98,11 +103,9 @@ Only allowed on testnet for testing purpose.
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all --aggregate-postmix"
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all" --aggregate-postmix --rpc-client-url=http://user:password@host:port
 ```
 - seed-passphrase & seed-words: wallet seed
-- rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will stop to let you broadcast it manually.
-
 
 ## Build instructions
 Build with maven:
