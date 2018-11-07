@@ -62,6 +62,9 @@ public class RunAggregateWallet {
       if (subsetUtxos.size() > 1) {
         log.info("Aggregating " + subsetUtxos.size() + " utxos (pass #" + round + ")");
         runAggregate(subsetUtxos);
+
+        log.info("Refreshing utxos...");
+        Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
       }
       round++;
     }

@@ -30,6 +30,7 @@ public class ApplicationArgs {
   private static final String ARG_ITERATION_DELAY = "iteration-delay";
   private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
+  private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
   private static final String ARG_RPC_CLIENT_URL = "rpc-client-url";
   public static final String USAGE =
       "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub= --rpc-client-url] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0]";
@@ -205,6 +206,10 @@ public class ApplicationArgs {
 
   public boolean isAggregatePostmix() {
     return args.containsOption(ARG_AGGREGATE_POSTMIX);
+  }
+
+  public boolean isAutoAggregatePostmix() {
+    return args.containsOption(ARG_AUTO_AGGREGATE_POSTMIX);
   }
 
   public String getRpcClientUrl() {

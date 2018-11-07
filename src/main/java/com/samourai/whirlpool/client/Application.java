@@ -119,6 +119,9 @@ public class Application implements ApplicationRunner {
                   new Bip84ApiWallet(bip84w, ACCOUNT_POSTMIX, samouraiApi);
               RunTx0 runTx0 =
                   new RunTx0(params, samouraiApi, rpcClientService, depositAndPremixWallet);
+              RunAggregateAndConsolidateWallet runAggregateAndConsolidateWallet =
+                  new RunAggregateAndConsolidateWallet(
+                      params, samouraiApi, rpcClientService, depositAndPremixWallet, postmixWallet);
               Optional<Integer> tx0Arg = appArgs.getTx0();
               if (tx0Arg.isPresent()) {
                 // go tx0
@@ -130,13 +133,7 @@ public class Application implements ApplicationRunner {
                 }
 
                 // go aggregate and consolidate
-                new RunAggregateAndConsolidateWallet(
-                        params,
-                        samouraiApi,
-                        rpcClientService,
-                        depositAndPremixWallet,
-                        postmixWallet)
-                    .run();
+                runAggregateAndConsolidateWallet.run();
               } else {
                 // go loop wallet
                 int iterationDelay = appArgs.getIterationDelay();
@@ -149,8 +146,17 @@ public class Application implements ApplicationRunner {
                 RunMixWallet runMixWallet =
                     new RunMixWallet(
                         config, depositAndPremixWallet, postmixWallet, clientDelay * 1000, clients);
+                Optional<RunAggregateAndConsolidateWallet>
+                    optionalRunAggregateAndConsolidateWallet =
+                        appArgs.isAutoAggregatePostmix()
+                            ? Optional.of(runAggregateAndConsolidateWallet)
+                            : Optional.empty();
                 RunLoopWallet runLoopWallet =
-                    new RunLoopWallet(runTx0, runMixWallet, depositAndPremixWallet);
+                    new RunLoopWallet(
+                        runTx0,
+                        runMixWallet,
+                        depositAndPremixWallet,
+                        optionalRunAggregateAndConsolidateWallet);
                 int i = 1;
                 int errors = 0;
                 while (true) {
