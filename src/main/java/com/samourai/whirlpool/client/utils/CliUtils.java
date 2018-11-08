@@ -10,6 +10,10 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
@@ -71,6 +75,16 @@ public class CliUtils {
     return mustMixUtxos;
   }
 
+  public static List<UnspentResponse.UnspentOutput> filterUtxoUniqueHash(
+      List<UnspentResponse.UnspentOutput> utxos) {
+    List<UnspentResponse.UnspentOutput> mustMixUtxos =
+        utxos
+            .stream()
+            .filter(distinctByKey(UnspentResponse.UnspentOutput::getTxHash))
+            .collect(Collectors.toList());
+    return mustMixUtxos;
+  }
+
   public static HD_Wallet computeBip84Wallet(
       String passphrase,
       String seedWords,
@@ -114,5 +128,10 @@ public class CliUtils {
   public static long computeMinerFee(long bytes, long feePerByte) {
     long minerFee = bytes * feePerByte;
     return Math.max(minerFee, MIN_RELAY_FEE);
+  }
+
+  public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+    Set<Object> seen = ConcurrentHashMap.newKeySet();
+    return t -> seen.add(keyExtractor.apply(t));
   }
 }

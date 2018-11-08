@@ -57,5 +57,9 @@ public class UnspentResponse {
           + addr
           + ")";
     }
+
+    public String getTxHash() {
+      return tx_hash;
+    }
   }
 }

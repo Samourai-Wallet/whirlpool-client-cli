@@ -51,11 +51,6 @@ public class RunTx0 {
 
     log.info("Found " + utxos.size() + " utxo from premix:");
     CliUtils.printUtxos(utxos);
-    return runTx0(utxos, pool, nbOutputs);
-  }
-
-  private Tx0 runTx0(List<UnspentResponse.UnspentOutput> utxos, Pool pool, int nbOutputs)
-      throws Exception {
 
     // fetch spend address info
     long destinationValue = computeDestinationValue(pool);

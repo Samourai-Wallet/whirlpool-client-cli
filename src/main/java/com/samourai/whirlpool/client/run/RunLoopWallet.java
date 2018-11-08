@@ -17,6 +17,7 @@ public class RunLoopWallet {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int MIN_MUST_MIX = 3;
+  private static final int OUTPUTS_PER_TX0 = 10;
 
   private RunTx0 runTx0;
   private RunMixWallet runMixWallet;
@@ -44,34 +45,38 @@ public class RunLoopWallet {
     CliUtils.printUtxos(utxos);
 
     // find mustMixUtxos
-    List<UnspentResponse.UnspentOutput> mustMixUtxos = CliUtils.filterUtxoMustMix(pool, utxos);
-    log.info("Found " + mustMixUtxos.size() + " mustMixUtxo");
+    List<UnspentResponse.UnspentOutput> mustMixUtxosUnique =
+        CliUtils.filterUtxoUniqueHash(CliUtils.filterUtxoMustMix(pool, utxos));
+    log.info("Found " + mustMixUtxosUnique.size() + " unique mustMixUtxo");
 
     // find liquidityUtxos
     List<UnspentResponse.UnspentOutput> liquidityUtxos = new ArrayList<>(); // TODO
 
-    int missingMustMixUtxos = computeMissingMustMixUtxos(nbClients, mustMixUtxos, liquidityUtxos);
+    int missingMustMixUtxos =
+        computeMissingMustMixUtxos(nbClients, mustMixUtxosUnique, liquidityUtxos);
 
     // do we have enough mustMixUtxo?
     if (missingMustMixUtxos > 0) {
       // not enough mustMixUtxos => Tx0
-      log.info(" • Tx0...");
-      try {
-        runTx0.runTx0(pool, missingMustMixUtxos);
-      } catch (Exception e) {
-        // premixAndDeposit is empty => autoRefill when possible
-        autoRefill();
-        runTx0.runTx0(pool, missingMustMixUtxos);
-      }
+      for (int i = 0; i < missingMustMixUtxos; i++) {
+        log.info(" • Tx0 (" + (i + 1) + "/" + missingMustMixUtxos + ")...");
+        try {
+          runTx0.runTx0(pool, OUTPUTS_PER_TX0);
+        } catch (Exception e) {
+          // premixAndDeposit is empty => autoRefill when possible
+          autoRefill();
+          runTx0.runTx0(pool, OUTPUTS_PER_TX0);
+        }
 
-      log.info("Refreshing utxos...");
-      Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
+        log.info("Refreshing utxos...");
+        Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
+      }
 
       // recursive
       return run(pool, nbClients);
     } else {
       log.info(" • New mix...");
-      return runMixWallet.runMix(mustMixUtxos, pool);
+      return runMixWallet.runMix(mustMixUtxosUnique, pool);
     }
   }
 
@@ -108,9 +113,9 @@ public class RunLoopWallet {
             + MIN_MUST_MIX
             + " mustMix). I have "
             + mustMixUtxos.size()
-            + " mustMixUtxo and "
+            + " unique mustMixUtxo and "
             + liquidityUtxos.size()
-            + " liquidityUtxo =>  "
+            + " unique liquidityUtxo =>  "
             + missingMustMixUtxos
             + " more mustMixUtxo needed");
 
