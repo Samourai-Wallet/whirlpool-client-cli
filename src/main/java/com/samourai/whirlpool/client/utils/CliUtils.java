@@ -27,9 +27,9 @@ public class CliUtils {
 
   public static final String BIP39_ENGLISH_SHA256 =
       "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db";
-  private static final long TX_BYTES_INITIAL = 150;
-  private static final long TX_BYTES_PER_INPUT_OUTPUT = 70;
-  private static final long MIN_RELAY_FEE = 35000;
+  private static final long TX_BYTES_PER_INPUT = 70;
+  private static final long TX_BYTES_PER_OUTPUT = 31;
+  private static final long MIN_RELAY_FEE = 100;
 
   public static double satToBtc(long sat) {
     return sat / 100000000.0;
@@ -113,9 +113,10 @@ public class CliUtils {
   }
 
   public static long estimateTxBytes(int nbInputs, int nbOutputs) {
-    long bytes = TX_BYTES_INITIAL + TX_BYTES_PER_INPUT_OUTPUT * (nbInputs + nbOutputs);
+    long bytes = TX_BYTES_PER_INPUT * nbInputs + TX_BYTES_PER_OUTPUT * nbOutputs;
     if (log.isDebugEnabled()) {
-      log.debug("tx size estimation: " + bytes + "b");
+      log.debug(
+          "tx size estimation: " + bytes + "b (" + nbInputs + " ins, + " + nbOutputs + "outs)");
     }
     return bytes;
   }
@@ -127,7 +128,18 @@ public class CliUtils {
 
   public static long computeMinerFee(long bytes, long feePerByte) {
     long minerFee = bytes * feePerByte;
-    return Math.max(minerFee, MIN_RELAY_FEE);
+    if (minerFee < MIN_RELAY_FEE) {
+      minerFee = MIN_RELAY_FEE;
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "minerFee = " + minerFee + " (" + bytes + "b, " + feePerByte + "s/b => MIN_RELAY_FEE)");
+      }
+    } else {
+      if (log.isDebugEnabled()) {
+        log.debug("minerFee = " + minerFee + " (" + bytes + "b, " + feePerByte + "s/b)");
+      }
+    }
+    return minerFee;
   }
 
   public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {

@@ -92,10 +92,7 @@ public class Tx0Service {
       outputs.add(txOutSpend);
     }
 
-    long tx0MinerFee = CliUtils.computeMinerFee(1, nbOutputs + 2, feeSatPerByte);
-    if (log.isDebugEnabled()) {
-      log.debug("tx0MinerFee=" + tx0MinerFee);
-    }
+    long tx0MinerFee = CliUtils.computeMinerFee(1, nbOutputs + 3, feeSatPerByte);
     long changeValue =
         spendFromBalance - (destinationValue * nbOutputs) - samouraiFees - tx0MinerFee;
 
