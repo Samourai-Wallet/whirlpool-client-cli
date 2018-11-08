@@ -48,8 +48,10 @@ public class RunAggregateWallet {
       log.info("AggregateWallet result: no utxo to aggregate");
       return;
     }
-    log.info("Found " + utxos.size() + " utxo to aggregate:");
-    CliUtils.printUtxos(utxos);
+    if (log.isDebugEnabled()) {
+      log.debug("Found " + utxos.size() + " utxo to aggregate:");
+      CliUtils.printUtxos(utxos);
+    }
 
     int round = 0;
     int offset = 0;

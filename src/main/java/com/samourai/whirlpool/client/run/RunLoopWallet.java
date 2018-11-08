@@ -41,13 +41,17 @@ public class RunLoopWallet {
     List<UnspentResponse.UnspentOutput> utxos =
         depositAndPremixWallet.fetchUtxos().stream().collect(Collectors.toList());
 
-    log.info("Found " + utxos.size() + " utxo from premix:");
-    CliUtils.printUtxos(utxos);
+    if (log.isDebugEnabled()) {
+      log.debug("Found " + utxos.size() + " utxo from premix:");
+      CliUtils.printUtxos(utxos);
+    }
 
     // find mustMixUtxos
     List<UnspentResponse.UnspentOutput> mustMixUtxosUnique =
         CliUtils.filterUtxoUniqueHash(CliUtils.filterUtxoMustMix(pool, utxos));
-    log.info("Found " + mustMixUtxosUnique.size() + " unique mustMixUtxo");
+    if (log.isDebugEnabled()) {
+      log.debug("Found " + mustMixUtxosUnique.size() + " unique mustMixUtxo");
+    }
 
     // find liquidityUtxos
     List<UnspentResponse.UnspentOutput> liquidityUtxos = new ArrayList<>(); // TODO
@@ -106,19 +110,20 @@ public class RunLoopWallet {
     int missingMustmixs = MIN_MUST_MIX - mustMixUtxos.size();
     int missingAnonymitySet = nbClients - (mustMixUtxos.size() + liquidityUtxos.size());
     int missingMustMixUtxos = Math.max(missingMustmixs, missingAnonymitySet);
-    log.info(
-        "Next mix needs "
-            + nbClients
-            + " utxos (minMustMix="
-            + MIN_MUST_MIX
-            + " mustMix). I have "
-            + mustMixUtxos.size()
-            + " unique mustMixUtxo and "
-            + liquidityUtxos.size()
-            + " unique liquidityUtxo =>  "
-            + missingMustMixUtxos
-            + " more mustMixUtxo needed");
-
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Next mix needs "
+              + nbClients
+              + " utxos (minMustMix="
+              + MIN_MUST_MIX
+              + " mustMix). I have "
+              + mustMixUtxos.size()
+              + " unique mustMixUtxo and "
+              + liquidityUtxos.size()
+              + " unique liquidityUtxo =>  "
+              + missingMustMixUtxos
+              + " more mustMixUtxo needed");
+    }
     return missingMustMixUtxos;
   }
 }

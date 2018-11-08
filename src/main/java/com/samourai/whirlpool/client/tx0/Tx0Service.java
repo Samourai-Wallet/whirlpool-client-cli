@@ -76,16 +76,18 @@ public class Tx0Service {
       String toAddressBech32 = bech32Util.toBech32(toAddress, params);
       ECKey toAddressKey = toAddress.getECKey();
       tx0Result.getToKeys().put(toAddressBech32, toAddressKey);
-      log.info(
-          "Tx0 out (premix): address="
-              + toAddressBech32
-              + ", key="
-              + toAddressKey.getPrivateKeyAsWiF(params)
-              + ", path="
-              + toAddress.toJSON().get("path")
-              + " ("
-              + destinationValue
-              + " sats)");
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "Tx0 out (premix): address="
+                + toAddressBech32
+                + ", key="
+                + toAddressKey.getPrivateKeyAsWiF(params)
+                + ", path="
+                + toAddress.toJSON().get("path")
+                + " ("
+                + destinationValue
+                + " sats)");
+      }
 
       TransactionOutput txOutSpend =
           bech32Util.getTransactionOutput(toAddressBech32, destinationValue, params);
@@ -104,14 +106,16 @@ public class Tx0Service {
     TransactionOutput txChange =
         bech32Util.getTransactionOutput(changeAddressBech32, changeValue, params);
     outputs.add(txChange);
-    log.info(
-        "Tx0 out (change): address="
-            + changeAddressBech32
-            + ", path="
-            + changeAddress.toJSON().get("path")
-            + " ("
-            + changeValue
-            + " sats)");
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Tx0 out (change): address="
+              + changeAddressBech32
+              + ", path="
+              + changeAddress.toJSON().get("path")
+              + " ("
+              + changeValue
+              + " sats)");
+    }
 
     // derive fee address
     DeterministicKey mKey =
@@ -127,12 +131,14 @@ public class Tx0Service {
     TransactionOutput txSWFee =
         bech32Util.getTransactionOutput(samouraiFeeAddressBech32, samouraiFees, params);
     outputs.add(txSWFee);
-    log.info(
-        "Tx0 out (samouraiFees): address="
-            + samouraiFeeAddressBech32
-            + " ("
-            + samouraiFees
-            + " sats)");
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Tx0 out (samouraiFees): address="
+              + samouraiFeeAddressBech32
+              + " ("
+              + samouraiFees
+              + " sats)");
+    }
 
     // add OP_RETURN output
     byte[] idxBuf = ByteBuffer.allocate(4).putInt(samouraiFeeIdx).array();
@@ -141,7 +147,9 @@ public class Tx0Service {
     TransactionOutput txFeeOutput =
         new TransactionOutput(params, null, Coin.valueOf(0L), op_returnOutputScript.getProgram());
     outputs.add(txFeeOutput);
-    log.info("Tx0 out (OP_RETURN): samouraiFeeIdx=" + samouraiFeeIdx);
+    if (log.isDebugEnabled()) {
+      log.debug("Tx0 out (OP_RETURN): samouraiFeeIdx=" + samouraiFeeIdx);
+    }
 
     // all outputs
     Collections.sort(outputs, new BIP69OutputComparator());
@@ -155,27 +163,31 @@ public class Tx0Service {
 
     final Script segwitPubkeyScript = ScriptBuilder.createP2WPKHOutputScript(spendFromKey);
     tx.addSignedInput(spendFromOutpoint, segwitPubkeyScript, spendFromKey);
-    log.info(
-        "Tx0 in: address="
-            + spendFromAddressBech32
-            + ", utxo="
-            + spendFromOutpoint
-            + ", key="
-            + spendFromKey.getPrivateKeyAsWiF(params)
-            + ", path="
-            + spendFromAddress.toJSON().get("path")
-            + " ("
-            + spendFromOutpoint.getValue().getValue()
-            + " sats)");
-    log.info("Tx0 fee: " + tx0MinerFee + " sats");
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Tx0 in: address="
+              + spendFromAddressBech32
+              + ", utxo="
+              + spendFromOutpoint
+              + ", key="
+              + spendFromKey.getPrivateKeyAsWiF(params)
+              + ", path="
+              + spendFromAddress.toJSON().get("path")
+              + " ("
+              + spendFromOutpoint.getValue().getValue()
+              + " sats)");
+      log.debug("Tx0 fee: " + tx0MinerFee + " sats");
+    }
 
     final String hexTx = new String(Hex.encode(tx.bitcoinSerialize()));
     final String strTxHash = tx.getHashAsString();
 
     tx.verify();
     // System.out.println(tx);
-    log.info("Tx0 hash: " + strTxHash);
-    log.info("Tx0 hex: " + hexTx + "\n");
+    if (log.isDebugEnabled()) {
+      log.debug("Tx0 hash: " + strTxHash);
+      log.debug("Tx0 hex: " + hexTx + "\n");
+    }
 
     for (TransactionOutput to : tx.getOutputs()) {
       tx0Result

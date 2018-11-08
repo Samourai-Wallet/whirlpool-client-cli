@@ -49,8 +49,10 @@ public class RunTx0 {
       throw new NotifiableException("No utxo found from premix.");
     }
 
-    log.info("Found " + utxos.size() + " utxo from premix:");
-    CliUtils.printUtxos(utxos);
+    if (log.isDebugEnabled()) {
+      log.debug("Found " + utxos.size() + " utxo from premix:");
+      CliUtils.printUtxos(utxos);
+    }
 
     // fetch spend address info
     long destinationValue = computeDestinationValue(pool);
@@ -66,8 +68,10 @@ public class RunTx0 {
     if (tx0SpendFroms.isEmpty()) {
       throw new Exception("ERROR: No utxo available to spend Tx0 from");
     }
-    log.info("Found " + tx0SpendFroms.size() + " utxos to use as Tx0 input");
-    CliUtils.printUtxos(tx0SpendFroms);
+    if (log.isDebugEnabled()) {
+      log.debug("Found " + tx0SpendFroms.size() + " utxos to use as Tx0 input");
+      CliUtils.printUtxos(tx0SpendFroms);
+    }
 
     UnspentResponse.UnspentOutput tx0SpendFrom = tx0SpendFroms.get(0);
     Tx0 tx0 = runTx0(tx0SpendFrom, destinationValue, nbOutputs);

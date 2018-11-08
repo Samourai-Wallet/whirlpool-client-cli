@@ -69,20 +69,24 @@ public class RunMixWallet {
       clientConfig.setStompClient(new JavaStompClient());
       WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(clientConfig);
 
-      log.info(
-          " • Connecting client #"
-              + (i + 1)
-              + ": mustMix, premixUtxo="
-              + premixUtxo
-              + ", premixKey="
-              + premixKey.getPrivateKeyAsWiF(config.getNetworkParameters())
-              + ", premixAddress="
-              + premixAddressBech32
-              + ", path="
-              + premixAddress.toJSON().get("path")
-              + " ("
-              + premixUtxo.value
-              + "sats)");
+      if (log.isDebugEnabled()) {
+        log.debug(
+            " • Connecting client #"
+                + (i + 1)
+                + ": mustMix, premixUtxo="
+                + premixUtxo
+                + ", premixKey="
+                + premixKey.getPrivateKeyAsWiF(config.getNetworkParameters())
+                + ", premixAddress="
+                + premixAddressBech32
+                + ", path="
+                + premixAddress.toJSON().get("path")
+                + " ("
+                + premixUtxo.value
+                + "sats)");
+      } else {
+        log.info(" • Connecting client #" + (i + 1));
+      }
       IPostmixHandler postmixHandler = new Bip84PostmixHandler(postmixWallet);
       MixParams mixParams =
           new MixParams(pool.getPoolId(), pool.getDenomination(), premixHandler, postmixHandler);

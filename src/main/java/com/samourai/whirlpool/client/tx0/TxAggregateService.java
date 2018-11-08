@@ -46,16 +46,18 @@ public class TxAggregateService {
     // 1 output
     String toAddressBech32 = bech32Util.toBech32(toAddress, params);
     ECKey toAddressKey = toAddress.getECKey();
-    log.info(
-        "Tx out: address="
-            + toAddressBech32
-            + ", key="
-            + toAddressKey.getPrivateKeyAsWiF(params)
-            + ", path="
-            + toAddress.toJSON().get("path")
-            + " ("
-            + destinationValue
-            + " sats)");
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Tx out: address="
+              + toAddressBech32
+              + ", key="
+              + toAddressKey.getPrivateKeyAsWiF(params)
+              + ", path="
+              + toAddress.toJSON().get("path")
+              + " ("
+              + destinationValue
+              + " sats)");
+    }
 
     TransactionOutput output =
         bech32Util.getTransactionOutput(toAddressBech32, destinationValue, params);
@@ -77,18 +79,20 @@ public class TxAggregateService {
               params, null, new byte[] {}, spendFromOutpoint, spendFromOutpoint.getValue());
       inputs.add(txInput);
       keysByInput.put(txInput, spendFromKey);
-      log.info(
-          "Tx in: address="
-              + spendFromAddressBech32
-              + ", utxo="
-              + spendFromOutpoint
-              + ", key="
-              + spendFromKey.getPrivateKeyAsWiF(params)
-              + ", path="
-              + spendFromAddress.toJSON().get("path")
-              + " ("
-              + spendFromOutpoint.getValue().getValue()
-              + " sats)");
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "Tx in: address="
+                + spendFromAddressBech32
+                + ", utxo="
+                + spendFromOutpoint
+                + ", key="
+                + spendFromKey.getPrivateKeyAsWiF(params)
+                + ", path="
+                + spendFromAddress.toJSON().get("path")
+                + " ("
+                + spendFromOutpoint.getValue().getValue()
+                + " sats)");
+      }
     }
 
     // sort inputs & add
@@ -111,10 +115,10 @@ public class TxAggregateService {
     final String strTxHash = tx.getHashAsString();
 
     tx.verify();
-    // System.out.println(tx);
-    log.info("Tx hash: " + strTxHash);
-    log.info("Tx hex: " + hexTx + "\n");
-
+    if (log.isDebugEnabled()) {
+      log.debug("Tx hash: " + strTxHash);
+      log.debug("Tx hex: " + hexTx + "\n");
+    }
     return tx;
   }
 }
