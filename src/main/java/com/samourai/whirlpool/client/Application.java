@@ -167,15 +167,13 @@ public class Application implements ApplicationRunner {
                     }
 
                     log.info(
-                        " => Iteration #"
+                        " ✔ Cycle #"
                             + i
-                            + " SUCCESS: "
-                            + clients
-                            + " utxo(s) mixed. Next iteration in "
+                            + " SUCCESS. Next cycle in "
                             + iterationDelay
-                            + "s...  (total mixed: "
-                            + (clients * (i - errors))
-                            + " utxos, total errors: "
+                            + "s...  (total success: "
+                            + (i - errors)
+                            + ", errors: "
                             + errors
                             + ")");
                     if (iterationDelay > 0) {
@@ -186,7 +184,7 @@ public class Application implements ApplicationRunner {
                     if (e instanceof NotifiableException) {
                       // don't log exception
                       log.error(
-                          " => Iteration #"
+                          " ✖ Cycle #"
                               + i
                               + " FAILED, retrying in "
                               + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
@@ -196,7 +194,7 @@ public class Application implements ApplicationRunner {
                     } else {
                       // log exception
                       log.error(
-                          " => Iteration #"
+                          " ✖ Cycle #"
                               + i
                               + " FAILED, retrying in "
                               + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
