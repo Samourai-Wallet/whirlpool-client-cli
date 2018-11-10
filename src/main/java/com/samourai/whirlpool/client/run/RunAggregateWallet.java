@@ -41,18 +41,19 @@ public class RunAggregateWallet {
     this.destinationWallet = destinationWallet;
   }
 
-  public void run() throws Exception {
+  public boolean run() throws Exception {
     List<UnspentResponse.UnspentOutput> utxos = sourceWallet.fetchUtxos();
     if (utxos.isEmpty()) {
       // maybe you need to declare zpub as bip84 with /multiaddr?bip84=
       log.info("AggregateWallet result: no utxo to aggregate");
-      return;
+      return false;
     }
     if (log.isDebugEnabled()) {
       log.debug("Found " + utxos.size() + " utxo to aggregate:");
       CliUtils.printUtxos(utxos);
     }
 
+    boolean success = false;
     int round = 0;
     int offset = 0;
     while (offset < utxos.size()) {
@@ -64,12 +65,14 @@ public class RunAggregateWallet {
       if (subsetUtxos.size() > 1) {
         log.info("Aggregating " + subsetUtxos.size() + " utxos (pass #" + round + ")");
         runAggregate(subsetUtxos);
+        success = true;
 
         log.info("Refreshing utxos...");
         Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
       }
       round++;
     }
+    return success;
   }
 
   private void runAggregate(List<UnspentResponse.UnspentOutput> postmixUtxos) throws Exception {

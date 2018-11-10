@@ -30,7 +30,7 @@ public class RunTx0 {
 
   private static final String XPUB_SAMOURAI_FEES =
       "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
-  private static final long SAMOURAI_FEES = 10000; // TODO
+  public static final long SAMOURAI_FEES = 10000; // TODO
 
   public RunTx0(
       NetworkParameters params,

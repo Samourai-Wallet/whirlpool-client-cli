@@ -9,8 +9,14 @@ import com.samourai.stomp.client.IStompClient;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.util.FormatsUtilGeneric;
+import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.run.*;
+import com.samourai.whirlpool.client.run.RunAggregateAndConsolidateWallet;
+import com.samourai.whirlpool.client.run.RunListPools;
+import com.samourai.whirlpool.client.run.RunLoopWallet;
+import com.samourai.whirlpool.client.run.RunMixUtxo;
+import com.samourai.whirlpool.client.run.RunMixWallet;
+import com.samourai.whirlpool.client.run.RunTx0;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.HdWalletFactory;
@@ -153,6 +159,7 @@ public class Application implements ApplicationRunner {
                             : Optional.empty();
                 RunLoopWallet runLoopWallet =
                     new RunLoopWallet(
+                        config,
                         runTx0,
                         runMixWallet,
                         depositAndPremixWallet,
@@ -179,7 +186,12 @@ public class Application implements ApplicationRunner {
                     if (iterationDelay > 0) {
                       Thread.sleep(iterationDelay * 1000);
                     }
+                  } catch (BroadcastException e) {
+                    CliUtils.broadcastTxInstruction(e);
+                  } catch (NotifiableException e) {
+                    throw e;
                   } catch (Exception e) {
+                    log.error(e.getMessage());
                     errors++;
                     if (e instanceof NotifiableException) {
                       // don't log exception
@@ -217,8 +229,14 @@ public class Application implements ApplicationRunner {
           new RunListPools().run(pools);
           log.info("Tip: use --pool argument to select a pool");
         }
+      } catch (BroadcastException e) {
+        try {
+          CliUtils.broadcastTxInstruction(e);
+        } catch (NotifiableException ee) {
+          log.error(e.getMessage());
+        }
       } catch (NotifiableException e) {
-        log.error("==> " + e.getMessage());
+        log.error(e.getMessage());
       } catch (Exception e) {
         log.error("", e);
       }

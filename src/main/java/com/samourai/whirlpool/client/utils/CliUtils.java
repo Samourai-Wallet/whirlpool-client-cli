@@ -3,9 +3,11 @@ package com.samourai.whirlpool.client.utils;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
 import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
+import java.io.Console;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
@@ -105,10 +107,7 @@ public class CliUtils {
     if (rpcClientService.isPresent()) {
       rpcClientService.get().broadcastTransaction(tx);
     } else {
-      final String hexTx = new String(Hex.encode(tx.bitcoinSerialize()));
-      String message =
-          "Please broadcast the following transaction and restart the script: " + hexTx;
-      throw new NotifiableException(message);
+      throw new BroadcastException(tx);
     }
   }
 
@@ -145,5 +144,24 @@ public class CliUtils {
   public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
     Set<Object> seen = ConcurrentHashMap.newKeySet();
     return t -> seen.add(keyExtractor.apply(t));
+  }
+
+  public static void waitUserAction(String message) throws NotifiableException {
+    Console console = System.console();
+    if (console != null) {
+      log.info("⣿ ACTION REQUIRED ⣿ " + message);
+      log.info("Press <ENTER> when ready:");
+      console.readLine();
+    } else {
+      throw new NotifiableException("⣿ ACTION REQUIRED ⣿ " + message);
+    }
+  }
+
+  public static void broadcastTxInstruction(BroadcastException e) throws NotifiableException {
+    String hexTx = new String(Hex.encode(e.getTx().bitcoinSerialize()));
+    String message =
+        "Please broadcast manually the following transaction (or restart with --rpc-client-url=http://user:password@yourBtcNode:port):\n"
+            + hexTx;
+    CliUtils.waitUserAction(message);
   }
 }
