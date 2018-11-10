@@ -98,7 +98,6 @@ Only allowed on testnet for testing purpose.
 ```
 --network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
 --seed-passphrase= --seed-words=
-[--rpc-client-url=http://user:password@host:port]
 --aggregate-postmix
 ```
 
