@@ -18,6 +18,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.crypto.MnemonicCode;
 import org.bouncycastle.util.encoders.Hex;
@@ -164,5 +165,9 @@ public class CliUtils {
             + hexTx
             + "\n";
     CliUtils.waitUserAction(message);
+  }
+
+  public static String sha256Hash(String str) {
+    return Sha256Hash.wrap(Sha256Hash.hash(str.getBytes())).toString();
   }
 }

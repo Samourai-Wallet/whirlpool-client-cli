@@ -36,7 +36,7 @@ public class Tx0ServiceTest extends AbstractTest {
             1,
             Sha256Hash.wrap("cc588cdcb368f894a41c372d1f905770b61ecb3fb8e5e01a97e7cedbf5e324ae"),
             Coin.valueOf(500000000));
-    Bip84Wallet depositAndPremixWallet = new Bip84Wallet(bip84w, 0, 62);
+    Bip84Wallet depositAndPremixWallet = new Bip84Wallet(bip84w, 0, null);
     int nbOutputs = 5;
     long destinationValue = 1000150;
     long tx0MinerFee = 150;

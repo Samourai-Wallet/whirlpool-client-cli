@@ -22,10 +22,13 @@ import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.HdWalletFactory;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
+import com.samourai.whirlpool.client.utils.indexHandler.FileIndexHandler;
+import com.samourai.whirlpool.client.utils.indexHandler.IIndexHandler;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.beans.Pools;
+import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Optional;
@@ -42,11 +45,13 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 /** Command-line client. */
 @EnableAutoConfiguration
 public class Application implements ApplicationRunner {
-  private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int ACCOUNT_DEPOSIT_AND_PREMIX = 0;
   private static final int ACCOUNT_POSTMIX = Integer.MAX_VALUE - 1;
   private static final int SLEEP_LOOPWALLET_ON_ERROR = 30000;
+  private static final String INDEX_DEPOSIT_AND_PREMIX = "depositAndPremix";
+  private static final String INDEX_POSTMIX = "postmix";
 
   private ApplicationArgs appArgs;
   private HdWalletFactory hdWalletFactory;
@@ -117,22 +122,40 @@ public class Application implements ApplicationRunner {
             } else {
               Optional<RpcClientService> rpcClientService = computeRpcClientService(appArgs);
               SamouraiApi samouraiApi = new SamouraiApi(config.getHttpClient());
+
+              // indexes
+              String walletIdentifier =
+                  CliUtils.sha256Hash(
+                      appArgs.getSeedPassphrase() + appArgs.getSeedWords() + params.getId());
+              FileIndexHandler fileIndexHandler =
+                  new FileIndexHandler(computeIndexFile(walletIdentifier));
+              IIndexHandler depositAndPremixIndexHandler =
+                  fileIndexHandler.getIndexHandler(INDEX_DEPOSIT_AND_PREMIX);
+              IIndexHandler postmixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_POSTMIX);
+              // --postmix-index
+              Integer postmixIndex = appArgs.getPostmixIndex();
+              if (postmixIndex != null) {
+                postmixIndexHandler.set(postmixIndex);
+              }
+
+              // init wallets
               HD_Wallet bip84w =
                   CliUtils.computeBip84Wallet(
                       appArgs.getSeedPassphrase(), appArgs.getSeedWords(), params, hdWalletFactory);
               Bip84ApiWallet depositAndPremixWallet =
-                  new Bip84ApiWallet(bip84w, ACCOUNT_DEPOSIT_AND_PREMIX, samouraiApi);
+                  new Bip84ApiWallet(
+                      bip84w,
+                      ACCOUNT_DEPOSIT_AND_PREMIX,
+                      depositAndPremixIndexHandler,
+                      samouraiApi);
               Bip84ApiWallet postmixWallet =
-                  new Bip84ApiWallet(bip84w, ACCOUNT_POSTMIX, samouraiApi);
-              Integer postmixIndex = appArgs.getPostmixIndex();
-              if (postmixIndex != null) {
-                postmixWallet.setNextAddressIndex(postmixIndex);
-              }
+                  new Bip84ApiWallet(bip84w, ACCOUNT_POSTMIX, postmixIndexHandler, samouraiApi);
               RunTx0 runTx0 =
                   new RunTx0(params, samouraiApi, rpcClientService, depositAndPremixWallet);
               RunAggregateAndConsolidateWallet runAggregateAndConsolidateWallet =
                   new RunAggregateAndConsolidateWallet(
                       params, samouraiApi, rpcClientService, depositAndPremixWallet, postmixWallet);
+
               Optional<Integer> tx0Arg = appArgs.getTx0();
               if (tx0Arg.isPresent()) {
                 // go tx0
@@ -196,7 +219,9 @@ public class Application implements ApplicationRunner {
                             + (i - errors)
                             + ", errors: "
                             + errors
-                            + ", postmixIndex: "+postmixWallet.peekNextAddressIndex()+")");
+                            + ", postmixIndex: "
+                            + postmixWallet.getIndexHandler().get()
+                            + ")");
                     if (iterationDelay > 0) {
                       Thread.sleep(iterationDelay * 1000);
                     }
@@ -214,7 +239,9 @@ public class Application implements ApplicationRunner {
                               + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
                               + "s (total errors: "
                               + errors
-                              + ", postmixIndex: "+postmixWallet.peekNextAddressIndex()+")");
+                              + ", postmixIndex: "
+                              + postmixWallet.getIndexHandler().get()
+                              + ")");
                     } else {
                       // log exception
                       log.error(
@@ -224,7 +251,9 @@ public class Application implements ApplicationRunner {
                               + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
                               + "s (total errors: "
                               + errors
-                              + ", postmixIndex: "+postmixWallet.peekNextAddressIndex()+")",
+                              + ", postmixIndex: "
+                              + postmixWallet.getIndexHandler().get()
+                              + ")",
                           e);
                     }
                     Thread.sleep(SLEEP_LOOPWALLET_ON_ERROR);
@@ -287,5 +316,24 @@ public class Application implements ApplicationRunner {
       throw new NotifiableException("Unable to connect to rpc-client-url");
     }
     return Optional.of(rpcClientService);
+  }
+
+  private File computeIndexFile(String walletIdentifier) throws NotifiableException {
+    String path = "whirlpool-cli-state-" + walletIdentifier + ".json";
+    if (log.isDebugEnabled()) {
+      log.debug("indexFile: " + path);
+    }
+    File f = new File(path);
+    if (!f.exists()) {
+      if (log.isDebugEnabled()) {
+        log.debug("Creating file " + path);
+      }
+      try {
+        f.createNewFile();
+      } catch (Exception e) {
+        throw new NotifiableException("Unable to write file " + path);
+      }
+    }
+    return f;
   }
 }
