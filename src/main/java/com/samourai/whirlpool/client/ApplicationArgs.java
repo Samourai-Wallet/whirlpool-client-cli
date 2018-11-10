@@ -30,6 +30,7 @@ public class ApplicationArgs {
   private static final String ARG_ITERATION_DELAY = "iteration-delay";
   private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
+  private static final String ARG_POSTMIX_INDEX = "postmix-index";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
   private static final String ARG_RPC_CLIENT_URL = "rpc-client-url";
   public static final String USAGE =
@@ -130,6 +131,20 @@ public class ApplicationArgs {
       throw new IllegalArgumentException("Numeric value expected for option: " + ARG_PAYNYM_INDEX);
     }
     return paynymIndex;
+  }
+
+  public Integer getPostmixIndex() {
+    Integer numeric = null;
+    try {
+      String str = optionalOption(ARG_POSTMIX_INDEX);
+      if (str != null) {
+        numeric = Integer.parseInt(str);
+        numeric = Math.max(0, numeric);
+      }
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_POSTMIX_INDEX);
+    }
+    return numeric;
   }
 
   public int getMixs() {

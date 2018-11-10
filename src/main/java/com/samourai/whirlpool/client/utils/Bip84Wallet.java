@@ -51,4 +51,8 @@ public class Bip84Wallet {
   private HD_Address getAddressBip84(int account, int chain, int index) {
     return bip84w.getAccountAt(account).getChain(chain).getAddressAt(index);
   }
+
+  public void setNextAddressIndex(int nextAddressIndex) {
+    this.nextAddressIndex = nextAddressIndex;
+  }
 }

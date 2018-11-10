@@ -40,7 +40,7 @@ You need a wallet holding funds to mix. The script will run the following automa
 ```
 --network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
 --seed-passphrase= --seed-words=
-[--clients=1] [--iteration-delay=0] [--client-delay=0] [--auto-aggregate-postmix]
+[--clients=1] [--iteration-delay=0] [--client-delay=0] [--auto-aggregate-postmix] [--postmix-index=]
 ```
 
 Example:
@@ -52,6 +52,7 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 - iteration-delay: delay (in seconds) to wait between mixs
 - client-delay: delay (in seconds) between each client connexion
 - auto-aggregate-postmix: enable automatically post-mix wallet agregation to refill premix when empty
+- postmix-index: set postmix-index instead of reading it from API
 
 ## Expert usage
 
