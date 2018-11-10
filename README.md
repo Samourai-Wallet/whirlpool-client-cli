@@ -92,13 +92,13 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 - seed-passphrase & seed-words: wallet seed
 - tx0: number of pre-mix utxo to generate
 
-### Aggregate postmix
+### Aggregate postmix / move funds
 Move all postmix funds back to premix wallet and consolidate to a single UTXO.
 Only allowed on testnet for testing purpose.
 ```
 --network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
 --seed-passphrase= --seed-words=
---aggregate-postmix
+--aggregate-postmix[=address]
 ```
 
 Example:
@@ -106,6 +106,7 @@ Example:
 java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all" --aggregate-postmix --rpc-client-url=http://user:password@host:port
 ```
 - seed-passphrase & seed-words: wallet seed
+- aggregate-postmix: move funds back to premix-wallet. Or --aggregate-postmix=address to move funds to a specific address.
 
 ## Build instructions
 Build with maven:
