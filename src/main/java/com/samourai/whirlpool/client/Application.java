@@ -210,7 +210,7 @@ public class Application implements ApplicationRunner {
                               + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
                               + "s (total errors: "
                               + errors
-                              + ")");
+                              + "): " + e.getMessage());
                     } else {
                       // log exception
                       log.error(
