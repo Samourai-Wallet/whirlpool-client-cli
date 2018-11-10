@@ -161,7 +161,8 @@ public class CliUtils {
     String hexTx = new String(Hex.encode(e.getTx().bitcoinSerialize()));
     String message =
         "Please broadcast manually the following transaction (or restart with --rpc-client-url=http://user:password@yourBtcNode:port):\n"
-            + hexTx + "\n";
+            + hexTx
+            + "\n";
     CliUtils.waitUserAction(message);
   }
 }

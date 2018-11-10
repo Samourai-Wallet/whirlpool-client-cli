@@ -35,9 +35,8 @@ public class RunAggregateAndConsolidateWallet {
     // go aggregate postmix to premix
     log.info(" • Aggregating postmix wallet to premix...");
     boolean success =
-        new RunAggregateWallet(
-                params, samouraiApi, rpcClientService, postmixWallet, depositAndPremixWallet)
-            .run();
+        new RunAggregateWallet(params, samouraiApi, rpcClientService, postmixWallet)
+            .run(depositAndPremixWallet);
     if (!success) {
       return false;
     }
@@ -48,9 +47,8 @@ public class RunAggregateAndConsolidateWallet {
 
     // consolidate premix
     log.info(" • Consolidating premix wallet...");
-    new RunAggregateWallet(
-            params, samouraiApi, rpcClientService, depositAndPremixWallet, depositAndPremixWallet)
-        .run();
+    new RunAggregateWallet(params, samouraiApi, rpcClientService, depositAndPremixWallet)
+        .run(depositAndPremixWallet);
     return true;
   }
 }

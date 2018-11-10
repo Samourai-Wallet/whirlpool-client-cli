@@ -12,6 +12,7 @@ import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.RunAggregateAndConsolidateWallet;
+import com.samourai.whirlpool.client.run.RunAggregateWallet;
 import com.samourai.whirlpool.client.run.RunListPools;
 import com.samourai.whirlpool.client.run.RunLoopWallet;
 import com.samourai.whirlpool.client.run.RunMixUtxo;
@@ -140,6 +141,15 @@ public class Application implements ApplicationRunner {
 
                 // go aggregate and consolidate
                 runAggregateAndConsolidateWallet.run();
+
+                // should we move to a specific address?
+                String toAddress = appArgs.getAggregatePostmix();
+                if (toAddress != null) {
+                  log.info(" • Moving funds to: " + toAddress);
+                  new RunAggregateWallet(
+                          params, samouraiApi, rpcClientService, depositAndPremixWallet)
+                      .run(toAddress);
+                }
               } else {
                 // go loop wallet
                 int iterationDelay = appArgs.getIterationDelay();
@@ -188,8 +198,6 @@ public class Application implements ApplicationRunner {
                     }
                   } catch (BroadcastException e) {
                     CliUtils.broadcastTxInstruction(e);
-                  } catch (NotifiableException e) {
-                    throw e;
                   } catch (Exception e) {
                     log.error(e.getMessage());
                     errors++;

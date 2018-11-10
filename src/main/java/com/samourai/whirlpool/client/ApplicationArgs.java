@@ -208,6 +208,10 @@ public class ApplicationArgs {
     return args.containsOption(ARG_AGGREGATE_POSTMIX);
   }
 
+  public String getAggregatePostmix() {
+    return optionalOption(ARG_AGGREGATE_POSTMIX);
+  }
+
   public boolean isAutoAggregatePostmix() {
     return args.containsOption(ARG_AUTO_AGGREGATE_POSTMIX);
   }
