@@ -22,7 +22,7 @@ public class Bip84Wallet {
   }
 
   public HD_Address getNextAddress() {
-    int nextAddressIndex = getNextAddressIndex();
+    int nextAddressIndex = popNextAddressIndex();
     return getAddressAt(CHAIN, nextAddressIndex);
   }
 
@@ -42,10 +42,14 @@ public class Bip84Wallet {
     return zpub;
   }
 
-  private int getNextAddressIndex() {
+  private int popNextAddressIndex() {
     // increment on each call
     nextAddressIndex++;
     return nextAddressIndex - 1;
+  }
+
+  public int peekNextAddressIndex() {
+    return nextAddressIndex;
   }
 
   private HD_Address getAddressBip84(int account, int chain, int index) {

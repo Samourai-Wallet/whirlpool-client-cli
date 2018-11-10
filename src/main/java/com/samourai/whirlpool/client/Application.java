@@ -196,7 +196,7 @@ public class Application implements ApplicationRunner {
                             + (i - errors)
                             + ", errors: "
                             + errors
-                            + ")");
+                            + ", postmixIndex: "+postmixWallet.peekNextAddressIndex()+")");
                     if (iterationDelay > 0) {
                       Thread.sleep(iterationDelay * 1000);
                     }
@@ -214,7 +214,7 @@ public class Application implements ApplicationRunner {
                               + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
                               + "s (total errors: "
                               + errors
-                              + ")");
+                              + ", postmixIndex: "+postmixWallet.peekNextAddressIndex()+")");
                     } else {
                       // log exception
                       log.error(
@@ -224,7 +224,7 @@ public class Application implements ApplicationRunner {
                               + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
                               + "s (total errors: "
                               + errors
-                              + ")",
+                              + ", postmixIndex: "+postmixWallet.peekNextAddressIndex()+")",
                           e);
                     }
                     Thread.sleep(SLEEP_LOOPWALLET_ON_ERROR);
