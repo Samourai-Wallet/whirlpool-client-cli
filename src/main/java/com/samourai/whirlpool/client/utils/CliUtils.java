@@ -32,7 +32,7 @@ public class CliUtils {
       "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db";
   private static final long TX_BYTES_PER_INPUT = 70;
   private static final long TX_BYTES_PER_OUTPUT = 31;
-  private static final long MIN_RELAY_FEE = 100;
+  private static final long MIN_RELAY_FEE = 178;
 
   public static double satToBtc(long sat) {
     return sat / 100000000.0;
