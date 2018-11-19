@@ -72,7 +72,10 @@ public class Application implements ApplicationRunner {
     }
 
     log.info("------------ whirlpool-client ------------");
-    log.info("Running whirlpool-client {}", Arrays.toString(args.getSourceArgs()));
+    log.info(
+        "Running whirlpool-client {} on java {}",
+        Arrays.toString(args.getSourceArgs()),
+        System.getProperty("java.version"));
     try {
       NetworkParameters params = appArgs.getNetworkParameters();
       new Context(params); // initialize bitcoinj context
