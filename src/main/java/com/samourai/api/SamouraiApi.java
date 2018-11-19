@@ -17,6 +17,7 @@ public class SamouraiApi {
   private static final String URL_BACKEND = "https://api.samouraiwallet.com/test";
   private static final String URL_UNSPENT = "/v2/unspent?active=";
   private static final String URL_MULTIADDR = "/v2/multiaddr?active=";
+  private static final String URL_INIT_BIP84 = "/v2/multiaddr?bip84=";
   private static final String URL_FEES = "/v2/fees";
   private static final int MAX_FEE_PER_BYTE = 500;
   private static final int FAILOVER_FEE_PER_BYTE = 400;
@@ -71,6 +72,19 @@ public class SamouraiApi {
               + address.change_index);
     }
     return address;
+  }
+
+  public List<MultiAddrResponse.Address> initBip84(String zpub) throws Exception {
+    String url = URL_BACKEND + URL_INIT_BIP84 + zpub;
+    if (log.isDebugEnabled()) {
+      log.debug("initBip84: " + url);
+    }
+    MultiAddrResponse multiAddrResponse = httpClient.parseJson(url, MultiAddrResponse.class);
+    List<MultiAddrResponse.Address> addresses = new ArrayList<>();
+    if (multiAddrResponse.addresses != null) {
+      addresses = Arrays.asList(multiAddrResponse.addresses);
+    }
+    return addresses;
   }
 
   public int fetchFees() {

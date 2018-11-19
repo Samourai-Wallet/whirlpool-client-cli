@@ -156,6 +156,9 @@ public class Application implements ApplicationRunner {
                   new RunAggregateAndConsolidateWallet(
                       params, samouraiApi, rpcClientService, depositAndPremixWallet, postmixWallet);
 
+              // init bip84 wallets at first run
+              initBip84(depositAndPremixWallet, postmixWallet, fileIndexHandler, samouraiApi);
+
               Optional<Integer> tx0Arg = appArgs.getTx0();
               if (tx0Arg.isPresent()) {
                 // go tx0
@@ -335,5 +338,21 @@ public class Application implements ApplicationRunner {
       }
     }
     return f;
+  }
+
+  private void initBip84(Bip84ApiWallet depositAndPremixWallet, Bip84ApiWallet postmixWallet, FileIndexHandler fileIndexHandler, SamouraiApi samouraiApi) throws Exception {
+    if (fileIndexHandler.get(FileIndexHandler.BIP84_INITIALIZED) != 1) {
+      log.info(" • Initializing bip84 wallet: depositAndPremix");
+      samouraiApi.initBip84(depositAndPremixWallet.getZpub());
+
+      log.info(" • Initializing bip84 wallet: postmix");
+      samouraiApi.initBip84(postmixWallet.getZpub());
+
+      fileIndexHandler.set(FileIndexHandler.BIP84_INITIALIZED, 1);
+    } else {
+      if (log.isDebugEnabled()) {
+        log.debug("bip84 wallets already initialized");
+      }
+    }
   }
 }

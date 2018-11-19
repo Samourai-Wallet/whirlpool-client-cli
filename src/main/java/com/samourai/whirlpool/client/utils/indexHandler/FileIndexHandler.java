@@ -15,6 +15,8 @@ public class FileIndexHandler {
   private ObjectMapper mapper = new ObjectMapper();
   private Map<String, Integer> indexes = new HashMap<>();
 
+  public static final String BIP84_INITIALIZED = "bip84init";
+
   public FileIndexHandler(File file) {
     this.file = file;
     load();
