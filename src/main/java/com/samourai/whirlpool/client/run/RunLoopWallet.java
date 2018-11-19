@@ -19,8 +19,7 @@ import org.slf4j.LoggerFactory;
 public class RunLoopWallet {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int OUTPUTS_PER_TX0 = 10;
-  private static final Bech32UtilGeneric bech32Util = Bech32UtilGeneric.getInstance();
+  private static final int OUTPUTS_PER_TX0 = 5;
 
   private WhirlpoolClientConfig config;
   private RunTx0 runTx0;
