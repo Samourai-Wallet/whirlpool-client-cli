@@ -39,15 +39,13 @@ You need a wallet holding funds to mix. The script will run the following automa
 
 ```
 --network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
---seed-passphrase= --seed-words=
 [--clients=1] [--iteration-delay=0] [--client-delay=0] [--auto-aggregate-postmix] [--postmix-index=]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all" --rpc-client-url=http://user:password@host:port
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --rpc-client-url=http://user:password@host:port
 ```
-- seed-passphrase & seed-words: wallet seed
 - clients: number of simultaneous clients to connect
 - iteration-delay: delay (in seconds) to wait between mixs
 - client-delay: delay (in seconds) between each client connexion
@@ -61,18 +59,17 @@ You need a valid pre-mix utxo (output of a valid tx0) to mix.
 ```
 --network={main,test} --server=host:port --pool=
 --utxo= --utxo-key= --utxo-balance=
---seed-passphrase= --seed-words= [--paynym-index=0]
+[--paynym-index=0]
 [--mixs=1]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --seed-passphrase=foo --seed-words="all all all all all all all all all all all all" --paynym-index=5
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --paynym-index=5
 ```
 - utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)
 - utxo-key: ECKey for pre-mix input
 - utxo-balance: pre-mix input balance (in satoshis). Whole utxo-balance balance will be spent.
-- seed-passphrase & seed-words: wallet seed from which to derive the paynym for computing post-mix address to receive the funds
 - paynym-index: paynym index to use for computing post-mix address to receive the funds
 - mixs: (1 to N) number of mixes to complete. Client will keep running until completing this number of mixes.
 
@@ -81,16 +78,14 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 You need a wallet holding funds to split.
 ```
 --network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
---seed-passphrase= --seed-words=
 --tx0=
 [--rpc-client-url=http://user:password@host:port]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all" --tx0=10 --rpc-client-url=http://user:password@host:port
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --tx0=10 --rpc-client-url=http://user:password@host:port
 ```
-- seed-passphrase & seed-words: wallet seed
 - tx0: number of pre-mix utxo to generate
 
 ### Aggregate postmix / move funds
@@ -98,15 +93,13 @@ Move all postmix funds back to premix wallet and consolidate to a single UTXO.
 Only allowed on testnet for testing purpose.
 ```
 --network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
---seed-passphrase= --seed-words=
 --aggregate-postmix[=address]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --seed-passphrase=foo --seed-words="all all all all all all all all all all all all" --aggregate-postmix --rpc-client-url=http://user:password@host:port
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --aggregate-postmix --rpc-client-url=http://user:password@host:port
 ```
-- seed-passphrase & seed-words: wallet seed
 - aggregate-postmix: move funds back to premix-wallet. Or --aggregate-postmix=address to move funds to a specific address.
 
 ## Build instructions

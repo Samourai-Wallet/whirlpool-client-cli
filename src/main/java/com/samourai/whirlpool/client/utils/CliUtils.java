@@ -158,6 +158,20 @@ public class CliUtils {
     }
   }
 
+  public static String readUserInput(String message, boolean secret) throws NotifiableException {
+    Console console = System.console();
+    if (console != null) {
+      console.printf("⣿ INPUT REQUIRED ⣿ " + message + "?>");
+      String line = secret ? new String(console.readPassword()).trim() : console.readLine().trim();
+      if (line.isEmpty()) {
+        return null;
+      }
+      return line;
+    } else {
+      throw new NotifiableException("⣿ INPUT REQUIRED ⣿ " + message + "?>");
+    }
+  }
+
   public static void broadcastTxInstruction(BroadcastException e) throws NotifiableException {
     String hexTx = new String(Hex.encode(e.getTx().bitcoinSerialize()));
     String message =

@@ -88,7 +88,7 @@ public class Application implements ApplicationRunner {
 
       // fetch pools
       try {
-        log.info(" • Retrieving pools...");
+        log.info(" • Fetching pools...");
         Pools pools = whirlpoolClient.fetchPools();
 
         String poolId = appArgs.getPoolId();
@@ -99,7 +99,6 @@ public class Application implements ApplicationRunner {
             // pool found
             String seedWords = appArgs.getSeedWords();
             String seedPassphrase = appArgs.getSeedPassphrase();
-            int paynymIndex = appArgs.getPaynymIndex();
 
             if (appArgs.isUtxo()) {
               // go whirlpool with UTXO
@@ -107,6 +106,7 @@ public class Application implements ApplicationRunner {
               long utxoIdx = appArgs.getUtxoIdx();
               String utxoKey = appArgs.getUtxoKey();
               long utxoBalance = appArgs.getUtxoBalance();
+              int paynymIndex = appArgs.getPaynymIndex();
               final int mixs = appArgs.getMixs();
 
               new RunMixUtxo()
@@ -128,8 +128,7 @@ public class Application implements ApplicationRunner {
 
               // indexes
               String walletIdentifier =
-                  CliUtils.sha256Hash(
-                      appArgs.getSeedPassphrase() + appArgs.getSeedWords() + params.getId());
+                  CliUtils.sha256Hash(seedPassphrase + seedWords + params.getId());
               FileIndexHandler fileIndexHandler =
                   new FileIndexHandler(computeIndexFile(walletIdentifier));
               IIndexHandler depositAndPremixIndexHandler =
@@ -143,8 +142,7 @@ public class Application implements ApplicationRunner {
 
               // init wallets
               HD_Wallet bip84w =
-                  CliUtils.computeBip84Wallet(
-                      appArgs.getSeedPassphrase(), appArgs.getSeedWords(), params, hdWalletFactory);
+                  CliUtils.computeBip84Wallet(seedPassphrase, seedWords, params, hdWalletFactory);
               Bip84ApiWallet depositAndPremixWallet =
                   new Bip84ApiWallet(
                       bip84w,

@@ -1,5 +1,7 @@
 package com.samourai.whirlpool.client;
 
+import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.utils.CliUtils;
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import org.bitcoinj.core.NetworkParameters;
@@ -108,14 +110,20 @@ public class ApplicationArgs {
     return utxoBalance;
   }
 
-  public String getSeedWords() {
-    String seedWords = requireOption(ARG_SEED_WORDS);
+  public String getSeedWords() throws NotifiableException {
+    String seedWords = optionalOption(ARG_SEED_WORDS);
+    if (seedWords == null) {
+      seedWords = CliUtils.readUserInput(ARG_SEED_WORDS, true);
+    }
     Assert.notNull(seedWords, "seedWords are null");
     return seedWords;
   }
 
-  public String getSeedPassphrase() {
-    String seedPassphrase = requireOption(ARG_SEED_PASSPHRASE);
+  public String getSeedPassphrase() throws NotifiableException {
+    String seedPassphrase = optionalOption(ARG_SEED_PASSPHRASE);
+    if (seedPassphrase == null) {
+      seedPassphrase = CliUtils.readUserInput(ARG_SEED_PASSPHRASE, true);
+    }
     Assert.notNull(seedPassphrase, "seedPassphrase is null");
     return seedPassphrase;
   }
