@@ -36,11 +36,7 @@ public class Bip84Wallet {
   }
 
   public String getZpub() {
-    String zpub = bip84w.getAccountAt(accountIndex).zpubstr();
-    if (log.isDebugEnabled()) {
-      log.debug("zpub for account #" + accountIndex + ": " + zpub);
-    }
-    return zpub;
+    return bip84w.getAccountAt(accountIndex).zpubstr();
   }
 
   private HD_Address getAddressBip84(int account, int chain, int index) {
@@ -49,5 +45,9 @@ public class Bip84Wallet {
 
   public IIndexHandler getIndexHandler() {
     return indexHandler;
+  }
+
+  public int getAccountIndex() {
+    return accountIndex;
   }
 }
