@@ -8,7 +8,7 @@ import com.samourai.rpc.client.RpcClientService;
 import com.samourai.stomp.client.IStompClient;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.hd.HD_Wallet;
-import com.samourai.wallet.hd.HD_WalletFactoryJava;
+import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.exception.NotifiableException;

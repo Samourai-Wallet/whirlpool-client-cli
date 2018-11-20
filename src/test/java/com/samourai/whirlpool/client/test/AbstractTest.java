@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.client.test;
 
-import com.samourai.wallet.hd.HD_WalletFactoryJava;
+import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.TestNet3Params;

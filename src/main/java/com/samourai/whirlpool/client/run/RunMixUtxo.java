@@ -1,9 +1,9 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.wallet.bip47.rpc.BIP47Wallet;
-import com.samourai.wallet.bip47.rpc.impl.Bip47Util;
+import com.samourai.wallet.bip47.rpc.java.Bip47UtilJava;
 import com.samourai.wallet.hd.HD_Wallet;
-import com.samourai.wallet.hd.HD_WalletFactoryJava;
+import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.whirlpool.client.CliListener;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.mix.MixParams;
@@ -50,7 +50,7 @@ public class RunMixUtxo {
     UtxoWithBalance utxo = new UtxoWithBalance(utxoHash, utxoIdx, utxoBalance);
     IPremixHandler premixHandler = new PremixHandler(utxo, ecKey);
     IPostmixHandler postmixHandler =
-        new PostmixHandler(bip47w, paynymIndex, Bip47Util.getInstance());
+        new PostmixHandler(bip47w, paynymIndex, Bip47UtilJava.getInstance());
     MixParams mixParams =
         new MixParams(pool.getPoolId(), pool.getDenomination(), premixHandler, postmixHandler);
     CliListener listener = new CliListener();
