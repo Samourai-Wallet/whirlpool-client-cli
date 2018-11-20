@@ -8,6 +8,7 @@ import com.samourai.rpc.client.RpcClientService;
 import com.samourai.stomp.client.IStompClient;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.wallet.hd.HD_WalletFactoryJava;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -20,7 +21,6 @@ import com.samourai.whirlpool.client.run.RunMixWallet;
 import com.samourai.whirlpool.client.run.RunTx0;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
-import com.samourai.whirlpool.client.utils.HdWalletFactory;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.utils.indexHandler.FileIndexHandler;
 import com.samourai.whirlpool.client.utils.indexHandler.IIndexHandler;
@@ -54,7 +54,7 @@ public class Application implements ApplicationRunner {
   private static final String INDEX_POSTMIX = "postmix";
 
   private ApplicationArgs appArgs;
-  private HdWalletFactory hdWalletFactory;
+  private HD_WalletFactoryJava hdWalletFactory = HD_WalletFactoryJava.getInstance();
 
   public static void main(String... args) {
     SpringApplication.run(Application.class, args);
@@ -79,7 +79,6 @@ public class Application implements ApplicationRunner {
     try {
       NetworkParameters params = appArgs.getNetworkParameters();
       new Context(params); // initialize bitcoinj context
-      hdWalletFactory = new HdWalletFactory(params, CliUtils.computeMnemonicCode());
 
       // instanciate client
       String server = appArgs.getServer();
@@ -99,6 +98,7 @@ public class Application implements ApplicationRunner {
             // pool found
             String seedWords = appArgs.getSeedWords();
             String seedPassphrase = appArgs.getSeedPassphrase();
+            HD_Wallet bip84w = hdWalletFactory.restoreWallet(seedWords, seedPassphrase, 1, params);
 
             if (appArgs.isUtxo()) {
               // go whirlpool with UTXO
@@ -118,8 +118,7 @@ public class Application implements ApplicationRunner {
                       utxoIdx,
                       utxoKey,
                       utxoBalance,
-                      seedWords,
-                      seedPassphrase,
+                      bip84w,
                       paynymIndex,
                       mixs);
             } else {
@@ -141,8 +140,6 @@ public class Application implements ApplicationRunner {
               }
 
               // init wallets
-              HD_Wallet bip84w =
-                  CliUtils.computeBip84Wallet(seedPassphrase, seedWords, params, hdWalletFactory);
               Bip84ApiWallet depositAndPremixWallet =
                   new Bip84ApiWallet(
                       bip84w,

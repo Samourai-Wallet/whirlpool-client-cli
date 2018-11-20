@@ -4,7 +4,7 @@ import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.whirlpool.client.test.AbstractTest;
 import com.samourai.whirlpool.client.utils.Bip84Wallet;
-import com.samourai.whirlpool.client.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.MemoryIndexHandler;
 import java.lang.invoke.MethodHandles;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Sha256Hash;
@@ -28,7 +28,7 @@ public class Tx0ServiceTest extends AbstractTest {
     String seedWords =
         "recipe obtain chunk amused split second disorder budget okay verb border rifle";
     String passphrase = "whirlpool";
-    HD_Wallet bip84w = CliUtils.computeBip84Wallet(passphrase, seedWords, params, hdWalletFactory);
+    HD_Wallet bip84w = hdWalletFactory.restoreWallet(seedWords, passphrase, 1, params);
     HD_Address spendFromAddress = bip84w.getAccountAt(0).getChain(0).getAddressAt(61);
     TransactionOutPoint spendFromOutpoint =
         new TransactionOutPoint(
@@ -36,7 +36,7 @@ public class Tx0ServiceTest extends AbstractTest {
             1,
             Sha256Hash.wrap("cc588cdcb368f894a41c372d1f905770b61ecb3fb8e5e01a97e7cedbf5e324ae"),
             Coin.valueOf(500000000));
-    Bip84Wallet depositAndPremixWallet = new Bip84Wallet(bip84w, 0, null);
+    Bip84Wallet depositAndPremixWallet = new Bip84Wallet(bip84w, 0, new MemoryIndexHandler());
     int nbOutputs = 5;
     long destinationValue = 1000150;
     long tx0MinerFee = 150;

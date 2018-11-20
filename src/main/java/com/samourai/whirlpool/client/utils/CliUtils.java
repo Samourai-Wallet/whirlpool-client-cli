@@ -2,13 +2,11 @@ package com.samourai.whirlpool.client.utils;
 
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
-import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.io.Console;
-import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
@@ -17,10 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
-import org.bitcoinj.crypto.MnemonicCode;
 import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,24 +24,12 @@ import org.slf4j.LoggerFactory;
 public class CliUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static final String BIP39_ENGLISH_SHA256 =
-      "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db";
   private static final long TX_BYTES_PER_INPUT = 70;
   private static final long TX_BYTES_PER_OUTPUT = 31;
   private static final long MIN_RELAY_FEE = 178;
 
   public static double satToBtc(long sat) {
     return sat / 100000000.0;
-  }
-
-  public static MnemonicCode computeMnemonicCode() {
-    InputStream wis = CliUtils.class.getResourceAsStream("/en_US.txt");
-    try {
-      MnemonicCode mc = new MnemonicCode(wis, CliUtils.BIP39_ENGLISH_SHA256);
-      return mc;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
   public static void printUtxos(List<UnspentResponse.UnspentOutput> utxos) {
@@ -86,21 +70,6 @@ public class CliUtils {
             .filter(distinctByKey(UnspentResponse.UnspentOutput::getTxHash))
             .collect(Collectors.toList());
     return mustMixUtxos;
-  }
-
-  public static HD_Wallet computeBip84Wallet(
-      String passphrase,
-      String seedWords,
-      NetworkParameters params,
-      HdWalletFactory hdWalletFactory)
-      throws Exception {
-    MnemonicCode mc = CliUtils.computeMnemonicCode();
-    HD_Wallet bip44w = hdWalletFactory.restoreWallet(seedWords, passphrase, 1);
-    // BIP47Wallet bip47w = new BIP47Wallet(47, mc, params, Hex.decode(bip44w.getSeedHex()),
-    // bip44w.getPassphrase(), 1);
-    HD_Wallet bip84w =
-        new HD_Wallet(84, mc, params, Hex.decode(bip44w.getSeedHex()), bip44w.getPassphrase(), 1);
-    return bip84w;
   }
 
   public static void broadcastOrNotify(Optional<RpcClientService> rpcClientService, Transaction tx)

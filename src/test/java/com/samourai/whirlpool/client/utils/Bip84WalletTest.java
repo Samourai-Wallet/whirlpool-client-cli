@@ -19,8 +19,7 @@ public class Bip84WalletTest extends AbstractTest {
   public void setup() throws Exception {
     super.setup();
 
-    HD_Wallet bip84w =
-        CliUtils.computeBip84Wallet(SEED_PASSPHRASE, SEED_WORDS, params, hdWalletFactory);
+    HD_Wallet bip84w = hdWalletFactory.restoreWallet(SEED_WORDS, SEED_PASSPHRASE, 1, params);
     bip84Wallet = new Bip84Wallet(bip84w, Integer.MAX_VALUE, null);
   }
 

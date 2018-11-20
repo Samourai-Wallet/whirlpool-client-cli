@@ -4,7 +4,6 @@ import com.samourai.whirlpool.client.Application;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.ApplicationArguments;
@@ -14,7 +13,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Ignore
 public class ApplicationTest extends AbstractApplicationTest {
   protected static final String SERVER = "127.0.0.1:8080";
 
@@ -37,7 +35,7 @@ public class ApplicationTest extends AbstractApplicationTest {
 
     new Application().run(appArgs);
 
-    Assert.assertTrue(getOut().contains(" • Retrieving pools..."));
+    Assert.assertTrue(getOut().contains(" • Fetching pools..."));
     Assert.assertTrue(getErr().isEmpty());
   }
 
