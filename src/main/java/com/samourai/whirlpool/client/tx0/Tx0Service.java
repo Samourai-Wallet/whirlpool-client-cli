@@ -6,8 +6,8 @@ import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.utils.Bip84Wallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
+import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.lang.invoke.MethodHandles;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,7 +45,8 @@ public class Tx0Service {
       long destinationValue,
       long feeSatPerByte,
       String xpubSamouraiFees,
-      long samouraiFees)
+      long samouraiFees,
+      String feePaymentCode)
       throws Exception {
     int samouraiFeeIdx = 0; // TODO address index, in prod get index from Samourai API
 
@@ -141,9 +142,12 @@ public class Tx0Service {
     }
 
     // add OP_RETURN output
-    byte[] idxBuf = ByteBuffer.allocate(4).putInt(samouraiFeeIdx).array();
+    byte[] input0PrivKey = spendFromAddress.getECKey().getPrivKeyBytes();
+    byte[] opReturnValue =
+        WhirlpoolProtocol.getWhirlpoolFee()
+            .encode(samouraiFeeIdx, feePaymentCode, params, input0PrivKey, spendFromOutpoint);
     Script op_returnOutputScript =
-        new ScriptBuilder().op(ScriptOpCodes.OP_RETURN).data(idxBuf).build();
+        new ScriptBuilder().op(ScriptOpCodes.OP_RETURN).data(opReturnValue).build();
     TransactionOutput txFeeOutput =
         new TransactionOutput(params, null, Coin.valueOf(0L), op_returnOutputScript.getProgram());
     outputs.add(txFeeOutput);

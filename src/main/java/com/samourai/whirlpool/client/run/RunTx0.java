@@ -43,7 +43,7 @@ public class RunTx0 {
     this.depositAndPremixWallet = depositAndPremixWallet;
   }
 
-  public Tx0 runTx0(Pool pool, int nbOutputs) throws Exception {
+  public Tx0 runTx0(Pool pool, int nbOutputs, String feePaymentCode) throws Exception {
     List<UnspentResponse.UnspentOutput> utxos = depositAndPremixWallet.fetchUtxos();
     if (utxos.isEmpty()) {
       throw new NotifiableException("No utxo found from premix.");
@@ -74,11 +74,15 @@ public class RunTx0 {
     }
 
     UnspentResponse.UnspentOutput tx0SpendFrom = tx0SpendFroms.get(0);
-    Tx0 tx0 = runTx0(tx0SpendFrom, destinationValue, nbOutputs);
+    Tx0 tx0 = runTx0(tx0SpendFrom, destinationValue, nbOutputs, feePaymentCode);
     return tx0;
   }
 
-  private Tx0 runTx0(UnspentResponse.UnspentOutput spendFrom, long destinationValue, int nbOutputs)
+  private Tx0 runTx0(
+      UnspentResponse.UnspentOutput spendFrom,
+      long destinationValue,
+      int nbOutputs,
+      String feePaymentCode)
       throws Exception {
 
     // spend from
@@ -97,7 +101,8 @@ public class RunTx0 {
                 destinationValue,
                 feeSatPerByte,
                 XPUB_SAMOURAI_FEES,
-                SAMOURAI_FEES);
+                SAMOURAI_FEES,
+                feePaymentCode);
 
     log.info("Tx0:");
     log.info(tx0.getTx().toString());

@@ -160,7 +160,7 @@ public class Application implements ApplicationRunner {
               Optional<Integer> tx0Arg = appArgs.getTx0();
               if (tx0Arg.isPresent()) {
                 // go tx0
-                runTx0.runTx0(pool, tx0Arg.get());
+                runTx0.runTx0(pool, tx0Arg.get(), pools.getFeePaymentCode());
               } else if (appArgs.isAggregatePostmix()) {
                 if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
                   throw new NotifiableException(
@@ -206,7 +206,7 @@ public class Application implements ApplicationRunner {
                 int errors = 0;
                 while (true) {
                   try {
-                    boolean success = runLoopWallet.run(pool, clients);
+                    boolean success = runLoopWallet.run(pool, clients, pools.getFeePaymentCode());
                     if (!success) {
                       throw new NotifiableException("Iteration failed");
                     }

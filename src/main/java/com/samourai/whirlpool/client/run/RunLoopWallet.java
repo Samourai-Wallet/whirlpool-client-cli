@@ -40,7 +40,7 @@ public class RunLoopWallet {
     this.runAggregateAndConsolidateWallet = runAggregateAndConsolidateWallet;
   }
 
-  public boolean run(Pool pool, int nbClients) throws Exception {
+  public boolean run(Pool pool, int nbClients, String feePaymentCode) throws Exception {
     // fetch unspent utx0s
     log.info(" • Fetching unspent outputs from premix...");
     List<UnspentResponse.UnspentOutput> utxos =
@@ -69,23 +69,24 @@ public class RunLoopWallet {
       // not enough mustMixUtxos => Tx0
       for (int i = 0; i < missingMustMixUtxos; i++) {
         log.info(" • Tx0 (" + (i + 1) + "/" + missingMustMixUtxos + ")...");
-        doRunTx0(pool, missingMustMixUtxos);
+        doRunTx0(pool, missingMustMixUtxos, feePaymentCode);
 
         log.info("Refreshing utxos...");
         Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
       }
 
       // recursive
-      return run(pool, nbClients);
+      return run(pool, nbClients, feePaymentCode);
     } else {
       log.info(" • New mix...");
       return runMixWallet.runMix(mustMixUtxosUnique, pool);
     }
   }
 
-  private void doRunTx0(Pool pool, int missingMustMixUtxos) throws Exception {
+  private void doRunTx0(Pool pool, int missingMustMixUtxos, String feePaymentCode)
+      throws Exception {
     try {
-      runTx0.runTx0(pool, OUTPUTS_PER_TX0);
+      runTx0.runTx0(pool, OUTPUTS_PER_TX0, feePaymentCode);
     } catch (BroadcastException e) {
       throw e;
     } catch (Exception e) {
@@ -96,7 +97,7 @@ public class RunLoopWallet {
           missingMustMixUtxos * (OUTPUTS_PER_TX0 * pool.getDenomination() + RunTx0.SAMOURAI_FEES);
       autoRefill(missingBalance);
 
-      doRunTx0(pool, missingMustMixUtxos);
+      doRunTx0(pool, missingMustMixUtxos, feePaymentCode);
     }
   }
 
