@@ -52,6 +52,7 @@ public class Application implements ApplicationRunner {
   private static final int SLEEP_LOOPWALLET_ON_ERROR = 30000;
   private static final String INDEX_DEPOSIT_AND_PREMIX = "depositAndPremix";
   private static final String INDEX_POSTMIX = "postmix";
+  private static final String INDEX_FEE = "fee";
 
   private ApplicationArgs appArgs;
   private HD_WalletFactoryJava hdWalletFactory = HD_WalletFactoryJava.getInstance();
@@ -133,6 +134,7 @@ public class Application implements ApplicationRunner {
               IIndexHandler depositAndPremixIndexHandler =
                   fileIndexHandler.getIndexHandler(INDEX_DEPOSIT_AND_PREMIX);
               IIndexHandler postmixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_POSTMIX);
+              IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
               // --postmix-index
               Integer postmixIndex = appArgs.getPostmixIndex();
               if (postmixIndex != null) {
@@ -160,7 +162,7 @@ public class Application implements ApplicationRunner {
               Optional<Integer> tx0Arg = appArgs.getTx0();
               if (tx0Arg.isPresent()) {
                 // go tx0
-                runTx0.runTx0(pool, tx0Arg.get(), pools.getFeePaymentCode());
+                runTx0.runTx0(pool, tx0Arg.get(), pools.getFeePaymentCode(), feeIndexHandler);
               } else if (appArgs.isAggregatePostmix()) {
                 if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
                   throw new NotifiableException(
@@ -206,7 +208,9 @@ public class Application implements ApplicationRunner {
                 int errors = 0;
                 while (true) {
                   try {
-                    boolean success = runLoopWallet.run(pool, clients, pools.getFeePaymentCode());
+                    boolean success =
+                        runLoopWallet.run(
+                            pool, clients, pools.getFeePaymentCode(), feeIndexHandler);
                     if (!success) {
                       throw new NotifiableException("Iteration failed");
                     }

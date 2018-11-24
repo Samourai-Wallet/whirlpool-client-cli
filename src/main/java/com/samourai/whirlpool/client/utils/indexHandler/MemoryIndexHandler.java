@@ -1,6 +1,4 @@
-package com.samourai.whirlpool.client.utils;
-
-import com.samourai.whirlpool.client.utils.indexHandler.IIndexHandler;
+package com.samourai.whirlpool.client.utils.indexHandler;
 
 public class MemoryIndexHandler implements IIndexHandler {
   private int index;

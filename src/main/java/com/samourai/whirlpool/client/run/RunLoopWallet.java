@@ -6,6 +6,7 @@ import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.indexHandler.IIndexHandler;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
@@ -40,7 +41,8 @@ public class RunLoopWallet {
     this.runAggregateAndConsolidateWallet = runAggregateAndConsolidateWallet;
   }
 
-  public boolean run(Pool pool, int nbClients, String feePaymentCode) throws Exception {
+  public boolean run(Pool pool, int nbClients, String feePaymentCode, IIndexHandler feeIndexHandler)
+      throws Exception {
     // fetch unspent utx0s
     log.info(" • Fetching unspent outputs from premix...");
     List<UnspentResponse.UnspentOutput> utxos =
@@ -69,24 +71,25 @@ public class RunLoopWallet {
       // not enough mustMixUtxos => Tx0
       for (int i = 0; i < missingMustMixUtxos; i++) {
         log.info(" • Tx0 (" + (i + 1) + "/" + missingMustMixUtxos + ")...");
-        doRunTx0(pool, missingMustMixUtxos, feePaymentCode);
+        doRunTx0(pool, missingMustMixUtxos, feePaymentCode, feeIndexHandler);
 
         log.info("Refreshing utxos...");
         Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
       }
 
       // recursive
-      return run(pool, nbClients, feePaymentCode);
+      return run(pool, nbClients, feePaymentCode, feeIndexHandler);
     } else {
       log.info(" • New mix...");
       return runMixWallet.runMix(mustMixUtxosUnique, pool);
     }
   }
 
-  private void doRunTx0(Pool pool, int missingMustMixUtxos, String feePaymentCode)
+  private void doRunTx0(
+      Pool pool, int missingMustMixUtxos, String feePaymentCode, IIndexHandler feeIndexHandler)
       throws Exception {
     try {
-      runTx0.runTx0(pool, OUTPUTS_PER_TX0, feePaymentCode);
+      runTx0.runTx0(pool, OUTPUTS_PER_TX0, feePaymentCode, feeIndexHandler);
     } catch (BroadcastException e) {
       throw e;
     } catch (Exception e) {
@@ -94,10 +97,10 @@ public class RunLoopWallet {
 
       // premixAndDeposit is empty => autoRefill when possible
       long missingBalance =
-          missingMustMixUtxos * (OUTPUTS_PER_TX0 * pool.getDenomination() + RunTx0.SAMOURAI_FEES);
+          missingMustMixUtxos * (OUTPUTS_PER_TX0 * pool.getDenomination() + RunTx0.FEE_VALUE);
       autoRefill(missingBalance);
 
-      doRunTx0(pool, missingMustMixUtxos, feePaymentCode);
+      doRunTx0(pool, missingMustMixUtxos, feePaymentCode, feeIndexHandler);
     }
   }
 

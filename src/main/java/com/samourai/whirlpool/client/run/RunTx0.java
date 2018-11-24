@@ -3,12 +3,12 @@ package com.samourai.whirlpool.client.run;
 import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
-import com.samourai.wallet.hd.HD_Address;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.indexHandler.IIndexHandler;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.lang.invoke.MethodHandles;
@@ -28,9 +28,9 @@ public class RunTx0 {
   private Optional<RpcClientService> rpcClientService;
   private Bip84ApiWallet depositAndPremixWallet;
 
-  private static final String XPUB_SAMOURAI_FEES =
+  private static final String FEE_XPUB =
       "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
-  public static final long SAMOURAI_FEES = 10000; // TODO
+  public static final long FEE_VALUE = 10000; // TODO
 
   public RunTx0(
       NetworkParameters params,
@@ -43,7 +43,8 @@ public class RunTx0 {
     this.depositAndPremixWallet = depositAndPremixWallet;
   }
 
-  public Tx0 runTx0(Pool pool, int nbOutputs, String feePaymentCode) throws Exception {
+  public Tx0 runTx0(Pool pool, int nbOutputs, String feePaymentCode, IIndexHandler feeIndexHandler)
+      throws Exception {
     List<UnspentResponse.UnspentOutput> utxos = depositAndPremixWallet.fetchUtxos();
     if (utxos.isEmpty()) {
       throw new NotifiableException("No utxo found from premix.");
@@ -58,7 +59,7 @@ public class RunTx0 {
     long destinationValue = computeDestinationValue(pool);
 
     // find utxo to spend Tx0 from
-    long spendFromBalanceMin = nbOutputs * (destinationValue + SAMOURAI_FEES);
+    long spendFromBalanceMin = nbOutputs * (destinationValue + FEE_VALUE);
     List<UnspentResponse.UnspentOutput> tx0SpendFroms =
         utxos
             .stream()
@@ -74,7 +75,8 @@ public class RunTx0 {
     }
 
     UnspentResponse.UnspentOutput tx0SpendFrom = tx0SpendFroms.get(0);
-    Tx0 tx0 = runTx0(tx0SpendFrom, destinationValue, nbOutputs, feePaymentCode);
+    int feeIndice = feeIndexHandler.getAndIncrement();
+    Tx0 tx0 = runTx0(tx0SpendFrom, destinationValue, nbOutputs, feePaymentCode, feeIndice);
     return tx0;
   }
 
@@ -82,27 +84,30 @@ public class RunTx0 {
       UnspentResponse.UnspentOutput spendFrom,
       long destinationValue,
       int nbOutputs,
-      String feePaymentCode)
+      String feePaymentCode,
+      int feeIndice)
       throws Exception {
 
     // spend from
     TransactionOutPoint spendFromOutpoint = spendFrom.computeOutpoint(params);
-    HD_Address spendFromAddress = depositAndPremixWallet.getAddressAt(spendFrom);
+    byte[] spendFromPrivKey =
+        depositAndPremixWallet.getAddressAt(spendFrom).getECKey().getPrivKeyBytes();
 
     // run tx0
     int feeSatPerByte = samouraiApi.fetchFees();
     Tx0 tx0 =
         new Tx0Service(params)
             .tx0(
-                spendFromAddress,
+                spendFromPrivKey,
                 spendFromOutpoint,
                 nbOutputs,
                 depositAndPremixWallet,
                 destinationValue,
                 feeSatPerByte,
-                XPUB_SAMOURAI_FEES,
-                SAMOURAI_FEES,
-                feePaymentCode);
+                FEE_XPUB,
+                FEE_VALUE,
+                feePaymentCode,
+                feeIndice);
 
     log.info("Tx0:");
     log.info(tx0.getTx().toString());

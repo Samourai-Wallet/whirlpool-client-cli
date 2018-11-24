@@ -1,12 +1,12 @@
 package com.samourai.whirlpool.client.tx0;
 
-import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.whirlpool.client.test.AbstractTest;
 import com.samourai.whirlpool.client.utils.Bip84Wallet;
-import com.samourai.whirlpool.client.utils.MemoryIndexHandler;
+import com.samourai.whirlpool.client.utils.indexHandler.MemoryIndexHandler;
 import java.lang.invoke.MethodHandles;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.TransactionOutPoint;
 import org.bouncycastle.util.encoders.Hex;
@@ -26,10 +26,10 @@ public class Tx0ServiceTest extends AbstractTest {
   @Test
   public void tx0() throws Exception {
     String seedWords =
-        "recipe obtain chunk amused split second disorder budget okay verb border rifle";
+        "all all all all all all all all all all all all";
     String passphrase = "whirlpool";
     HD_Wallet bip84w = hdWalletFactory.restoreWallet(seedWords, passphrase, 1, params);
-    HD_Address spendFromAddress = bip84w.getAccountAt(0).getChain(0).getAddressAt(61);
+    ECKey spendFromKey = bip84w.getAccountAt(0).getChain(0).getAddressAt(61).getECKey();
     TransactionOutPoint spendFromOutpoint =
         new TransactionOutPoint(
             params,
@@ -40,26 +40,28 @@ public class Tx0ServiceTest extends AbstractTest {
     int nbOutputs = 5;
     long destinationValue = 1000150;
     long tx0MinerFee = 150;
-    String xpubSamouraiFees =
+    String feeXpub =
         "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
-    long samouraiFees = 1000;
+    long feeValue = 1000;
 
     Tx0 tx0 =
         tx0Service.tx0(
-            spendFromAddress,
+            spendFromKey.getPrivKeyBytes(),
             spendFromOutpoint,
             nbOutputs,
             depositAndPremixWallet,
             destinationValue,
             tx0MinerFee,
-            xpubSamouraiFees,
-            samouraiFees);
+            feeXpub,
+            feeValue,
+            "PM8TJXp19gCE6hQzqRi719FGJzF6AreRwvoQKLRnQ7dpgaakakFns22jHUqhtPQWmfevPQRCyfFbdDrKvrfw9oZv5PjaCerQMa3BKkPyUf9yN1CDR3w6",
+            0);
     String tx0Hash = tx0.getTx().getHashAsString();
     String tx0Hex = new String(Hex.encode(tx0.getTx().bitcoinSerialize()));
     Assert.assertEquals(
-        "40bed460423e461f98f00dba5f9b07ba6f5af7daca5cf5ecd16cb466457041f9", tx0Hash);
+        "ecebfeddceaf842bb7fe739e843b02b68de55854398f1e54ee21a0be7321c58f", tx0Hash);
     Assert.assertEquals(
-        "01000000000101ae24e3f5dbcee7971ae0e5b83fcb1eb67057901f2d371ca494f868b3dc8c58cc0100000000ffffffff080000000000000000066a0400000000e803000000000000160014c25132cfe8371e4c4ab5d046db21e18e804a7625d6420f0000000000160014150e6675de4649d1b798c6f82d7213203a1dd053d6420f0000000000160014260663c929e115f7b5e870ed69876950c5f392f9d6420f00000000001600145b82acbd922c8d795c5fcaa07e648f4e6ad1f3c5d6420f00000000001600145e5e83bbdd188cfa1373b8f85c23b5197eaa4ec7d6420f0000000000160014914cd104d9524b55226fa84e2f1d714b74705b0ea6d07f1d000000001600140816ab9d6d6da88d16629ba9927ae22da22bb7fa024830450221009f2aba47cd4c14a57057d23e1dee59af557f4d4f88581437079c840ab8a533fd022065f1349f8b92489702e34ed111ada53bb4200f11cb651edd93d753d68c9052d7012102cd718166e324dde323106acb320a4118786ba70b6b9db49a703f0e6d3df6218400000000",
+        "01000000000101ae24e3f5dbcee7971ae0e5b83fcb1eb67057901f2d371ca494f868b3dc8c58cc0100000000ffffffff080000000000000000426a401a2ceb49ee82694a8cd85c69be419eb8968b357f450431e236dbadb35d9de16daf80676573d1e00a87bfeb5223c36351398940ff44f0b69dad62b060b82b537de803000000000000160014c25132cfe8371e4c4ab5d046db21e18e804a7625d6420f00000000001600141384e5f8b6ec64d7276b1f6f5d320af0def4a014d6420f00000000001600146f37da8f91ac1131bba65f7b7cdbbfbec4ced57cd6420f00000000001600147b80c569987972ec2753a5708b61fbaef60ad6d0d6420f000000000016001482545e4232941f47e7abcd8042e6514fbc968305d6420f0000000000160014b7017582609a12233e4019dac754d660db6963669658801d00000000160014f9d3a39cb5f697ab3d85dfa4cc1b848520cc241002483045022100d879fe1cd911ee9b1faf61411789dc15eeb6fe1e92147009f8c22f697408215802204864084ff49d293668eb415f7242a34bbd33eec510b76a6c391e4ed5a179dc11012103ae9a9884b779bb72ba1d6d0da99c1f0f361f8ff9ab7ef4a8062e00014689359100000000",
         tx0Hex);
   }
 }

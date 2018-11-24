@@ -38,17 +38,17 @@ public class Tx0Service {
   }
 
   public Tx0 tx0(
-      HD_Address spendFromAddress,
+      byte[] spendFromPrivKey,
       TransactionOutPoint spendFromOutpoint,
       int nbOutputs,
       Bip84Wallet depositAndPremixWallet,
       long destinationValue,
       long feeSatPerByte,
-      String xpubSamouraiFees,
-      long samouraiFees,
-      String feePaymentCode)
+      String xpubFee,
+      long fee,
+      String feePaymentCode,
+      int feeIndice)
       throws Exception {
-    int samouraiFeeIdx = 0; // TODO address index, in prod get index from Samourai API
 
     long spendFromBalance = spendFromOutpoint.getValue().getValue();
 
@@ -96,8 +96,7 @@ public class Tx0Service {
     }
 
     long tx0MinerFee = CliUtils.computeMinerFee(1, nbOutputs + 3, feeSatPerByte);
-    long changeValue =
-        spendFromBalance - (destinationValue * nbOutputs) - samouraiFees - tx0MinerFee;
+    long changeValue = spendFromBalance - (destinationValue * nbOutputs) - fee - tx0MinerFee;
 
     //
     // 1 change output
@@ -119,40 +118,31 @@ public class Tx0Service {
     }
 
     // derive fee address
-    DeterministicKey mKey =
-        FormatsUtilGeneric.getInstance().createMasterPubKeyFromXPub(xpubSamouraiFees);
+    DeterministicKey mKey = FormatsUtilGeneric.getInstance().createMasterPubKeyFromXPub(xpubFee);
     DeterministicKey cKey =
         HDKeyDerivation.deriveChildKey(
             mKey, new ChildNumber(0, false)); // assume external/receive chain
-    DeterministicKey adk =
-        HDKeyDerivation.deriveChildKey(cKey, new ChildNumber(samouraiFeeIdx, false));
-    ECKey samouraiFeePubkey = ECKey.fromPublicOnly(adk.getPubKey());
-    String samouraiFeeAddressBech32 = bech32Util.toBech32(samouraiFeePubkey.getPubKey(), params);
+    DeterministicKey adk = HDKeyDerivation.deriveChildKey(cKey, new ChildNumber(feeIndice, false));
+    ECKey feePubkey = ECKey.fromPublicOnly(adk.getPubKey());
+    String feeAddressBech32 = bech32Util.toBech32(feePubkey.getPubKey(), params);
 
-    TransactionOutput txSWFee =
-        bech32Util.getTransactionOutput(samouraiFeeAddressBech32, samouraiFees, params);
+    TransactionOutput txSWFee = bech32Util.getTransactionOutput(feeAddressBech32, fee, params);
     outputs.add(txSWFee);
     if (log.isDebugEnabled()) {
-      log.debug(
-          "Tx0 out (samouraiFees): address="
-              + samouraiFeeAddressBech32
-              + " ("
-              + samouraiFees
-              + " sats)");
+      log.debug("Tx0 out (fee): address=" + feeAddressBech32 + " (" + fee + " sats)");
     }
 
     // add OP_RETURN output
-    byte[] input0PrivKey = spendFromAddress.getECKey().getPrivKeyBytes();
     byte[] opReturnValue =
         WhirlpoolProtocol.getWhirlpoolFee()
-            .encode(samouraiFeeIdx, feePaymentCode, params, input0PrivKey, spendFromOutpoint);
+            .encode(feeIndice, feePaymentCode, params, spendFromPrivKey, spendFromOutpoint);
     Script op_returnOutputScript =
         new ScriptBuilder().op(ScriptOpCodes.OP_RETURN).data(opReturnValue).build();
     TransactionOutput txFeeOutput =
         new TransactionOutput(params, null, Coin.valueOf(0L), op_returnOutputScript.getProgram());
     outputs.add(txFeeOutput);
     if (log.isDebugEnabled()) {
-      log.debug("Tx0 out (OP_RETURN): samouraiFeeIdx=" + samouraiFeeIdx);
+      log.debug("Tx0 out (OP_RETURN): feeIndice=" + feeIndice);
     }
 
     // all outputs
@@ -162,24 +152,18 @@ public class Tx0Service {
     }
 
     // input
-    String spendFromAddressBech32 = bech32Util.toBech32(spendFromAddress, params);
-    ECKey spendFromKey = spendFromAddress.getECKey();
+    ECKey spendFromKey = ECKey.fromPrivate(spendFromPrivKey);
 
     final Script segwitPubkeyScript = ScriptBuilder.createP2WPKHOutputScript(spendFromKey);
     tx.addSignedInput(spendFromOutpoint, segwitPubkeyScript, spendFromKey);
     if (log.isDebugEnabled()) {
       log.debug(
-          "Tx0 in: address="
-              + spendFromAddressBech32
-              + ", utxo="
+          "Tx0 in: utxo="
               + spendFromOutpoint
-              + ", key="
-              + spendFromKey.getPrivateKeyAsWiF(params)
-              + ", path="
-              + spendFromAddress.toJSON().get("path")
               + " ("
               + spendFromOutpoint.getValue().getValue()
-              + " sats)");
+              + " sats), key="
+              + spendFromKey.getPrivateKeyAsWiF(params));
       log.debug("Tx0 fee: " + tx0MinerFee + " sats");
     }
 
