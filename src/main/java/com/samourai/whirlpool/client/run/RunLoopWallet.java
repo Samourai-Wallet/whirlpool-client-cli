@@ -107,7 +107,7 @@ public class RunLoopWallet {
   private void autoRefill(long missingBalance) throws Exception {
     String depositAddress =
         Bech32UtilGeneric.getInstance()
-            .toBech32(depositAndPremixWallet.getNextAddress(), config.getNetworkParameters());
+            .toBech32(depositAndPremixWallet.getNextAddress(false), config.getNetworkParameters());
     String message =
         "depositAndPremixWallet is empty. I need at least "
             + CliUtils.satToBtc(missingBalance)

@@ -23,7 +23,11 @@ public class Bip84Wallet {
   }
 
   public HD_Address getNextAddress() {
-    int nextAddressIndex = indexHandler.getAndIncrement();
+    return getNextAddress(true);
+  }
+
+  public HD_Address getNextAddress(boolean increment) {
+    int nextAddressIndex = increment ? indexHandler.getAndIncrement() : indexHandler.get();
     return getAddressAt(CHAIN, nextAddressIndex);
   }
 
