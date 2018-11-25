@@ -26,7 +26,8 @@ public class CliUtils {
 
   private static final long TX_BYTES_PER_INPUT = 70;
   private static final long TX_BYTES_PER_OUTPUT = 31;
-  private static final long MIN_RELAY_FEE = 178;
+  private static final long TX_BYTES_PER_OPRETURN = 20;
+  private static final long MIN_RELAY_FEE_PER_BYTE = 1;
 
   public static double satToBtc(long sat) {
     return sat / 100000000.0;
@@ -90,23 +91,31 @@ public class CliUtils {
     return bytes;
   }
 
+  public static long estimateOpReturnBytes(byte[] opReturnValue) {
+    long bytes = TX_BYTES_PER_OPRETURN+opReturnValue.length;
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "OP_RETURN size estimation: " + bytes + "b (" + opReturnValue.length + " + "+TX_BYTES_PER_OPRETURN+")");
+    }
+    return bytes;
+  }
+
   public static long computeMinerFee(int nbInputs, int nbOutputs, long feePerByte) {
     long bytes = estimateTxBytes(nbInputs, nbOutputs);
     return computeMinerFee(bytes, feePerByte);
   }
 
   public static long computeMinerFee(long bytes, long feePerByte) {
-    long minerFee = bytes * feePerByte;
-    if (minerFee < MIN_RELAY_FEE) {
-      minerFee = MIN_RELAY_FEE;
+    if (feePerByte < MIN_RELAY_FEE_PER_BYTE) {
       if (log.isDebugEnabled()) {
         log.debug(
-            "minerFee = " + minerFee + " (" + bytes + "b, " + feePerByte + "s/b => MIN_RELAY_FEE)");
+            "minerFee = " + feePerByte + "s/b => MIN_RELAY_FEE " + MIN_RELAY_FEE_PER_BYTE + "s/b");
       }
-    } else {
-      if (log.isDebugEnabled()) {
-        log.debug("minerFee = " + minerFee + " (" + bytes + "b, " + feePerByte + "s/b)");
-      }
+      feePerByte = MIN_RELAY_FEE_PER_BYTE;
+    }
+    long minerFee = bytes * feePerByte;
+    if (log.isDebugEnabled()) {
+      log.debug("minerFee = " + minerFee + " (" + bytes + "b, " + feePerByte + "s/b)");
     }
     return minerFee;
   }

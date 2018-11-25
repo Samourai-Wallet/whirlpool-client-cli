@@ -25,8 +25,7 @@ public class Tx0ServiceTest extends AbstractTest {
 
   @Test
   public void tx0() throws Exception {
-    String seedWords =
-        "all all all all all all all all all all all all";
+    String seedWords = "all all all all all all all all all all all all";
     String passphrase = "whirlpool";
     HD_Wallet bip84w = hdWalletFactory.restoreWallet(seedWords, passphrase, 1, params);
     ECKey spendFromKey = bip84w.getAccountAt(0).getChain(0).getAddressAt(61).getECKey();

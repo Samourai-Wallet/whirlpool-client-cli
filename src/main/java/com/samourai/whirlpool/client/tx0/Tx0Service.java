@@ -95,7 +95,16 @@ public class Tx0Service {
       outputs.add(txOutSpend);
     }
 
-    long tx0MinerFee = CliUtils.computeMinerFee(1, nbOutputs + 3, feeSatPerByte);
+    byte[] opReturnValue =
+        WhirlpoolProtocol.getWhirlpoolFee()
+            .encode(feeIndice, feePaymentCode, params, spendFromPrivKey, spendFromOutpoint);
+
+    // fee estimation: n outputs + change + fee + OP_RETURN
+    long totalBytes = CliUtils.estimateTxBytes(1, nbOutputs + 2) + CliUtils.estimateOpReturnBytes(opReturnValue);
+    if (log.isDebugEnabled()) {
+      log.debug("totalBytes="+totalBytes+"b");
+    }
+    long tx0MinerFee = CliUtils.computeMinerFee(totalBytes, feeSatPerByte);
     long changeValue = spendFromBalance - (destinationValue * nbOutputs) - fee - tx0MinerFee;
 
     //
@@ -133,9 +142,6 @@ public class Tx0Service {
     }
 
     // add OP_RETURN output
-    byte[] opReturnValue =
-        WhirlpoolProtocol.getWhirlpoolFee()
-            .encode(feeIndice, feePaymentCode, params, spendFromPrivKey, spendFromOutpoint);
     Script op_returnOutputScript =
         new ScriptBuilder().op(ScriptOpCodes.OP_RETURN).data(opReturnValue).build();
     TransactionOutput txFeeOutput =
@@ -174,7 +180,9 @@ public class Tx0Service {
     // System.out.println(tx);
     if (log.isDebugEnabled()) {
       log.debug("Tx0 hash: " + strTxHash);
-      log.debug("Tx0 hex: " + hexTx + "\n");
+      log.debug("Tx0 hex: " + hexTx);
+      long feePrice = tx0MinerFee / tx.getVirtualTransactionSize();
+      log.debug("Tx0 size: " + tx.getVirtualTransactionSize()+"b, feePrice="+feePrice+"s/b");
     }
 
     for (TransactionOutput to : tx.getOutputs()) {
