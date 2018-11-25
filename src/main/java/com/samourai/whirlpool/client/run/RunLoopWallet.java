@@ -4,6 +4,7 @@ import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.client.exception.BroadcastException;
+import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.indexHandler.IIndexHandler;
@@ -92,9 +93,7 @@ public class RunLoopWallet {
       runTx0.runTx0(pool, OUTPUTS_PER_TX0, feePaymentCode, feeIndexHandler);
     } catch (BroadcastException e) {
       throw e;
-    } catch (Exception e) {
-      log.error("Tx0 failed: " + e.getMessage());
-
+    } catch (EmptyWalletException e) {
       // premixAndDeposit is empty => autoRefill when possible
       long missingBalance =
           missingMustMixUtxos * (OUTPUTS_PER_TX0 * pool.getDenomination() + RunTx0.FEE_VALUE);

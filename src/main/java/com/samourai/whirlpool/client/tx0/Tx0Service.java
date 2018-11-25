@@ -100,9 +100,10 @@ public class Tx0Service {
             .encode(feeIndice, feePaymentCode, params, spendFromPrivKey, spendFromOutpoint);
 
     // fee estimation: n outputs + change + fee + OP_RETURN
-    long totalBytes = CliUtils.estimateTxBytes(1, nbOutputs + 2) + CliUtils.estimateOpReturnBytes(opReturnValue);
+    long totalBytes =
+        CliUtils.estimateTxBytes(1, nbOutputs + 2) + CliUtils.estimateOpReturnBytes(opReturnValue);
     if (log.isDebugEnabled()) {
-      log.debug("totalBytes="+totalBytes+"b");
+      log.debug("totalBytes=" + totalBytes + "b");
     }
     long tx0MinerFee = CliUtils.computeMinerFee(totalBytes, feeSatPerByte);
     long changeValue = spendFromBalance - (destinationValue * nbOutputs) - fee - tx0MinerFee;
@@ -182,7 +183,7 @@ public class Tx0Service {
       log.debug("Tx0 hash: " + strTxHash);
       log.debug("Tx0 hex: " + hexTx);
       long feePrice = tx0MinerFee / tx.getVirtualTransactionSize();
-      log.debug("Tx0 size: " + tx.getVirtualTransactionSize()+"b, feePrice="+feePrice+"s/b");
+      log.debug("Tx0 size: " + tx.getVirtualTransactionSize() + "b, feePrice=" + feePrice + "s/b");
     }
 
     for (TransactionOutput to : tx.getOutputs()) {

@@ -15,10 +15,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class ApplicationWalletTest extends AbstractApplicationTest {
   private static final String SEED_WORDS =
-      "hub casual home drift winter such economy wage waste wagon essay torch";
-  private static final String SEED_PASSPHRASE = "whirlpool";
-  protected static final String SERVER = "127.0.0.1:8080";
-  protected static final String RPC_CLIENT_URL = "http://user:password@host:port";
+      "leisure mix glove infant admit multiply rib harbor burden once loop deposit";
+  private static final String SEED_PASSPHRASE = "whirlpool4";
+  private static final String SERVER = "pool.whirl.mx:8081";
+  private static final String RPC_CLIENT_URL =
+      "http://zeroleak:833b09863f0ef98435382dfbe942352551124%e5316623659e3ba8__59bb911d562@212.129.55.26:18332";
 
   @Before
   @Override
@@ -42,8 +43,9 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
           "--seed-words=" + SEED_WORDS,
           "--debug",
           "--pool=0.01btc",
-          "--test-mode",
           "--server=" + SERVER,
+          "--clients=5",
+          "--iteration-delay=60"
         };
     ApplicationArguments appArgs = new DefaultApplicationArguments(args);
     new Application().run(appArgs);
@@ -52,14 +54,14 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
   }
 
   @Test
-  public void runTx0WithRpcClientUrl() {
+  public void runTx0WithRpcClient() {
     String[] args =
         new String[] {
           "--network=test",
           "--seed-passphrase=" + SEED_PASSPHRASE,
           "--rpc-client-url=" + RPC_CLIENT_URL,
           "--seed-words=" + SEED_WORDS,
-          "--tx0=20",
+          "--tx0=1",
           "--debug",
           "--pool=0.01btc",
           "--server=" + SERVER
@@ -71,13 +73,13 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
   }
 
   @Test
-  public void runTx0WithoutRpcClientUrl() {
+  public void runTx0WithoutRpcClient() {
     String[] args =
         new String[] {
           "--network=test",
           "--seed-passphrase=" + SEED_PASSPHRASE,
           "--seed-words=" + SEED_WORDS,
-          "--tx0=20",
+          "--tx0=1",
           "--debug",
           "--pool=0.01btc",
           "--server=" + SERVER
@@ -96,7 +98,7 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
           "--seed-passphrase=" + SEED_PASSPHRASE,
           "--rpc-client-url=" + RPC_CLIENT_URL,
           "--seed-words=" + SEED_WORDS,
-          "--aggregate-postmix",
+          "--aggregate-postmix=tb1qkxzjh0u8a84c3cqpcu83c4mrhh3vxkgnyp4wa8",
           "--debug",
           "--pool=0.01btc",
           "--server=" + SERVER

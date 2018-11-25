@@ -3,7 +3,7 @@ package com.samourai.whirlpool.client.run;
 import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
-import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
@@ -47,7 +47,7 @@ public class RunTx0 {
       throws Exception {
     List<UnspentResponse.UnspentOutput> utxos = depositAndPremixWallet.fetchUtxos();
     if (utxos.isEmpty()) {
-      throw new NotifiableException("No utxo found from premix.");
+      throw new EmptyWalletException("No utxo found from premix.");
     }
 
     if (log.isDebugEnabled()) {
@@ -67,7 +67,7 @@ public class RunTx0 {
             .collect(Collectors.toList());
 
     if (tx0SpendFroms.isEmpty()) {
-      throw new Exception("ERROR: No utxo available to spend Tx0 from");
+      throw new EmptyWalletException("ERROR: No utxo available to spend Tx0 from");
     }
     if (log.isDebugEnabled()) {
       log.debug("Found " + tx0SpendFroms.size() + " utxos to use as Tx0 input");

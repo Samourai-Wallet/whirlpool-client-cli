@@ -92,10 +92,16 @@ public class CliUtils {
   }
 
   public static long estimateOpReturnBytes(byte[] opReturnValue) {
-    long bytes = TX_BYTES_PER_OPRETURN+opReturnValue.length;
+    long bytes = TX_BYTES_PER_OPRETURN + opReturnValue.length;
     if (log.isDebugEnabled()) {
       log.debug(
-          "OP_RETURN size estimation: " + bytes + "b (" + opReturnValue.length + " + "+TX_BYTES_PER_OPRETURN+")");
+          "OP_RETURN size estimation: "
+              + bytes
+              + "b ("
+              + opReturnValue.length
+              + " + "
+              + TX_BYTES_PER_OPRETURN
+              + ")");
     }
     return bytes;
   }
