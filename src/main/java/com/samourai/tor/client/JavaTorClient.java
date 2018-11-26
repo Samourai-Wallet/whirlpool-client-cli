@@ -3,8 +3,8 @@ package com.samourai.tor.client;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.net.URLStreamHandler;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
 import org.silvertunnel_ng.netlib.adapter.url.NetlibURLStreamHandlerFactory;
 import org.silvertunnel_ng.netlib.api.NetFactory;
 import org.silvertunnel_ng.netlib.api.NetLayer;
@@ -16,18 +16,15 @@ public class JavaTorClient {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private NetFactory sharedNetFactory;
-  private Queue<NetFactory> privateNetFactories = new LinkedList<>(); // FIFO
+  private List<NetFactory> netFactories = new ArrayList<>();
   private int nbPrivateConnexions;
 
   public JavaTorClient() {
-    this.nbPrivateConnexions = 0;
+    this.nbPrivateConnexions = 1;
   }
 
   public void connect() {
-    // start shared connexion
-    sharedNetFactory = createNetFactory();
-
-    // start private connexions
+    // start connecting
     adjustPrivateConnexions();
   }
 
@@ -37,8 +34,8 @@ public class JavaTorClient {
       sharedNetFactory = null;
     }
 
-    privateNetFactories.forEach(privateNetFactory -> privateNetFactory.clearRegisteredNetLayers());
-    privateNetFactories.clear();
+    netFactories.forEach(privateNetFactory -> privateNetFactory.clearRegisteredNetLayers());
+    netFactories.clear();
   }
 
   public boolean isConnected() {
@@ -66,22 +63,52 @@ public class JavaTorClient {
     if (!isConnected()) {
       connect();
     }
+    NetFactory netFactory = privateCircuit ? getNetFactoryReady() : getSharedNetFactory();
+    return netFactory;
+  }
 
-    NetFactory netFactory;
-    if (privateCircuit) {
-      // get private circuit (FIFO)
-      netFactory = privateNetFactories.remove();
-
-      // create a new one for next time
-      privateNetFactories.add(createNetFactory());
-    } else {
-      netFactory = sharedNetFactory;
+  private synchronized NetFactory getSharedNetFactory() {
+    if (sharedNetFactory == null) {
+      sharedNetFactory = getNetFactoryReady();
     }
+    return sharedNetFactory;
+  }
+
+  private synchronized NetFactory getNetFactoryReady() {
+    // get first NetFactory ready
+    NetFactory netFactory = null;
+    while (true) {
+      double bestIndicator = 0;
+      for (NetFactory nf : netFactories) {
+        double indicator = nf.getNetLayerById(NetLayerIDs.TOR).getStatus().getReadyIndicator();
+        if (indicator == 1.0) {
+          netFactory = nf;
+          break;
+        }
+        if (indicator > bestIndicator) {
+          bestIndicator = indicator;
+        }
+      }
+      if (netFactory != null) {
+        break;
+      }
+      log.info("Connecting TOR... (" + (Math.round(bestIndicator) * 100) + "%)");
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+      }
+    }
+
+    // remove
+    netFactories.remove(netFactory);
+
+    // create a new one for next time
+    netFactories.add(createNetFactory());
     return netFactory;
   }
 
   private void adjustPrivateConnexions() {
-    int nbToAdd = nbPrivateConnexions - privateNetFactories.size();
+    int nbToAdd = nbPrivateConnexions - netFactories.size();
     if (nbToAdd == 0) {
       return;
     }
@@ -92,7 +119,7 @@ public class JavaTorClient {
         if (log.isDebugEnabled()) {
           log.debug("New private connexion: " + i + "/" + nbToAdd);
         }
-        privateNetFactories.add(createNetFactory());
+        netFactories.add(createNetFactory());
       }
     } else {
       // remove exceeding connexions

@@ -71,7 +71,10 @@ public class Application implements ApplicationRunner {
       LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
     }
 
-    log.info("------------ whirlpool-client ------------");
+    Optional<JavaTorClient> torClient = Optional.empty();
+    WhirlpoolClientConfig config = null;
+
+        log.info("------------ whirlpool-client ------------");
     log.info(
         "Running whirlpool-client {} on java {}",
         Arrays.toString(args.getSourceArgs()),
@@ -81,7 +84,6 @@ public class Application implements ApplicationRunner {
       new Context(params); // initialize bitcoinj context
 
       // TOR
-      Optional<JavaTorClient> torClient = Optional.empty();
       if (appArgs.isTor()) {
         torClient = Optional.of(new JavaTorClient());
         torClient.get().connect();
@@ -89,7 +91,7 @@ public class Application implements ApplicationRunner {
 
       // instanciate client
       String server = appArgs.getServer();
-      WhirlpoolClientConfig config = computeWhirlpoolClientConfig(server, params, torClient);
+      config = computeWhirlpoolClientConfig(server, params, torClient);
       WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(config);
 
       // fetch pools
@@ -303,6 +305,14 @@ public class Application implements ApplicationRunner {
     } catch (IllegalArgumentException e) {
       log.info("Invalid arguments: " + e.getMessage());
       log.info("Usage: whirlpool-client " + ApplicationArgs.USAGE);
+    }
+
+    // disconnect
+    if (torClient.isPresent()) {
+      torClient.get().disconnect();
+    }
+    if (config != null) {
+      config.getStompClient().disconnect();
     }
   }
 
