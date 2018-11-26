@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kevinsawicki.http.HttpRequest;
 import com.samourai.tor.client.JavaTorClient;
+import com.samourai.tor.client.JavaTorConnexion;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.Optional;
@@ -28,7 +29,8 @@ public class JavaHttpClient implements IHttpClient {
       HttpRequest request;
       if (torClient.isPresent()) {
         // use TOR - same circuit for all GET requests
-        URL url = torClient.get().getUrl(urlStr, false);
+        JavaTorConnexion sharedTorConnexion = torClient.get().getConnexion(false);
+        URL url = sharedTorConnexion.getUrl(urlStr);
         request = HttpRequest.get(url);
       } else {
         // standard connexion
@@ -36,6 +38,7 @@ public class JavaHttpClient implements IHttpClient {
       }
       checkResponseSuccess(request);
       T result = objectMapper.readValue(request.bytes(), entityClass);
+      // keep sharedTorConnexion open
       return result;
     } catch (Exception e) {
       if (!(e instanceof HttpException)) {
@@ -47,12 +50,14 @@ public class JavaHttpClient implements IHttpClient {
 
   @Override
   public void postJsonOverTor(String urlStr, Object bodyObj) throws HttpException {
+    JavaTorConnexion privateTorConnexion = null;
     try {
       String jsonBody = objectMapper.writeValueAsString(bodyObj);
       HttpRequest request;
       if (torClient.isPresent()) {
         // different circuit for each POST request
-        URL url = torClient.get().getUrl(urlStr, true);
+        privateTorConnexion = torClient.get().getConnexion(true);
+        URL url = privateTorConnexion.getUrl(urlStr);
         request = HttpRequest.post(url).header("Content-Type", "application/json");
       } else {
         // standard connexion
@@ -60,10 +65,12 @@ public class JavaHttpClient implements IHttpClient {
       }
       request.send(jsonBody.getBytes());
       checkResponseSuccess(request);
+      privateTorConnexion.close();
     } catch (Exception e) {
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
       }
+      privateTorConnexion.close();
       throw (HttpException) e;
     }
   }

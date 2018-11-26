@@ -74,7 +74,7 @@ public class Application implements ApplicationRunner {
     Optional<JavaTorClient> torClient = Optional.empty();
     WhirlpoolClientConfig config = null;
 
-        log.info("------------ whirlpool-client ------------");
+    log.info("------------ whirlpool-client ------------");
     log.info(
         "Running whirlpool-client {} on java {}",
         Arrays.toString(args.getSourceArgs()),

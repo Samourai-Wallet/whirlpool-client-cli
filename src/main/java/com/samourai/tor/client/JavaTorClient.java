@@ -1,13 +1,9 @@
 package com.samourai.tor.client;
 
 import java.lang.invoke.MethodHandles;
-import java.net.URL;
-import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.List;
-import org.silvertunnel_ng.netlib.adapter.url.NetlibURLStreamHandlerFactory;
 import org.silvertunnel_ng.netlib.api.NetFactory;
-import org.silvertunnel_ng.netlib.api.NetLayer;
 import org.silvertunnel_ng.netlib.api.NetLayerIDs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,22 +38,10 @@ public class JavaTorClient {
     return sharedNetFactory != null;
   }
 
-  public URL getUrl(String urlStr, boolean privateCircuit) throws Exception {
+  public JavaTorConnexion getConnexion(boolean privateCircuit) {
     NetFactory netFactory = getNetFactory(privateCircuit);
-
-    NetlibURLStreamHandlerFactory streamHandlerFactory = computeStreamHandlerFactory(netFactory);
-    String protocol = urlStr.split("://")[0];
-    URLStreamHandler handler = streamHandlerFactory.createURLStreamHandler(protocol);
-    URL url = new URL(null, urlStr, handler);
-    return url;
+    return new JavaTorConnexion(netFactory);
   }
-
-  /*public NetSocket getNetSocket(String host, int port) throws Exception {
-    final TcpipNetAddress netAddress = new TcpipNetAddress(host, port);
-    NetSocket netSocket = NetFactory.getInstance().getNetLayerById(NetLayerIDs.TOR_OVER_TLS_OVER_TCPIP)
-        .createNetSocket(null, null, netAddress);
-    return netSocket;
-  }*/
 
   private synchronized NetFactory getNetFactory(boolean privateCircuit) {
     if (!isConnected()) {
@@ -139,13 +123,9 @@ public class JavaTorClient {
     return netFactory;
   }
 
-  private NetlibURLStreamHandlerFactory computeStreamHandlerFactory(NetFactory netFactory) {
-    NetLayer netLayer = netFactory.getNetLayerById(NetLayerIDs.TOR);
-    netLayer.waitUntilReady(); // wait connected
-
-    NetlibURLStreamHandlerFactory urlFactory = new NetlibURLStreamHandlerFactory(false);
-    urlFactory.setNetLayerForHttpHttpsFtp(netLayer);
-    return urlFactory;
+  protected synchronized void removeConnexion(NetFactory netFactory) {
+    this.netFactories.remove(netFactory);
+    adjustPrivateConnexions();
   }
 
   public void setNbPrivateConnexions(int nbPrivateConnexions) {
