@@ -69,7 +69,14 @@ public class Application implements ApplicationRunner {
     // enable debug logs with --debug
     if (appArgs.isDebug()) {
       LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
+    } else {
+      LogbackUtils.setLogLevel("org.silvertunnel_ng.netlib", Level.ERROR.toString());
     }
+    LogbackUtils.setLogLevel(
+        "org.silvertunnel_ng.netlib.layer.tor.directory.RouterParserCallable",
+        Level.ERROR.toString());
+    LogbackUtils.setLogLevel(
+        "org.silvertunnel_ng.netlib.layer.tor.directory.Directory", Level.ERROR.toString());
 
     Optional<JavaTorClient> torClient = Optional.empty();
     WhirlpoolClientConfig config = null;

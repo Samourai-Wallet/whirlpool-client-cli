@@ -61,6 +61,7 @@ public class JavaTorClient {
   private synchronized NetFactory getNetFactoryReady() {
     // get first NetFactory ready
     NetFactory netFactory = null;
+    double lastBestIndicator = -1;
     while (true) {
       double bestIndicator = 0;
       for (NetFactory nf : netFactories) {
@@ -76,7 +77,10 @@ public class JavaTorClient {
       if (netFactory != null) {
         break;
       }
-      log.info("Connecting TOR... (" + (Math.round(bestIndicator) * 100) + "%)");
+      if (bestIndicator != lastBestIndicator) {
+        log.info("Connecting TOR... (" + (Math.round(bestIndicator) * 100) + "%)");
+        lastBestIndicator = bestIndicator;
+      }
       try {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
@@ -89,6 +93,44 @@ public class JavaTorClient {
     // create a new one for next time
     netFactories.add(createNetFactory());
     return netFactory;
+  }
+
+  public void waitConnexionReady(int nbConnexions) {
+    for (int i = 0; i < nbConnexions; i++) {
+      double lastBestIndicator = -1;
+      while (true) {
+        int nbReady = 0;
+        double bestIndicator = 0;
+        for (NetFactory nf : netFactories) {
+          double indicator = nf.getNetLayerById(NetLayerIDs.TOR).getStatus().getReadyIndicator();
+          if (indicator == 1.0) {
+            nbReady++;
+            if (nbReady == nbConnexions) {
+              return;
+            }
+          } else {
+            if (indicator > bestIndicator) {
+              bestIndicator = indicator;
+              lastBestIndicator = bestIndicator;
+            }
+          }
+        }
+        if (bestIndicator != lastBestIndicator) {
+          log.info(
+              "Connecting TOR "
+                  + nbReady
+                  + "/"
+                  + nbConnexions
+                  + "... ("
+                  + (Math.round(bestIndicator) * 100)
+                  + "%)");
+        }
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+      }
+    }
   }
 
   private void adjustPrivateConnexions() {

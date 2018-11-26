@@ -69,6 +69,8 @@ public class RunMixWallet {
       ECKey premixKey = premixAddress.getECKey();
       IPremixHandler premixHandler = new PremixHandler(premixUtxoWithBalance, premixKey);
 
+      torClient.get().waitConnexionReady(1);
+
       // one config / StompClient per client
       WhirlpoolClientConfig clientConfig = new WhirlpoolClientConfig(config);
       clientConfig.setStompClient(new JavaStompClient(torClient));

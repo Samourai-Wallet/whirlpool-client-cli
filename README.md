@@ -40,7 +40,7 @@ You need a wallet holding funds to mix. The script will run the following automa
 
 ```
 --network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
-[--clients=1] [--iteration-delay=0] [--client-delay=0] [--auto-aggregate-postmix] [--postmix-index=]
+[--clients=1] [--iteration-delay=0] [--client-delay=1] [--auto-aggregate-postmix] [--postmix-index=]
 ```
 
 Example:
