@@ -51,7 +51,7 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 - iteration-delay: delay (in seconds) to wait between mixs
 - client-delay: delay (in seconds) between each client connexion
 - auto-aggregate-postmix: enable automatically post-mix wallet agregation to refill premix when empty
-- postmix-index: set postmix-index instead of reading it from API
+- postmix-index: force postmix-index instead of reading it from local state. Use --postmix-index=0 to resync local state with API.
 
 ## Expert usage
 

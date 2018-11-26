@@ -15,11 +15,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class ApplicationWalletTest extends AbstractApplicationTest {
   private static final String SEED_WORDS =
-      "leisure mix glove infant admit multiply rib harbor burden once loop deposit";
-  private static final String SEED_PASSPHRASE = "whirlpool4";
-  private static final String SERVER = "pool.whirl.mx:8081";
-  private static final String RPC_CLIENT_URL =
-      "http://zeroleak:833b09863f0ef98435382dfbe942352551124%e5316623659e3ba8__59bb911d562@212.129.55.26:18332";
+      "hub casual home drift winter such economy wage waste wagon essay torch";
+  private static final String SEED_PASSPHRASE = "whirlpool";
+  protected static final String SERVER = "127.0.0.1:8080";
+  protected static final String RPC_CLIENT_URL = "http://user:password@host:port";
 
   @Before
   @Override
@@ -45,7 +44,8 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
           "--pool=0.01btc",
           "--server=" + SERVER,
           "--clients=5",
-          "--iteration-delay=60"
+          "--iteration-delay=60",
+          "--postmix-index=0"
         };
     ApplicationArguments appArgs = new DefaultApplicationArguments(args);
     new Application().run(appArgs);
