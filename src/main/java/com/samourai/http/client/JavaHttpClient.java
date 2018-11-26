@@ -1,41 +1,76 @@
 package com.samourai.http.client;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestClientResponseException;
-import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.kevinsawicki.http.HttpRequest;
+import com.samourai.tor.client.JavaTorClient;
+import java.lang.invoke.MethodHandles;
+import java.net.URL;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JavaHttpClient implements IHttpClient {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private Optional<JavaTorClient> torClient;
+  private ObjectMapper objectMapper;
+
+  public JavaHttpClient(Optional<JavaTorClient> torClient) {
+    this.torClient = torClient;
+    this.objectMapper = new ObjectMapper();
+    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+  }
+
   @Override
-  public <T> T parseJson(String url, Class<T> entityClass) throws HttpException {
-    RestTemplate restTemplate = new RestTemplate();
+  public <T> T parseJson(String urlStr, Class<T> entityClass) throws HttpException {
     try {
-      ResponseEntity<T> result = restTemplate.getForEntity(url, entityClass);
-      if (result == null || !result.getStatusCode().is2xxSuccessful()) {
-        // response error
-        String responseBody = null;
-        throw new HttpException(new Exception("unable to retrieve pools"), responseBody);
+      HttpRequest request;
+      if (torClient.isPresent()) {
+        // use TOR - same circuit for all GET requests
+        URL url = torClient.get().getUrl(urlStr, false);
+        request = HttpRequest.get(url);
+      } else {
+        // standard connexion
+        request = HttpRequest.get(urlStr);
       }
-      return result.getBody();
-    } catch (RestClientResponseException e) {
-      String responseBody = e.getResponseBodyAsString();
-      throw new HttpException(e, responseBody);
+      checkResponseSuccess(request);
+      T result = objectMapper.readValue(request.bytes(), entityClass);
+      return result;
+    } catch (Exception e) {
+      if (!(e instanceof HttpException)) {
+        e = new HttpException(e, null);
+      }
+      throw (HttpException) e;
     }
   }
 
   @Override
-  public void postJsonOverTor(String url, Object body) throws HttpException {
+  public void postJsonOverTor(String urlStr, Object bodyObj) throws HttpException {
     try {
-      // TODO use TOR
-      RestTemplate restTemplate = new RestTemplate();
-      ResponseEntity result = restTemplate.postForEntity(url, body, null);
-      if (result == null || !result.getStatusCode().is2xxSuccessful()) {
-        // response error
-        String responseBody = null;
-        throw new HttpException(new Exception("statusCode not successful"), responseBody);
+      String jsonBody = objectMapper.writeValueAsString(bodyObj);
+      HttpRequest request;
+      if (torClient.isPresent()) {
+        // different circuit for each POST request
+        URL url = torClient.get().getUrl(urlStr, true);
+        request = HttpRequest.post(url).header("Content-Type", "application/json");
+      } else {
+        // standard connexion
+        request = HttpRequest.post(urlStr);
       }
-    } catch (RestClientResponseException e) {
-      String responseBody = e.getResponseBodyAsString();
-      throw new HttpException(e, responseBody);
+      request.send(jsonBody.getBytes());
+      checkResponseSuccess(request);
+    } catch (Exception e) {
+      if (!(e instanceof HttpException)) {
+        e = new HttpException(e, null);
+      }
+      throw (HttpException) e;
+    }
+  }
+
+  private void checkResponseSuccess(HttpRequest request) throws HttpException {
+    if (!request.ok()) {
+      throw new HttpException(new Exception("statusCode=" + request.code()), request.body());
     }
   }
 }

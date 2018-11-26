@@ -2,6 +2,7 @@ package com.samourai.whirlpool.client.run;
 
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.stomp.client.JavaStompClient;
+import com.samourai.tor.client.JavaTorClient;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.client.WhirlpoolClient;
@@ -18,6 +19,7 @@ import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.listener.WhirlpoolClientListener;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Optional;
 import org.bitcoinj.core.ECKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +28,7 @@ public class RunMixWallet {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private WhirlpoolClientConfig config;
+  private Optional<JavaTorClient> torClient;
   private Bip84Wallet depositAndPremixWallet;
   private Bip84Wallet postmixWallet;
   private int clientDelay;
@@ -34,11 +37,13 @@ public class RunMixWallet {
 
   public RunMixWallet(
       WhirlpoolClientConfig config,
+      Optional<JavaTorClient> torClient,
       Bip84Wallet depositAndPremixWallet,
       Bip84Wallet postmixWallet,
       int clientDelay,
       int nbClients) {
     this.config = config;
+    this.torClient = torClient;
     this.depositAndPremixWallet = depositAndPremixWallet;
     this.postmixWallet = postmixWallet;
     this.clientDelay = clientDelay;
@@ -66,7 +71,7 @@ public class RunMixWallet {
 
       // one config / StompClient per client
       WhirlpoolClientConfig clientConfig = new WhirlpoolClientConfig(config);
-      clientConfig.setStompClient(new JavaStompClient());
+      clientConfig.setStompClient(new JavaStompClient(torClient));
       WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(clientConfig);
 
       if (log.isDebugEnabled()) {

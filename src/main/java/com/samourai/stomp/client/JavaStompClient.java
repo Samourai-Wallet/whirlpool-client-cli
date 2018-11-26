@@ -1,7 +1,9 @@
 package com.samourai.stomp.client;
 
+import com.samourai.tor.client.JavaTorClient;
 import com.samourai.whirlpool.client.Application;
 import java.util.Map;
+import java.util.Optional;
 import javax.websocket.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,11 @@ public class JavaStompClient implements IStompClient {
   private String stompSessionId;
 
   private StompHeaders connectedHeaders;
+  private Optional<JavaTorClient> torClient;
+
+  public JavaStompClient(Optional<JavaTorClient> torClient) {
+    this.torClient = torClient;
+  }
 
   @Override
   public void connect(

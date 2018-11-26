@@ -6,7 +6,7 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 ## General usage
 ```
 java -jar target/whirlpool-client-version-run.jar --network={main,test} --server=host:port
-[--ssl=true] [--debug] [--pool=] [--test-mode]
+[--ssl=true] [--tor=true] [--debug] [--pool=] [--test-mode]
 [--rpc-client-url=http://user:password@host:port] {args...}
 ```
 
@@ -16,6 +16,7 @@ java -jar target/whirlpool-client-version-run.jar --network={main,test} --server
 
 ### Optional arguments:
 - ssl: enable or disable SSL
+- tor: enable or disable TOR
 - debug: display more logs for debugging
 - pool: id of the pool to join
 - test-mode: disable tx0 checks, only available when enabled on server

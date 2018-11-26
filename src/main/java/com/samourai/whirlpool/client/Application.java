@@ -7,6 +7,7 @@ import com.samourai.rpc.client.JSONRpcClientServiceImpl;
 import com.samourai.rpc.client.RpcClientService;
 import com.samourai.stomp.client.IStompClient;
 import com.samourai.stomp.client.JavaStompClient;
+import com.samourai.tor.client.JavaTorClient;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.util.FormatsUtilGeneric;
@@ -61,8 +62,6 @@ public class Application implements ApplicationRunner {
     SpringApplication.run(Application.class, args);
   }
 
-  private IHttpClient httpClient = new JavaHttpClient();
-
   @Override
   public void run(ApplicationArguments args) {
     this.appArgs = new ApplicationArgs(args);
@@ -81,9 +80,16 @@ public class Application implements ApplicationRunner {
       NetworkParameters params = appArgs.getNetworkParameters();
       new Context(params); // initialize bitcoinj context
 
+      // TOR
+      Optional<JavaTorClient> torClient = Optional.empty();
+      if (appArgs.isTor()) {
+        torClient = Optional.of(new JavaTorClient());
+        torClient.get().connect();
+      }
+
       // instanciate client
       String server = appArgs.getServer();
-      WhirlpoolClientConfig config = computeWhirlpoolClientConfig(server, params);
+      WhirlpoolClientConfig config = computeWhirlpoolClientConfig(server, params, torClient);
       WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(config);
 
       // fetch pools
@@ -189,9 +195,17 @@ public class Application implements ApplicationRunner {
                         iterationDelay); // wait for API to refresh
                 int clientDelay = appArgs.getClientDelay();
                 int clients = appArgs.getClients();
+                if (torClient.isPresent()) {
+                  torClient.get().setNbPrivateConnexions(clients * 2);
+                }
                 RunMixWallet runMixWallet =
                     new RunMixWallet(
-                        config, depositAndPremixWallet, postmixWallet, clientDelay * 1000, clients);
+                        config,
+                        torClient,
+                        depositAndPremixWallet,
+                        postmixWallet,
+                        clientDelay * 1000,
+                        clients);
                 Optional<RunAggregateAndConsolidateWallet>
                     optionalRunAggregateAndConsolidateWallet =
                         appArgs.isAutoAggregatePostmix()
@@ -293,8 +307,9 @@ public class Application implements ApplicationRunner {
   }
 
   private WhirlpoolClientConfig computeWhirlpoolClientConfig(
-      String server, NetworkParameters params) {
-    IStompClient stompClient = new JavaStompClient();
+      String server, NetworkParameters params, Optional<JavaTorClient> torClient) {
+    IHttpClient httpClient = new JavaHttpClient(torClient);
+    IStompClient stompClient = new JavaStompClient(torClient);
     WhirlpoolClientConfig config =
         new WhirlpoolClientConfig(httpClient, stompClient, server, params);
     if (appArgs.isTestMode()) {

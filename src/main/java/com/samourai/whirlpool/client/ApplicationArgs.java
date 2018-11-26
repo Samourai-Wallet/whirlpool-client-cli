@@ -35,6 +35,7 @@ public class ApplicationArgs {
   private static final String ARG_POSTMIX_INDEX = "postmix-index";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
   private static final String ARG_RPC_CLIENT_URL = "rpc-client-url";
+  private static final String ARG_TOR = "tor";
   public static final String USAGE =
       "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub= --rpc-client-url] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0]";
   private static final String UTXO_SEPARATOR = "-";
@@ -241,6 +242,10 @@ public class ApplicationArgs {
 
   public String getRpcClientUrl() {
     return optionalOption(ARG_RPC_CLIENT_URL);
+  }
+
+  public boolean isTor() {
+    return Boolean.parseBoolean(requireOption(ARG_TOR, "true"));
   }
 
   private String optionalOption(String name) {
