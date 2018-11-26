@@ -143,7 +143,7 @@ public class JavaTorClient {
       // create missing connexions
       for (int i = 0; i < nbToAdd; i++) {
         if (log.isDebugEnabled()) {
-          log.debug("New private connexion: " + i + "/" + nbToAdd);
+          log.debug("New private connexion: " + (i + 1) + "/" + nbToAdd);
         }
         netFactories.add(createNetFactory());
       }
@@ -152,7 +152,7 @@ public class JavaTorClient {
       int nbToClose = -nbToAdd;
       for (int i = 0; i < nbToClose; i++) {
         if (log.isDebugEnabled()) {
-          log.debug("Closing private connexion: " + i + "/" + nbToClose);
+          log.debug("Closing private connexion: " + (i + 1) + "/" + nbToClose);
         }
         getNetFactory(true).clearRegisteredNetLayers();
       }
