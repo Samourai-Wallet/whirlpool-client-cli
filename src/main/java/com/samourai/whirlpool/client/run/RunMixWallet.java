@@ -113,7 +113,7 @@ public class RunMixWallet {
 
     if (log.isDebugEnabled()) {
       log.debug(
-          " • Connecting client #"
+          " • Connecting client "
               + (i + 1)
               + "/"
               + nbClients
@@ -129,7 +129,7 @@ public class RunMixWallet {
               + premixUtxo.value
               + "sats)");
     } else {
-      log.info(" • Connecting client #" + (i + 1));
+      log.info(" • Connecting client " + (i + 1));
     }
     whirlpoolClient.whirlpool(mixParams, 1, listener);
     return whirlpoolClient;

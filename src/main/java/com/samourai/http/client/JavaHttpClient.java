@@ -61,7 +61,7 @@ public class JavaHttpClient implements IHttpClient {
         request = HttpRequest.post(url).header("Content-Type", "application/json");
       } else {
         // standard connexion
-        request = HttpRequest.post(urlStr);
+        request = HttpRequest.post(urlStr).header("Content-Type", "application/json");
       }
       request.send(jsonBody.getBytes());
       checkResponseSuccess(request);
@@ -70,7 +70,9 @@ public class JavaHttpClient implements IHttpClient {
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
       }
-      privateTorConnexion.close();
+      if (privateTorConnexion != null) {
+        privateTorConnexion.close();
+      }
       throw (HttpException) e;
     }
   }
