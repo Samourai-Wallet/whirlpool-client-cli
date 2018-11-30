@@ -70,7 +70,9 @@ public class JavaHttpClient implements IHttpClient {
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
       }
-      privateTorConnexion.close();
+      if (privateTorConnexion != null) {
+        privateTorConnexion.close();
+      }
       throw (HttpException) e;
     }
   }
