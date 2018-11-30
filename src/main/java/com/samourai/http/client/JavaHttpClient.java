@@ -65,7 +65,9 @@ public class JavaHttpClient implements IHttpClient {
       }
       request.send(jsonBody.getBytes());
       checkResponseSuccess(request);
-      privateTorConnexion.close();
+      if (privateTorConnexion != null) {
+        privateTorConnexion.close();
+      }
     } catch (Exception e) {
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
