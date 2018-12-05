@@ -217,7 +217,7 @@ public class ApplicationArgs {
   public int getClientDelay() {
     int delay;
     try {
-      delay = Integer.parseInt(requireOption(ARG_CLIENT_DELAY, "1"));
+      delay = Integer.parseInt(requireOption(ARG_CLIENT_DELAY, "60"));
       if (delay < 0) {
         throw new IllegalArgumentException(
             "Positive value expected for option: " + ARG_CLIENT_DELAY);
