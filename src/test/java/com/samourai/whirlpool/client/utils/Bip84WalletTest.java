@@ -11,8 +11,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class Bip84WalletTest extends AbstractTest {
-  private static final String SEED_WORDS =
-      "all all all all all all all all all all all all";
+  private static final String SEED_WORDS = "all all all all all all all all all all all all";
   private static final String SEED_PASSPHRASE = "whirlpool";
   private Bip84Wallet bip84Wallet;
 

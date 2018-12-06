@@ -15,13 +15,17 @@ public class Bip84ApiWallet extends Bip84Wallet {
   private SamouraiApi samouraiApi;
 
   public Bip84ApiWallet(
-      HD_Wallet bip84w, int accountIndex, IIndexHandler indexHandler, SamouraiApi samouraiApi, boolean init)
+      HD_Wallet bip84w,
+      int accountIndex,
+      IIndexHandler indexHandler,
+      SamouraiApi samouraiApi,
+      boolean init)
       throws Exception {
     super(bip84w, accountIndex, indexHandler);
     this.samouraiApi = samouraiApi;
 
     if (init) {
-      log.info(" • Initializing bip84 wallet: "+accountIndex);
+      log.info(" • Initializing bip84 wallet: " + accountIndex);
       samouraiApi.initBip84(getZpub());
     }
 

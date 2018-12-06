@@ -4,6 +4,7 @@ import com.samourai.whirlpool.client.Application;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.ApplicationArguments;
@@ -13,9 +14,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Ignore
 public class ApplicationWalletTest extends AbstractApplicationTest {
-  private static final String SEED_WORDS =
-      "hub casual home drift winter such economy wage waste wagon essay torch";
+  private static final String SEED_WORDS = "all all all all all all all all all all all all";
   private static final String SEED_PASSPHRASE = "whirlpool";
   protected static final String SERVER = "127.0.0.1:8080";
   protected static final String RPC_CLIENT_URL = "http://user:password@host:port";
@@ -44,8 +45,9 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
           "--pool=0.01btc",
           "--server=" + SERVER,
           "--clients=5",
-          "--iteration-delay=60",
-          "--postmix-index=0"
+          "--postmix-index=0",
+          "--client-delay=1",
+          "--tor=false"
         };
     ApplicationArguments appArgs = new DefaultApplicationArguments(args);
     new Application().run(appArgs);
@@ -64,7 +66,8 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
           "--tx0=1",
           "--debug",
           "--pool=0.01btc",
-          "--server=" + SERVER
+          "--server=" + SERVER,
+          "--tor=false"
         };
     ApplicationArguments appArgs = new DefaultApplicationArguments(args);
     new Application().run(appArgs);
