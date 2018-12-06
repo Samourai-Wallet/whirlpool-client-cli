@@ -6,6 +6,7 @@ import com.samourai.http.client.IHttpClient;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -17,7 +18,7 @@ public class SamouraiApi {
   private static final String URL_BACKEND = "https://api.samouraiwallet.com/test";
   private static final String URL_UNSPENT = "/v2/unspent?active=";
   private static final String URL_MULTIADDR = "/v2/multiaddr?active=";
-  private static final String URL_INIT_BIP84 = "/v2/multiaddr?bip84=";
+  private static final String URL_INIT_BIP84 = "/v2/xpub";
   private static final String URL_FEES = "/v2/fees";
   private static final int MAX_FEE_PER_BYTE = 500;
   private static final int FAILOVER_FEE_PER_BYTE = 400;
@@ -74,17 +75,16 @@ public class SamouraiApi {
     return address;
   }
 
-  public List<MultiAddrResponse.Address> initBip84(String zpub) throws Exception {
-    String url = URL_BACKEND + URL_INIT_BIP84 + zpub;
+  public void initBip84(String zpub) throws Exception {
+    String url = URL_BACKEND + URL_INIT_BIP84;
     if (log.isDebugEnabled()) {
-      log.debug("initBip84: " + url);
+      log.debug("initBip84: zpub=" + zpub);
     }
-    MultiAddrResponse multiAddrResponse = httpClient.parseJson(url, MultiAddrResponse.class);
-    List<MultiAddrResponse.Address> addresses = new ArrayList<>();
-    if (multiAddrResponse.addresses != null) {
-      addresses = Arrays.asList(multiAddrResponse.addresses);
-    }
-    return addresses;
+    Map<String, String> postBody = new HashMap<>();
+    postBody.put("xpub", zpub);
+    postBody.put("type", "new");
+    postBody.put("segwit", "bip84");
+    httpClient.postUrlEncoded(url, postBody);
   }
 
   public int fetchFees() {

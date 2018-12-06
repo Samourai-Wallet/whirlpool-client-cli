@@ -7,6 +7,7 @@ import com.samourai.tor.client.JavaTorClient;
 import com.samourai.tor.client.JavaTorConnexion;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,12 +59,43 @@ public class JavaHttpClient implements IHttpClient {
         // different circuit for each POST request
         privateTorConnexion = torClient.get().getConnexion(true);
         URL url = privateTorConnexion.getUrl(urlStr);
-        request = HttpRequest.post(url).header("Content-Type", "application/json");
+        request = HttpRequest.post(url);
       } else {
         // standard connexion
-        request = HttpRequest.post(urlStr).header("Content-Type", "application/json");
+        request = HttpRequest.post(urlStr);
       }
-      request.send(jsonBody.getBytes());
+      request.contentType(HttpRequest.CONTENT_TYPE_JSON).send(jsonBody.getBytes());
+      checkResponseSuccess(request);
+      if (privateTorConnexion != null) {
+        privateTorConnexion.close();
+      }
+    } catch (Exception e) {
+      if (!(e instanceof HttpException)) {
+        e = new HttpException(e, null);
+      }
+      if (privateTorConnexion != null) {
+        privateTorConnexion.close();
+      }
+      throw (HttpException) e;
+    }
+  }
+
+  @Override
+  public void postUrlEncoded(String urlStr, Map<String, String> body) throws HttpException {
+    String bodyUrlEncoded = HttpRequest.append("", body).substring(1); // remove starting '?'
+    JavaTorConnexion privateTorConnexion = null;
+    try {
+      HttpRequest request;
+      if (torClient.isPresent()) {
+        // different circuit for each POST request
+        privateTorConnexion = torClient.get().getConnexion(true);
+        URL url = privateTorConnexion.getUrl(urlStr);
+        request = HttpRequest.post(url);
+      } else {
+        // standard connexion
+        request = HttpRequest.post(urlStr);
+      }
+      request.contentType(HttpRequest.CONTENT_TYPE_FORM).send(bodyUrlEncoded.getBytes());
       checkResponseSuccess(request);
       if (privateTorConnexion != null) {
         privateTorConnexion.close();

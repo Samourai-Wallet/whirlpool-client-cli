@@ -156,23 +156,45 @@ public class Application implements ApplicationRunner {
                 postmixIndexHandler.set(postmixIndex);
               }
 
+              // init bip84 at first run
+              boolean initBip84 = (fileIndexHandler.get(FileIndexHandler.BIP84_INITIALIZED) != 1);
+
               // init wallets
               Bip84ApiWallet depositAndPremixWallet =
                   new Bip84ApiWallet(
                       bip84w,
                       ACCOUNT_DEPOSIT_AND_PREMIX,
                       depositAndPremixIndexHandler,
-                      samouraiApi);
+                      samouraiApi,
+                      initBip84);
               Bip84ApiWallet postmixWallet =
-                  new Bip84ApiWallet(bip84w, ACCOUNT_POSTMIX, postmixIndexHandler, samouraiApi);
+                  new Bip84ApiWallet(bip84w, ACCOUNT_POSTMIX, postmixIndexHandler, samouraiApi, initBip84);
               RunTx0 runTx0 =
                   new RunTx0(params, samouraiApi, rpcClientService, depositAndPremixWallet);
               RunAggregateAndConsolidateWallet runAggregateAndConsolidateWallet =
                   new RunAggregateAndConsolidateWallet(
                       params, samouraiApi, rpcClientService, depositAndPremixWallet, postmixWallet);
 
-              // init wallets
-              initWallets(depositAndPremixWallet, postmixWallet, fileIndexHandler, samouraiApi);
+              // save initialized state
+              if (initBip84) {
+                fileIndexHandler.set(FileIndexHandler.BIP84_INITIALIZED, 1);
+              }
+
+              // log zpubs
+              if (log.isDebugEnabled()) {
+                String depositAndPremixZpub = depositAndPremixWallet.getZpub();
+                String postmixZpub = postmixWallet.getZpub();
+                log.debug(
+                    "Using wallet depositAndPremix: accountIndex="
+                        + depositAndPremixWallet.getAccountIndex()
+                        + ", zpub="
+                        + depositAndPremixZpub);
+                log.debug(
+                    "Using wallet postmix: accountIndex="
+                        + postmixWallet.getAccountIndex()
+                        + ", zpub="
+                        + postmixZpub);
+              }
 
               Optional<Integer> tx0Arg = appArgs.getTx0();
               if (tx0Arg.isPresent()) {
@@ -372,40 +394,5 @@ public class Application implements ApplicationRunner {
       }
     }
     return f;
-  }
-
-  private void initWallets(
-      Bip84ApiWallet depositAndPremixWallet,
-      Bip84ApiWallet postmixWallet,
-      FileIndexHandler fileIndexHandler,
-      SamouraiApi samouraiApi)
-      throws Exception {
-    String depositAndPremixZpub = depositAndPremixWallet.getZpub();
-    String postmixZpub = postmixWallet.getZpub();
-
-    // log zpubs
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "Using wallet depositAndPremix: accountIndex="
-              + depositAndPremixWallet.getAccountIndex()
-              + ", zpub="
-              + depositAndPremixZpub);
-      log.debug(
-          "Using wallet postmix: accountIndex="
-              + postmixWallet.getAccountIndex()
-              + ", zpub="
-              + postmixZpub);
-    }
-
-    // init bip84 at first run
-    if (fileIndexHandler.get(FileIndexHandler.BIP84_INITIALIZED) != 1) {
-      log.info(" • Initializing bip84 wallet: depositAndPremix");
-      samouraiApi.initBip84(depositAndPremixZpub);
-
-      log.info(" • Initializing bip84 wallet: postmix");
-      samouraiApi.initBip84(postmixZpub);
-
-      fileIndexHandler.set(FileIndexHandler.BIP84_INITIALIZED, 1);
-    }
   }
 }
