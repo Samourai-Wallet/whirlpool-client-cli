@@ -23,6 +23,7 @@
             <groupId>wf.bitcoin</groupId>
             <artifactId>JavaBitcoindRpcClient</artifactId>
             <version>1.0.0</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
