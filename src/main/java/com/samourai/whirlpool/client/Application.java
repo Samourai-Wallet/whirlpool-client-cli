@@ -168,7 +168,8 @@ public class Application implements ApplicationRunner {
                       samouraiApi,
                       initBip84);
               Bip84ApiWallet postmixWallet =
-                  new Bip84ApiWallet(bip84w, ACCOUNT_POSTMIX, postmixIndexHandler, samouraiApi, initBip84);
+                  new Bip84ApiWallet(
+                      bip84w, ACCOUNT_POSTMIX, postmixIndexHandler, samouraiApi, initBip84);
               RunTx0 runTx0 =
                   new RunTx0(params, samouraiApi, rpcClientService, depositAndPremixWallet);
               RunAggregateAndConsolidateWallet runAggregateAndConsolidateWallet =

@@ -20,9 +20,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.Polve</groupId>
+            <groupId>wf.bitcoin</groupId>
             <artifactId>JavaBitcoindRpcClient</artifactId>
-            <version>0.17.x-SNAPSHOT</version>
+            <version>1.0.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -90,13 +90,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
