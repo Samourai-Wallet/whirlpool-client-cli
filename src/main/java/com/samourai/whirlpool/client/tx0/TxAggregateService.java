@@ -33,7 +33,7 @@ public class TxAggregateService {
   public Transaction txAggregate(
       List<TransactionOutPoint> spendFromOutpoints,
       List<HD_Address> spendFromAddresses,
-      HD_Address toAddress,
+      String toAddress,
       long feeSatPerByte)
       throws Exception {
 
@@ -44,23 +44,11 @@ public class TxAggregateService {
     long destinationValue = inputsValue - minerFee;
 
     // 1 output
-    String toAddressBech32 = bech32Util.toBech32(toAddress, params);
-    ECKey toAddressKey = toAddress.getECKey();
     if (log.isDebugEnabled()) {
-      log.debug(
-          "Tx out: address="
-              + toAddressBech32
-              + ", key="
-              + toAddressKey.getPrivateKeyAsWiF(params)
-              + ", path="
-              + toAddress.toJSON().get("path")
-              + " ("
-              + destinationValue
-              + " sats)");
+      log.debug("Tx out: address=" + toAddress + " (" + destinationValue + " sats)");
     }
 
-    TransactionOutput output =
-        bech32Util.getTransactionOutput(toAddressBech32, destinationValue, params);
+    TransactionOutput output = bech32Util.getTransactionOutput(toAddress, destinationValue, params);
     tx.addOutput(output);
 
     // prepare N inputs

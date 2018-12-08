@@ -1,5 +1,7 @@
 package com.samourai.whirlpool.client;
 
+import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.utils.CliUtils;
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import org.bitcoinj.core.NetworkParameters;
@@ -30,8 +32,10 @@ public class ApplicationArgs {
   private static final String ARG_ITERATION_DELAY = "iteration-delay";
   private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
+  private static final String ARG_POSTMIX_INDEX = "postmix-index";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
   private static final String ARG_RPC_CLIENT_URL = "rpc-client-url";
+  private static final String ARG_TOR = "tor";
   public static final String USAGE =
       "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub= --rpc-client-url] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0]";
   private static final String UTXO_SEPARATOR = "-";
@@ -107,14 +111,20 @@ public class ApplicationArgs {
     return utxoBalance;
   }
 
-  public String getSeedWords() {
-    String seedWords = requireOption(ARG_SEED_WORDS);
+  public String getSeedWords() throws NotifiableException {
+    String seedWords = optionalOption(ARG_SEED_WORDS);
+    if (seedWords == null) {
+      seedWords = CliUtils.readUserInput(ARG_SEED_WORDS, true);
+    }
     Assert.notNull(seedWords, "seedWords are null");
     return seedWords;
   }
 
-  public String getSeedPassphrase() {
-    String seedPassphrase = requireOption(ARG_SEED_PASSPHRASE);
+  public String getSeedPassphrase() throws NotifiableException {
+    String seedPassphrase = optionalOption(ARG_SEED_PASSPHRASE);
+    if (seedPassphrase == null) {
+      seedPassphrase = CliUtils.readUserInput(ARG_SEED_PASSPHRASE, true);
+    }
     Assert.notNull(seedPassphrase, "seedPassphrase is null");
     return seedPassphrase;
   }
@@ -130,6 +140,20 @@ public class ApplicationArgs {
       throw new IllegalArgumentException("Numeric value expected for option: " + ARG_PAYNYM_INDEX);
     }
     return paynymIndex;
+  }
+
+  public Integer getPostmixIndex() {
+    Integer numeric = null;
+    try {
+      String str = optionalOption(ARG_POSTMIX_INDEX);
+      if (str != null) {
+        numeric = Integer.parseInt(str);
+        numeric = Math.max(0, numeric);
+      }
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_POSTMIX_INDEX);
+    }
+    return numeric;
   }
 
   public int getMixs() {
@@ -193,7 +217,7 @@ public class ApplicationArgs {
   public int getClientDelay() {
     int delay;
     try {
-      delay = Integer.parseInt(requireOption(ARG_CLIENT_DELAY, "0"));
+      delay = Integer.parseInt(requireOption(ARG_CLIENT_DELAY, "60"));
       if (delay < 0) {
         throw new IllegalArgumentException(
             "Positive value expected for option: " + ARG_CLIENT_DELAY);
@@ -208,12 +232,20 @@ public class ApplicationArgs {
     return args.containsOption(ARG_AGGREGATE_POSTMIX);
   }
 
+  public String getAggregatePostmix() {
+    return optionalOption(ARG_AGGREGATE_POSTMIX);
+  }
+
   public boolean isAutoAggregatePostmix() {
     return args.containsOption(ARG_AUTO_AGGREGATE_POSTMIX);
   }
 
   public String getRpcClientUrl() {
     return optionalOption(ARG_RPC_CLIENT_URL);
+  }
+
+  public boolean isTor() {
+    return Boolean.parseBoolean(requireOption(ARG_TOR, "true"));
   }
 
   private String optionalOption(String name) {

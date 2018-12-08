@@ -31,12 +31,15 @@ public class RunAggregateAndConsolidateWallet {
     this.postmixWallet = postmixWallet;
   }
 
-  public void run() throws Exception {
+  public boolean run() throws Exception {
     // go aggregate postmix to premix
     log.info(" • Aggregating postmix wallet to premix...");
-    new RunAggregateWallet(
-            params, samouraiApi, rpcClientService, postmixWallet, depositAndPremixWallet)
-        .run();
+    boolean success =
+        new RunAggregateWallet(params, samouraiApi, rpcClientService, postmixWallet)
+            .run(depositAndPremixWallet);
+    if (!success) {
+      return false;
+    }
 
     // delay to let API detect the broadcasted tx
     log.info("Refreshing utxos...");
@@ -44,8 +47,8 @@ public class RunAggregateAndConsolidateWallet {
 
     // consolidate premix
     log.info(" • Consolidating premix wallet...");
-    new RunAggregateWallet(
-            params, samouraiApi, rpcClientService, depositAndPremixWallet, depositAndPremixWallet)
-        .run();
+    new RunAggregateWallet(params, samouraiApi, rpcClientService, depositAndPremixWallet)
+        .run(depositAndPremixWallet);
+    return true;
   }
 }

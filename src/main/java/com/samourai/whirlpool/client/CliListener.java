@@ -21,7 +21,7 @@ public class CliListener extends LoggingWhirlpoolClientListener {
 
   @Override
   public void success(int nbMixs, MixSuccess mixSuccess) {
-    //super.success(nbMixs, mixSuccess); // no log at success
+    // super.success(nbMixs, mixSuccess); // no log at success
     done = true;
 
     // override with custom code here: all mixs success

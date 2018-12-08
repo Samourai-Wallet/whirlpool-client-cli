@@ -9,6 +9,8 @@
     <properties>
         <spring.version>2.0.3.RELEASE</spring.version>
         <spring-websocket.version>5.0.7.RELEASE</spring-websocket.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <dependencies>
         <dependency>
@@ -18,9 +20,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.Polve</groupId>
+            <groupId>wf.bitcoin</groupId>
             <artifactId>JavaBitcoindRpcClient</artifactId>
-            <version>0.17.x-SNAPSHOT</version>
+            <version>1.0.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -40,6 +42,16 @@
             <artifactId>spring-messaging</artifactId>
             <version>${spring-websocket.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.silvertunnel-ng</groupId>
+            <artifactId>netlib</artifactId>
+            <version>0.0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.kevinsawicki</groupId>
+            <artifactId>http-request</artifactId>
+            <version>5.6</version>
         </dependency>
         <!-- test -->
         <dependency>
@@ -78,13 +90,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

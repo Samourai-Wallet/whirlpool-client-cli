@@ -2,8 +2,13 @@ package com.samourai.whirlpool.client.run;
 
 import com.samourai.api.SamouraiApi;
 import com.samourai.api.beans.UnspentResponse;
+import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
+import com.samourai.whirlpool.client.exception.BroadcastException;
+import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.indexHandler.IIndexHandler;
+import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -16,26 +21,29 @@ import org.slf4j.LoggerFactory;
 public class RunLoopWallet {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int MIN_MUST_MIX = 3;
-  private static final int OUTPUTS_PER_TX0 = 10;
+  private static final int OUTPUTS_PER_TX0 = 5;
 
+  private WhirlpoolClientConfig config;
   private RunTx0 runTx0;
   private RunMixWallet runMixWallet;
   private Bip84ApiWallet depositAndPremixWallet;
   private Optional<RunAggregateAndConsolidateWallet> runAggregateAndConsolidateWallet;
 
   public RunLoopWallet(
+      WhirlpoolClientConfig config,
       RunTx0 runTx0,
       RunMixWallet runMixWallet,
       Bip84ApiWallet depositAndPremixWallet,
       Optional<RunAggregateAndConsolidateWallet> runAggregateAndConsolidateWallet) {
+    this.config = config;
     this.runTx0 = runTx0;
     this.runMixWallet = runMixWallet;
     this.depositAndPremixWallet = depositAndPremixWallet;
     this.runAggregateAndConsolidateWallet = runAggregateAndConsolidateWallet;
   }
 
-  public boolean run(Pool pool, int nbClients) throws Exception {
+  public boolean run(Pool pool, int nbClients, String feePaymentCode, IIndexHandler feeIndexHandler)
+      throws Exception {
     // fetch unspent utx0s
     log.info(" • Fetching unspent outputs from premix...");
     List<UnspentResponse.UnspentOutput> utxos =
@@ -64,59 +72,73 @@ public class RunLoopWallet {
       // not enough mustMixUtxos => Tx0
       for (int i = 0; i < missingMustMixUtxos; i++) {
         log.info(" • Tx0 (" + (i + 1) + "/" + missingMustMixUtxos + ")...");
-        try {
-          runTx0.runTx0(pool, OUTPUTS_PER_TX0);
-        } catch (Exception e) {
-          // premixAndDeposit is empty => autoRefill when possible
-          autoRefill();
-          runTx0.runTx0(pool, OUTPUTS_PER_TX0);
-        }
+        doRunTx0(pool, missingMustMixUtxos, feePaymentCode, feeIndexHandler);
 
         log.info("Refreshing utxos...");
         Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
       }
 
       // recursive
-      return run(pool, nbClients);
+      return run(pool, nbClients, feePaymentCode, feeIndexHandler);
     } else {
       log.info(" • New mix...");
       return runMixWallet.runMix(mustMixUtxosUnique, pool);
     }
   }
 
-  private List<UnspentResponse.UnspentOutput> autoRefill() throws Exception {
-    if (!runAggregateAndConsolidateWallet.isPresent()) {
-      throw new Exception("ERROR: depositAndPremixWallet is empty.");
+  private void doRunTx0(
+      Pool pool, int missingMustMixUtxos, String feePaymentCode, IIndexHandler feeIndexHandler)
+      throws Exception {
+    try {
+      runTx0.runTx0(pool, OUTPUTS_PER_TX0, feePaymentCode, feeIndexHandler);
+    } catch (BroadcastException e) {
+      throw e;
+    } catch (EmptyWalletException e) {
+      // premixAndDeposit is empty => autoRefill when possible
+      long missingBalance =
+          missingMustMixUtxos * (OUTPUTS_PER_TX0 * pool.getDenomination() + RunTx0.FEE_VALUE);
+      autoRefill(missingBalance);
+
+      doRunTx0(pool, missingMustMixUtxos, feePaymentCode, feeIndexHandler);
     }
+  }
+
+  private void autoRefill(long missingBalance) throws Exception {
+    String depositAddress =
+        Bech32UtilGeneric.getInstance()
+            .toBech32(depositAndPremixWallet.getNextAddress(false), config.getNetworkParameters());
+    String message =
+        "depositAndPremixWallet is empty. I need at least "
+            + CliUtils.satToBtc(missingBalance)
+            + "btc (+ fees) to continue.\nPlease make a deposit to "
+            + depositAddress;
+    if (!runAggregateAndConsolidateWallet.isPresent()) {
+      CliUtils.waitUserAction(message);
+      return;
+    }
+
     // auto aggregate postmix
     log.info(" • depositAndPremixWallet wallet is empty. Aggregating postmix to refill it...");
-    runAggregateAndConsolidateWallet.get().run();
+    boolean aggregateSuccess = runAggregateAndConsolidateWallet.get().run();
+    if (!aggregateSuccess) {
+      CliUtils.waitUserAction(message);
+    }
 
     log.info("Refreshing utxos...");
     Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
-
-    List<UnspentResponse.UnspentOutput> utxos =
-        depositAndPremixWallet.fetchUtxos().stream().collect(Collectors.toList());
-    if (utxos.isEmpty()) {
-      throw new Exception("ERROR: depositAndPremixWallet is empty.");
-    }
-    return utxos;
   }
 
   private int computeMissingMustMixUtxos(
       int nbClients,
       List<UnspentResponse.UnspentOutput> mustMixUtxos,
       List<UnspentResponse.UnspentOutput> liquidityUtxos) {
-    int missingMustmixs = MIN_MUST_MIX - mustMixUtxos.size();
     int missingAnonymitySet = nbClients - (mustMixUtxos.size() + liquidityUtxos.size());
-    int missingMustMixUtxos = Math.max(missingMustmixs, missingAnonymitySet);
+    int missingMustMixUtxos = missingAnonymitySet > 0 ? missingAnonymitySet : 0;
     if (log.isDebugEnabled()) {
       log.debug(
           "Next mix needs "
               + nbClients
-              + " utxos (minMustMix="
-              + MIN_MUST_MIX
-              + " mustMix). I have "
+              + " utxos. I have "
               + mustMixUtxos.size()
               + " unique mustMixUtxo and "
               + liquidityUtxos.size()

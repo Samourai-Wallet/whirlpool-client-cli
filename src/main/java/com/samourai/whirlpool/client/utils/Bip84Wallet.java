@@ -3,6 +3,7 @@ package com.samourai.whirlpool.client.utils;
 import com.samourai.api.beans.UnspentResponse;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.hd.HD_Wallet;
+import com.samourai.whirlpool.client.utils.indexHandler.IIndexHandler;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,16 +14,20 @@ public class Bip84Wallet {
 
   protected HD_Wallet bip84w;
   protected int accountIndex;
-  protected int nextAddressIndex;
+  protected IIndexHandler indexHandler;
 
-  public Bip84Wallet(HD_Wallet bip84w, int accountIndex, int nextAddressIndex) {
+  public Bip84Wallet(HD_Wallet bip84w, int accountIndex, IIndexHandler indexHandler) {
     this.bip84w = bip84w;
     this.accountIndex = accountIndex;
-    this.nextAddressIndex = nextAddressIndex;
+    this.indexHandler = indexHandler;
   }
 
   public HD_Address getNextAddress() {
-    int nextAddressIndex = getNextAddressIndex();
+    return getNextAddress(true);
+  }
+
+  public HD_Address getNextAddress(boolean increment) {
+    int nextAddressIndex = increment ? indexHandler.getAndIncrement() : indexHandler.get();
     return getAddressAt(CHAIN, nextAddressIndex);
   }
 
@@ -35,20 +40,18 @@ public class Bip84Wallet {
   }
 
   public String getZpub() {
-    String zpub = bip84w.getAccountAt(accountIndex).zpubstr();
-    if (log.isDebugEnabled()) {
-      log.debug("zpub for account #" + accountIndex + ": " + zpub);
-    }
-    return zpub;
-  }
-
-  private int getNextAddressIndex() {
-    // increment on each call
-    nextAddressIndex++;
-    return nextAddressIndex - 1;
+    return bip84w.getAccountAt(accountIndex).zpubstr();
   }
 
   private HD_Address getAddressBip84(int account, int chain, int index) {
     return bip84w.getAccountAt(account).getChain(chain).getAddressAt(index);
+  }
+
+  public IIndexHandler getIndexHandler() {
+    return indexHandler;
+  }
+
+  public int getAccountIndex() {
+    return accountIndex;
   }
 }

@@ -37,7 +37,7 @@ public class ApplicationTest extends AbstractApplicationTest {
 
     new Application().run(appArgs);
 
-    Assert.assertTrue(getOut().contains(" • Retrieving pools..."));
+    Assert.assertTrue(getOut().contains(" • Fetching pools..."));
     Assert.assertTrue(getErr().isEmpty());
   }
 
