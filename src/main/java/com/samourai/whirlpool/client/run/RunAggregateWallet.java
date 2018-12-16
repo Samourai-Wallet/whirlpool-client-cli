@@ -5,6 +5,7 @@ import com.samourai.api.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
+import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.tx0.TxAggregateService;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.Bip84Wallet;
@@ -28,7 +29,6 @@ public class RunAggregateWallet {
   private SamouraiApi samouraiApi;
   private Optional<RpcClientService> rpcClientService;
   private Bip84ApiWallet sourceWallet;
-  private Bip84Wallet destinationWallet;
 
   public RunAggregateWallet(
       NetworkParameters params,
@@ -70,14 +70,21 @@ public class RunAggregateWallet {
       for (int i = offset; i < (offset + AGGREGATED_UTXOS_PER_TX) && i < utxos.size(); i++) {
         subsetUtxos.add(utxos.get(i));
       }
-      if (subsetUtxos.size() > 0) {
+      // allow aggregate 1 utxo when moving to specific address, otherwise 2 utxos min
+      // (otherwise infinite loop on RunUpgrade)
+      if (subsetUtxos.size() > 1 || (subsetUtxos.size() == 1 && destinationAddress != null)) {
         String toAddress = destinationAddress;
         if (toAddress == null) {
           toAddress = bech32Util.toBech32(destinationWallet.getNextAddress(), params);
         }
 
         log.info("Aggregating " + subsetUtxos.size() + " utxos (pass #" + round + ")");
-        runAggregate(subsetUtxos, toAddress);
+        try {
+          runAggregate(subsetUtxos, toAddress);
+        } catch (BroadcastException e) {
+          CliUtils.broadcastTxInstruction(e);
+          // stay in the loop
+        }
         success = true;
 
         log.info("Refreshing utxos...");

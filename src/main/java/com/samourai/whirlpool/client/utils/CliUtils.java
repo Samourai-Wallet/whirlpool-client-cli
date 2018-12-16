@@ -85,8 +85,7 @@ public class CliUtils {
   public static long estimateTxBytes(int nbInputs, int nbOutputs) {
     long bytes = TX_BYTES_PER_INPUT * nbInputs + TX_BYTES_PER_OUTPUT * nbOutputs;
     if (log.isDebugEnabled()) {
-      log.debug(
-          "tx size estimation: " + bytes + "b (" + nbInputs + " ins, " + nbOutputs + "outs)");
+      log.debug("tx size estimation: " + bytes + "b (" + nbInputs + " ins, " + nbOutputs + "outs)");
     }
 
     // TODO
