@@ -43,7 +43,12 @@ public class RunTx0 {
     this.depositAndPremixWallet = depositAndPremixWallet;
   }
 
-  public Tx0 runTx0(Pool pool, int nbOutputs, String feePaymentCode, IIndexHandler feeIndexHandler)
+  public Tx0 runTx0(
+      Pool pool,
+      int nbOutputs,
+      String feePaymentCode,
+      byte[] feePayload,
+      IIndexHandler feeIndexHandler)
       throws Exception {
     List<UnspentResponse.UnspentOutput> utxos = depositAndPremixWallet.fetchUtxos();
     if (utxos.isEmpty()) {
@@ -75,8 +80,9 @@ public class RunTx0 {
     }
 
     UnspentResponse.UnspentOutput tx0SpendFrom = tx0SpendFroms.get(0);
-    int feeIndice = feeIndexHandler.getAndIncrement();
-    Tx0 tx0 = runTx0(tx0SpendFrom, destinationValue, nbOutputs, feePaymentCode, feeIndice);
+    int feeIndice = (feePayload != null ? 0 : feeIndexHandler.getAndIncrement());
+    Tx0 tx0 =
+        runTx0(tx0SpendFrom, destinationValue, nbOutputs, feePaymentCode, feePayload, feeIndice);
     return tx0;
   }
 
@@ -85,6 +91,7 @@ public class RunTx0 {
       long destinationValue,
       int nbOutputs,
       String feePaymentCode,
+      byte[] feePayload,
       int feeIndice)
       throws Exception {
 
@@ -107,7 +114,8 @@ public class RunTx0 {
                 FEE_XPUB,
                 FEE_VALUE,
                 feePaymentCode,
-                feeIndice);
+                feeIndice,
+                feePayload);
 
     log.info("Tx0:");
     log.info(tx0.getTx().toString());

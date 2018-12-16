@@ -33,6 +33,7 @@ import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
@@ -200,7 +201,12 @@ public class Application implements ApplicationRunner {
               Optional<Integer> tx0Arg = appArgs.getTx0();
               if (tx0Arg.isPresent()) {
                 // go tx0
-                runTx0.runTx0(pool, tx0Arg.get(), pools.getFeePaymentCode(), feeIndexHandler);
+                runTx0.runTx0(
+                    pool,
+                    tx0Arg.get(),
+                    pools.getFeePaymentCode(),
+                    pools.getFeePayload(),
+                    feeIndexHandler);
               } else if (appArgs.isAggregatePostmix()) {
                 if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
                   throw new NotifiableException(
@@ -256,7 +262,11 @@ public class Application implements ApplicationRunner {
                   try {
                     boolean success =
                         runLoopWallet.run(
-                            pool, clients, pools.getFeePaymentCode(), feeIndexHandler);
+                            pool,
+                            clients,
+                            pools.getFeePaymentCode(),
+                            pools.getFeePayload(),
+                            feeIndexHandler);
                     if (!success) {
                       throw new NotifiableException("Iteration failed");
                     }
@@ -360,6 +370,11 @@ public class Application implements ApplicationRunner {
     }
     boolean ssl = appArgs.isSsl();
     config.setSsl(ssl);
+
+    String scode = appArgs.getScode();
+    if (!StringUtils.isEmpty(scode)) {
+      config.setScode(scode);
+    }
     return config;
   }
 

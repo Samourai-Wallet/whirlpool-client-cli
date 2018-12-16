@@ -9,7 +9,7 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 ## General usage
 ```
 java -jar target/whirlpool-client-version-run.jar --network={main,test} --server=host:port
-[--ssl=true] [--tor=true] [--debug] [--pool=] [--test-mode]
+[--ssl=true] [--tor=true] [--debug] [--pool=] [--scode=] [--test-mode]
 [--rpc-client-url=http://user:password@host:port] {args...}
 ```
 
@@ -22,6 +22,7 @@ java -jar target/whirlpool-client-version-run.jar --network={main,test} --server
 - tor: enable or disable TOR
 - debug: display more logs for debugging
 - pool: id of the pool to join
+- scode: optional scode to use for tx0
 - test-mode: disable tx0 checks, only available when enabled on server
 - rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 or aggregate transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will show rawtx and stop to let you broadcast it manually.
 

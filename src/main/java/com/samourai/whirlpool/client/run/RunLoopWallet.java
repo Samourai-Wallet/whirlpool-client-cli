@@ -42,7 +42,12 @@ public class RunLoopWallet {
     this.runAggregateAndConsolidateWallet = runAggregateAndConsolidateWallet;
   }
 
-  public boolean run(Pool pool, int nbClients, String feePaymentCode, IIndexHandler feeIndexHandler)
+  public boolean run(
+      Pool pool,
+      int nbClients,
+      String feePaymentCode,
+      byte[] feePayload,
+      IIndexHandler feeIndexHandler)
       throws Exception {
     // fetch unspent utx0s
     log.info(" • Fetching unspent outputs from premix...");
@@ -72,14 +77,14 @@ public class RunLoopWallet {
       // not enough mustMixUtxos => Tx0
       for (int i = 0; i < missingMustMixUtxos; i++) {
         log.info(" • Tx0 (" + (i + 1) + "/" + missingMustMixUtxos + ")...");
-        doRunTx0(pool, missingMustMixUtxos, feePaymentCode, feeIndexHandler);
+        doRunTx0(pool, missingMustMixUtxos, feePaymentCode, feePayload, feeIndexHandler);
 
         log.info("Refreshing utxos...");
         Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
       }
 
       // recursive
-      return run(pool, nbClients, feePaymentCode, feeIndexHandler);
+      return run(pool, nbClients, feePaymentCode, feePayload, feeIndexHandler);
     } else {
       log.info(" • New mix...");
       return runMixWallet.runMix(mustMixUtxosUnique, pool);
@@ -87,10 +92,14 @@ public class RunLoopWallet {
   }
 
   private void doRunTx0(
-      Pool pool, int missingMustMixUtxos, String feePaymentCode, IIndexHandler feeIndexHandler)
+      Pool pool,
+      int missingMustMixUtxos,
+      String feePaymentCode,
+      byte[] feePayload,
+      IIndexHandler feeIndexHandler)
       throws Exception {
     try {
-      runTx0.runTx0(pool, OUTPUTS_PER_TX0, feePaymentCode, feeIndexHandler);
+      runTx0.runTx0(pool, OUTPUTS_PER_TX0, feePaymentCode, feePayload, feeIndexHandler);
     } catch (BroadcastException e) {
       throw e;
     } catch (EmptyWalletException e) {
@@ -99,7 +108,7 @@ public class RunLoopWallet {
           missingMustMixUtxos * (OUTPUTS_PER_TX0 * pool.getDenomination() + RunTx0.FEE_VALUE);
       autoRefill(missingBalance);
 
-      doRunTx0(pool, missingMustMixUtxos, feePaymentCode, feeIndexHandler);
+      doRunTx0(pool, missingMustMixUtxos, feePaymentCode, feePayload, feeIndexHandler);
     }
   }
 

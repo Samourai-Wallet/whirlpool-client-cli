@@ -6,7 +6,7 @@ import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.utils.Bip84Wallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
-import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
+import com.samourai.whirlpool.protocol.fee.WhirlpoolFee;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 public class Tx0Service {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final Bech32UtilGeneric bech32Util = Bech32UtilGeneric.getInstance();
+  private final WhirlpoolFee whirlpoolFee = WhirlpoolFee.getInstance();
 
   private final NetworkParameters params;
 
@@ -47,7 +48,8 @@ public class Tx0Service {
       String xpubFee,
       long fee,
       String feePaymentCode,
-      int feeIndice)
+      int feeIndice,
+      byte[] feePayload)
       throws Exception {
 
     long spendFromBalance = spendFromOutpoint.getValue().getValue();
@@ -96,14 +98,14 @@ public class Tx0Service {
     }
 
     byte[] opReturnValue =
-        WhirlpoolProtocol.getWhirlpoolFee()
-            .encode(feeIndice, feePaymentCode, params, spendFromPrivKey, spendFromOutpoint);
+        whirlpoolFee.encode(
+            feeIndice, feePayload, feePaymentCode, params, spendFromPrivKey, spendFromOutpoint);
 
     // fee estimation: n outputs + change + fee + OP_RETURN
     long totalBytes =
         CliUtils.estimateTxBytes(1, nbOutputs + 2) + CliUtils.estimateOpReturnBytes(opReturnValue);
     if (log.isDebugEnabled()) {
-      log.debug("totalBytes=" + totalBytes + "b");
+      log.debug("tx size estimation final: " + totalBytes + "b");
     }
     long tx0MinerFee = CliUtils.computeMinerFee(totalBytes, feeSatPerByte);
     long changeValue = spendFromBalance - (destinationValue * nbOutputs) - fee - tx0MinerFee;
@@ -127,20 +129,23 @@ public class Tx0Service {
               + " sats)");
     }
 
-    // derive fee address
-    DeterministicKey mKey = FormatsUtilGeneric.getInstance().createMasterPubKeyFromXPub(xpubFee);
-    DeterministicKey cKey =
-        HDKeyDerivation.deriveChildKey(
-            mKey, new ChildNumber(0, false)); // assume external/receive chain
-    DeterministicKey adk = HDKeyDerivation.deriveChildKey(cKey, new ChildNumber(feeIndice, false));
-    ECKey feePubkey = ECKey.fromPublicOnly(adk.getPubKey());
-    String feeAddressBech32 = bech32Util.toBech32(feePubkey.getPubKey(), params);
-
+    // samourai fee
+    String feeAddressBech32;
+    if (feePayload == null) {
+      // pay to xpub
+      feeAddressBech32 = computeFeeAddress(xpubFee, feeIndice);
+      if (log.isDebugEnabled()) {
+        log.debug("Tx0 out (fee->xpub): address=" + feeAddressBech32 + " (" + fee + " sats)");
+      }
+    } else {
+      // pay to deposit
+      feeAddressBech32 = bech32Util.toBech32(depositAndPremixWallet.getNextAddress(), params);
+      if (log.isDebugEnabled()) {
+        log.debug("Tx0 out (fee->deposit): address=" + feeAddressBech32 + " (" + fee + " sats)");
+      }
+    }
     TransactionOutput txSWFee = bech32Util.getTransactionOutput(feeAddressBech32, fee, params);
     outputs.add(txSWFee);
-    if (log.isDebugEnabled()) {
-      log.debug("Tx0 out (fee): address=" + feeAddressBech32 + " (" + fee + " sats)");
-    }
 
     // add OP_RETURN output
     Script op_returnOutputScript =
@@ -149,7 +154,11 @@ public class Tx0Service {
         new TransactionOutput(params, null, Coin.valueOf(0L), op_returnOutputScript.getProgram());
     outputs.add(txFeeOutput);
     if (log.isDebugEnabled()) {
-      log.debug("Tx0 out (OP_RETURN): feeIndice=" + feeIndice);
+      log.debug(
+          "Tx0 out (OP_RETURN): feeIndice="
+              + feeIndice
+              + ", feePayloadHex="
+              + (feePayload != null ? Hex.toHexString(feePayload) : "null"));
     }
 
     // all outputs
@@ -194,5 +203,16 @@ public class Tx0Service {
 
     tx0Result.setTx(tx);
     return tx0Result;
+  }
+
+  private String computeFeeAddress(String xpubFee, int feeIndice) {
+    DeterministicKey mKey = FormatsUtilGeneric.getInstance().createMasterPubKeyFromXPub(xpubFee);
+    DeterministicKey cKey =
+        HDKeyDerivation.deriveChildKey(
+            mKey, new ChildNumber(0, false)); // assume external/receive chain
+    DeterministicKey adk = HDKeyDerivation.deriveChildKey(cKey, new ChildNumber(feeIndice, false));
+    ECKey feePubkey = ECKey.fromPublicOnly(adk.getPubKey());
+    String feeAddressBech32 = bech32Util.toBech32(feePubkey.getPubKey(), params);
+    return feeAddressBech32;
   }
 }
