@@ -70,7 +70,7 @@ public class RunAggregateWallet {
       for (int i = offset; i < (offset + AGGREGATED_UTXOS_PER_TX) && i < utxos.size(); i++) {
         subsetUtxos.add(utxos.get(i));
       }
-      if (subsetUtxos.size() > 1) {
+      if (subsetUtxos.size() > 0) {
         String toAddress = destinationAddress;
         if (toAddress == null) {
           toAddress = bech32Util.toBech32(destinationWallet.getNextAddress(), params);
