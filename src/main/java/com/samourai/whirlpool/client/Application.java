@@ -20,6 +20,7 @@ import com.samourai.whirlpool.client.run.RunLoopWallet;
 import com.samourai.whirlpool.client.run.RunMixUtxo;
 import com.samourai.whirlpool.client.run.RunMixWallet;
 import com.samourai.whirlpool.client.run.RunTx0;
+import com.samourai.whirlpool.client.run.RunUpgradeCli;
 import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
@@ -52,9 +53,11 @@ public class Application implements ApplicationRunner {
   private static final int ACCOUNT_DEPOSIT_AND_PREMIX = 0;
   private static final int ACCOUNT_POSTMIX = Integer.MAX_VALUE - 1;
   private static final int SLEEP_LOOPWALLET_ON_ERROR = 30000;
+  private static final int CLI_VERSION = 1;
   private static final String INDEX_DEPOSIT_AND_PREMIX = "depositAndPremix";
   private static final String INDEX_POSTMIX = "postmix";
   private static final String INDEX_FEE = "fee";
+  private static final String INDEX_CLI_VERSION = "cliVersion";
 
   private ApplicationArgs appArgs;
   private HD_WalletFactoryJava hdWalletFactory = HD_WalletFactoryJava.getInstance();
@@ -171,6 +174,9 @@ public class Application implements ApplicationRunner {
               Bip84ApiWallet postmixWallet =
                   new Bip84ApiWallet(
                       bip84w, ACCOUNT_POSTMIX, postmixIndexHandler, samouraiApi, initBip84);
+              IIndexHandler cliVersionHandler = fileIndexHandler.getIndexHandler(INDEX_CLI_VERSION);
+              checkUpgrade(
+                  params, samouraiApi, rpcClientService, depositAndPremixWallet, cliVersionHandler);
               RunTx0 runTx0 =
                   new RunTx0(params, samouraiApi, rpcClientService, depositAndPremixWallet);
               RunAggregateAndConsolidateWallet runAggregateAndConsolidateWallet =
@@ -410,5 +416,31 @@ public class Application implements ApplicationRunner {
       }
     }
     return f;
+  }
+
+  private void checkUpgrade(
+      NetworkParameters params,
+      SamouraiApi samouraiApi,
+      Optional<RpcClientService> rpcClientService,
+      Bip84ApiWallet depositAndPremixWallet,
+      IIndexHandler cliVersionHandler)
+      throws Exception {
+    int lastVersion = cliVersionHandler.get();
+    if (lastVersion == CLI_VERSION) {
+      // up to date
+      if (log.isDebugEnabled()) {
+        log.debug("cli is up to date: " + CLI_VERSION);
+      }
+      return;
+    }
+
+    if (log.isDebugEnabled()) {
+      log.debug(" • Upgrading cli: " + lastVersion + " -> " + CLI_VERSION);
+    }
+    new RunUpgradeCli(params, samouraiApi, rpcClientService, depositAndPremixWallet)
+        .run(lastVersion);
+
+    // set new version
+    cliVersionHandler.set(CLI_VERSION);
   }
 }
