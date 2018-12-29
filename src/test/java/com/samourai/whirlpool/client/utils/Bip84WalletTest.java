@@ -19,20 +19,21 @@ public class Bip84WalletTest extends AbstractTest {
   public void setup() throws Exception {
     super.setup();
 
-    HD_Wallet bip84w = hdWalletFactory.restoreWallet(SEED_WORDS, SEED_PASSPHRASE, 1, params);
+    byte[] seed = hdWalletFactory.computeSeedFromWords(SEED_WORDS);
+    HD_Wallet bip84w = hdWalletFactory.getBIP84(seed, SEED_PASSPHRASE, params);
     bip84Wallet = new Bip84Wallet(bip84w, Integer.MAX_VALUE, new MemoryIndexHandler());
   }
 
   @Test
   public void getAddressAt() throws Exception {
     Assert.assertEquals(
-        "tb1qz4lz7f82uesq3nzl29dlrxyuuksjwxp7sufrv8", toBech32(bip84Wallet.getAddressAt(0, 0)));
+        "tb1q5lc455emwwttdqwf9p32xf8fhgrhvfp5vxvul7", toBech32(bip84Wallet.getAddressAt(0, 0)));
     Assert.assertEquals(
-        "tb1qpaamtpfe3glzl5lzuals058tf8x2jmqtgc29th", toBech32(bip84Wallet.getAddressAt(0, 15)));
+        "tb1q2vw863w92dwpej48maqyjazj4ch3x0krzrw9cs", toBech32(bip84Wallet.getAddressAt(0, 15)));
     Assert.assertEquals(
-        "tb1qy6zc2fusaxy7n2z4pdkw8s7ycyz3jvwaauuh5a", toBech32(bip84Wallet.getAddressAt(1, 0)));
+        "tb1qtfrd7zug2qkhv3nc6294pls92qru6vvqse40dw", toBech32(bip84Wallet.getAddressAt(1, 0)));
     Assert.assertEquals(
-        "tb1qpaamtpfe3glzl5lzuals058tf8x2jmqtgc29th", toBech32(bip84Wallet.getAddressAt(0, 15)));
+        "tb1q2vw863w92dwpej48maqyjazj4ch3x0krzrw9cs", toBech32(bip84Wallet.getAddressAt(0, 15)));
   }
 
   @Test
@@ -48,7 +49,7 @@ public class Bip84WalletTest extends AbstractTest {
   @Test
   public void getZpub() throws Exception {
     Assert.assertEquals(
-        "vpub5Y7ApGPEn58hVWY7rQLJ3465UNC4QPacc4iB5KJZCw8NCu365xLQYmP31AFpiwNFJzJt2Bu3Gwc8okofkTqkY6waeGNrsWC9PPbWUw5d6XE",
+        "vpub5YEQpEDXWE3TcFX9JXj73TaBskrDTy5pdw3HNujngNKfAYtgx1ynNd6ri92A8Jdgccm9BX4S8yo45hsK4oiCar15pqA7MHM9XtkzNySdknj",
         bip84Wallet.getZpub());
   }
 

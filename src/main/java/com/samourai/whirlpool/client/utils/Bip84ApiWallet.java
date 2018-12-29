@@ -55,7 +55,7 @@ public class Bip84ApiWallet extends Bip84Wallet {
     return address.account_index;
   }
 
-  private void initBip84() throws Exception {
+  public void initBip84() throws Exception {
     for (int i = 0; i < INIT_BIP84_RETRY; i++) {
       log.info(" • Initializing bip84 wallet: " + accountIndex);
       try {
