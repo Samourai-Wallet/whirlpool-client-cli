@@ -83,8 +83,6 @@ public class Tx0Service {
         log.debug(
             "Tx0 out (premix): address="
                 + toAddressBech32
-                + ", key="
-                + toAddressKey.getPrivateKeyAsWiF(params)
                 + ", path="
                 + toAddress.toJSON().get("path")
                 + " ("
@@ -178,8 +176,7 @@ public class Tx0Service {
               + spendFromOutpoint
               + " ("
               + spendFromOutpoint.getValue().getValue()
-              + " sats), key="
-              + spendFromKey.getPrivateKeyAsWiF(params));
+              + " sats)");
       log.debug("Tx0 fee: " + tx0MinerFee + " sats");
     }
 

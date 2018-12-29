@@ -73,8 +73,6 @@ public class TxAggregateService {
                 + spendFromAddressBech32
                 + ", utxo="
                 + spendFromOutpoint
-                + ", key="
-                + spendFromKey.getPrivateKeyAsWiF(params)
                 + ", path="
                 + spendFromAddress.toJSON().get("path")
                 + " ("

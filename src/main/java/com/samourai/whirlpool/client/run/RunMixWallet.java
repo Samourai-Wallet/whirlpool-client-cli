@@ -119,8 +119,6 @@ public class RunMixWallet {
               + nbClients
               + ": mustMix, premixUtxo="
               + premixUtxo
-              + ", premixKey="
-              + premixKey.getPrivateKeyAsWiF(config.getNetworkParameters())
               + ", premixAddress="
               + premixAddressBech32
               + ", path="
