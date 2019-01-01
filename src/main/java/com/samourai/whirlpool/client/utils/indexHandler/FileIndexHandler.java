@@ -22,14 +22,22 @@ public class FileIndexHandler {
     load();
   }
 
+  public int get(String key, int defaultValue) {
+    return indexes.getOrDefault(key, defaultValue);
+  }
+
   public int get(String key) {
-    return indexes.getOrDefault(key, 0);
+    return get(key, IIndexHandler.DEFAULT_VALUE);
+  }
+
+  public synchronized int getAndIncrement(String key, int defaultValue) {
+    int value = get(key, defaultValue);
+    set(key, value + 1);
+    return value;
   }
 
   public synchronized int getAndIncrement(String key) {
-    int value = get(key);
-    set(key, value + 1);
-    return value;
+    return getAndIncrement(key, IIndexHandler.DEFAULT_VALUE);
   }
 
   public void set(String key, int value) {
@@ -37,8 +45,12 @@ public class FileIndexHandler {
     write();
   }
 
+  public ItemFileIndexHandler getIndexHandler(String key, int defaultValue) {
+    return new ItemFileIndexHandler(this, key, defaultValue);
+  }
+
   public ItemFileIndexHandler getIndexHandler(String key) {
-    return new ItemFileIndexHandler(this, key);
+    return getIndexHandler(key, IIndexHandler.DEFAULT_VALUE);
   }
 
   private void load() {

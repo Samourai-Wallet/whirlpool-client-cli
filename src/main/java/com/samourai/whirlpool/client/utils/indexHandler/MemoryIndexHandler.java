@@ -4,7 +4,11 @@ public class MemoryIndexHandler implements IIndexHandler {
   private int index;
 
   public MemoryIndexHandler() {
-    index = 0;
+    this(IIndexHandler.DEFAULT_VALUE);
+  }
+
+  public MemoryIndexHandler(int defaultValue) {
+    index = defaultValue;
   }
 
   @Override

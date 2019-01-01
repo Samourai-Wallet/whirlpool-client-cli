@@ -175,7 +175,8 @@ public class Application implements ApplicationRunner {
               Bip84ApiWallet postmixWallet =
                   new Bip84ApiWallet(
                       bip84w, ACCOUNT_POSTMIX, postmixIndexHandler, samouraiApi, initBip84);
-              IIndexHandler cliVersionHandler = fileIndexHandler.getIndexHandler(INDEX_CLI_VERSION);
+              IIndexHandler cliVersionHandler =
+                  fileIndexHandler.getIndexHandler(INDEX_CLI_VERSION, CLI_VERSION);
               checkUpgrade(
                   params,
                   samouraiApi,
@@ -433,23 +434,21 @@ public class Application implements ApplicationRunner {
       IIndexHandler cliVersionHandler)
       throws Exception {
     int lastVersion = cliVersionHandler.get();
-    if (lastVersion != 0) { // not a new wallet
 
-      if (lastVersion == CLI_VERSION) {
-        // up to date
-        if (log.isDebugEnabled()) {
-          log.debug("cli is up to date: " + CLI_VERSION);
-        }
-        return;
-      }
-
+    if (lastVersion == CLI_VERSION) {
+      // up to date
       if (log.isDebugEnabled()) {
-        log.debug(" • Upgrading cli: " + lastVersion + " -> " + CLI_VERSION);
+        log.debug("cli is up to date: " + CLI_VERSION);
       }
-      new RunUpgradeCli(
-              params, samouraiApi, rpcClientService, depositAndPremixWallet, postmixWallet, appArgs)
-          .run(lastVersion);
+      return;
     }
+
+    if (log.isDebugEnabled()) {
+      log.debug(" • Upgrading cli: " + lastVersion + " -> " + CLI_VERSION);
+    }
+    new RunUpgradeCli(
+            params, samouraiApi, rpcClientService, depositAndPremixWallet, postmixWallet, appArgs)
+        .run(lastVersion);
 
     // set new version
     cliVersionHandler.set(CLI_VERSION);
