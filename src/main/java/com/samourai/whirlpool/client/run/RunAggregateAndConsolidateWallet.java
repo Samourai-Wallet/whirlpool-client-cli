@@ -15,28 +15,31 @@ public class RunAggregateAndConsolidateWallet {
   private NetworkParameters params;
   private SamouraiApi samouraiApi;
   private Optional<RpcClientService> rpcClientService;
-  private Bip84ApiWallet depositAndPremixWallet;
+  private Bip84ApiWallet depositWallet;
+  private Bip84ApiWallet premixWallet;
   private Bip84ApiWallet postmixWallet;
 
   public RunAggregateAndConsolidateWallet(
       NetworkParameters params,
       SamouraiApi samouraiApi,
       Optional<RpcClientService> rpcClientService,
-      Bip84ApiWallet depositAndPremixWallet,
+      Bip84ApiWallet depositWallet,
+      Bip84ApiWallet premixWallet,
       Bip84ApiWallet postmixWallet) {
     this.params = params;
     this.samouraiApi = samouraiApi;
     this.rpcClientService = rpcClientService;
-    this.depositAndPremixWallet = depositAndPremixWallet;
+    this.depositWallet = depositWallet;
+    this.premixWallet = premixWallet;
     this.postmixWallet = postmixWallet;
   }
 
   public boolean run() throws Exception {
-    // go aggregate postmix to premix
-    log.info(" • Aggregating postmix wallet to premix...");
+    // consolidate postmix
+    log.info(" • Consolidating postmix -> deposit...");
     boolean success =
         new RunAggregateWallet(params, samouraiApi, rpcClientService, postmixWallet)
-            .run(depositAndPremixWallet);
+            .run(depositWallet);
     if (!success) {
       return false;
     }
@@ -46,9 +49,12 @@ public class RunAggregateAndConsolidateWallet {
     Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
 
     // consolidate premix
-    log.info(" • Consolidating premix wallet...");
-    new RunAggregateWallet(params, samouraiApi, rpcClientService, depositAndPremixWallet)
-        .run(depositAndPremixWallet);
+    log.info(" • Consolidating premix -> deposit...");
+    new RunAggregateWallet(params, samouraiApi, rpcClientService, premixWallet).run(depositWallet);
+
+    // consolidate deposit
+    log.info(" • Consolidating deposit...");
+    new RunAggregateWallet(params, samouraiApi, rpcClientService, depositWallet).run(depositWallet);
     return true;
   }
 }

@@ -26,7 +26,8 @@ public class RunTx0 {
   private NetworkParameters params;
   private SamouraiApi samouraiApi;
   private Optional<RpcClientService> rpcClientService;
-  private Bip84ApiWallet depositAndPremixWallet;
+  private Bip84ApiWallet depositWallet;
+  private Bip84ApiWallet premixWallet;
 
   private static final String FEE_XPUB =
       "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
@@ -36,11 +37,13 @@ public class RunTx0 {
       NetworkParameters params,
       SamouraiApi samouraiApi,
       Optional<RpcClientService> rpcClientService,
-      Bip84ApiWallet depositAndPremixWallet) {
+      Bip84ApiWallet depositWallet,
+      Bip84ApiWallet premixWallet) {
     this.params = params;
     this.samouraiApi = samouraiApi;
     this.rpcClientService = rpcClientService;
-    this.depositAndPremixWallet = depositAndPremixWallet;
+    this.depositWallet = depositWallet;
+    this.premixWallet = premixWallet;
   }
 
   public Tx0 runTx0(
@@ -50,13 +53,13 @@ public class RunTx0 {
       byte[] feePayload,
       IIndexHandler feeIndexHandler)
       throws Exception {
-    List<UnspentResponse.UnspentOutput> utxos = depositAndPremixWallet.fetchUtxos();
+    List<UnspentResponse.UnspentOutput> utxos = depositWallet.fetchUtxos();
     if (utxos.isEmpty()) {
-      throw new EmptyWalletException("No utxo found from premix.");
+      throw new EmptyWalletException("No utxo found from deposit.");
     }
 
     if (log.isDebugEnabled()) {
-      log.debug("Found " + utxos.size() + " utxo from premix:");
+      log.debug("Found " + utxos.size() + " utxo from deposit:");
       CliUtils.printUtxos(utxos);
     }
 
@@ -97,8 +100,7 @@ public class RunTx0 {
 
     // spend from
     TransactionOutPoint spendFromOutpoint = spendFrom.computeOutpoint(params);
-    byte[] spendFromPrivKey =
-        depositAndPremixWallet.getAddressAt(spendFrom).getECKey().getPrivKeyBytes();
+    byte[] spendFromPrivKey = depositWallet.getAddressAt(spendFrom).getECKey().getPrivKeyBytes();
 
     // run tx0
     int feeSatPerByte = samouraiApi.fetchFees();
@@ -108,7 +110,8 @@ public class RunTx0 {
                 spendFromPrivKey,
                 spendFromOutpoint,
                 nbOutputs,
-                depositAndPremixWallet,
+                depositWallet,
+                premixWallet,
                 destinationValue,
                 feeSatPerByte,
                 FEE_XPUB,

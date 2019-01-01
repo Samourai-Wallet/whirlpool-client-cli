@@ -29,7 +29,7 @@ public class RunMixWallet {
 
   private WhirlpoolClientConfig config;
   private Optional<JavaTorClient> torClient;
-  private Bip84Wallet depositAndPremixWallet;
+  private Bip84Wallet premixWallet;
   private Bip84Wallet postmixWallet;
   private int clientDelay;
   private int nbClients;
@@ -38,13 +38,13 @@ public class RunMixWallet {
   public RunMixWallet(
       WhirlpoolClientConfig config,
       Optional<JavaTorClient> torClient,
-      Bip84Wallet depositAndPremixWallet,
+      Bip84Wallet premixWallet,
       Bip84Wallet postmixWallet,
       int clientDelay,
       int nbClients) {
     this.config = config;
     this.torClient = torClient;
-    this.depositAndPremixWallet = depositAndPremixWallet;
+    this.premixWallet = premixWallet;
     this.postmixWallet = postmixWallet;
     this.clientDelay = clientDelay;
     this.nbClients = nbClients;
@@ -103,7 +103,7 @@ public class RunMixWallet {
         new UtxoWithBalance(premixUtxo.tx_hash, premixUtxo.tx_output_n, premixUtxo.value);
 
     // input key from premix
-    HD_Address premixAddress = depositAndPremixWallet.getAddressAt(premixUtxo);
+    HD_Address premixAddress = premixWallet.getAddressAt(premixUtxo);
     String premixAddressBech32 = bech32Util.toBech32(premixAddress, config.getNetworkParameters());
     ECKey premixKey = premixAddress.getECKey();
     IPremixHandler premixHandler = new PremixHandler(premixUtxoWithBalance, premixKey);

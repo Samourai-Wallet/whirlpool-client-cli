@@ -26,19 +26,22 @@ public class RunLoopWallet {
   private WhirlpoolClientConfig config;
   private RunTx0 runTx0;
   private RunMixWallet runMixWallet;
-  private Bip84ApiWallet depositAndPremixWallet;
+  private Bip84ApiWallet depositWallet;
+  private Bip84ApiWallet premixWallet;
   private Optional<RunAggregateAndConsolidateWallet> runAggregateAndConsolidateWallet;
 
   public RunLoopWallet(
       WhirlpoolClientConfig config,
       RunTx0 runTx0,
       RunMixWallet runMixWallet,
-      Bip84ApiWallet depositAndPremixWallet,
+      Bip84ApiWallet depositWallet,
+      Bip84ApiWallet premixWallet,
       Optional<RunAggregateAndConsolidateWallet> runAggregateAndConsolidateWallet) {
     this.config = config;
     this.runTx0 = runTx0;
     this.runMixWallet = runMixWallet;
-    this.depositAndPremixWallet = depositAndPremixWallet;
+    this.depositWallet = depositWallet;
+    this.premixWallet = premixWallet;
     this.runAggregateAndConsolidateWallet = runAggregateAndConsolidateWallet;
   }
 
@@ -52,7 +55,7 @@ public class RunLoopWallet {
     // fetch unspent utx0s
     log.info(" • Fetching unspent outputs from premix...");
     List<UnspentResponse.UnspentOutput> utxos =
-        depositAndPremixWallet.fetchUtxos().stream().collect(Collectors.toList());
+        premixWallet.fetchUtxos().stream().collect(Collectors.toList());
 
     if (log.isDebugEnabled()) {
       log.debug("Found " + utxos.size() + " utxo from premix:");
@@ -115,9 +118,9 @@ public class RunLoopWallet {
   private void autoRefill(long missingBalance) throws Exception {
     String depositAddress =
         Bech32UtilGeneric.getInstance()
-            .toBech32(depositAndPremixWallet.getNextAddress(false), config.getNetworkParameters());
+            .toBech32(depositWallet.getNextAddress(false), config.getNetworkParameters());
     String message =
-        "depositAndPremixWallet is empty. I need at least "
+        "depositWallet is empty. I need at least "
             + CliUtils.satToBtc(missingBalance)
             + "btc (+ fees) to continue.\nPlease make a deposit to "
             + depositAddress;
@@ -127,7 +130,7 @@ public class RunLoopWallet {
     }
 
     // auto aggregate postmix
-    log.info(" • depositAndPremixWallet wallet is empty. Aggregating postmix to refill it...");
+    log.info(" • depositWallet wallet is empty. Aggregating postmix to refill it...");
     boolean aggregateSuccess = runAggregateAndConsolidateWallet.get().run();
     if (!aggregateSuccess) {
       CliUtils.waitUserAction(message);

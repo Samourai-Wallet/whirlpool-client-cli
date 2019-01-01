@@ -42,7 +42,8 @@ public class Tx0Service {
       byte[] spendFromPrivKey,
       TransactionOutPoint spendFromOutpoint,
       int nbOutputs,
-      Bip84Wallet depositAndPremixWallet,
+      Bip84Wallet depositWallet,
+      Bip84Wallet premixWallet,
       long destinationValue,
       long feeSatPerByte,
       String xpubFee,
@@ -75,7 +76,7 @@ public class Tx0Service {
     //
     for (int j = 0; j < nbOutputs; j++) {
       // send to PREMIX
-      HD_Address toAddress = depositAndPremixWallet.getNextAddress();
+      HD_Address toAddress = premixWallet.getNextAddress();
       String toAddressBech32 = bech32Util.toBech32(toAddress, params);
       ECKey toAddressKey = toAddress.getECKey();
       tx0Result.getToKeys().put(toAddressBech32, toAddressKey);
@@ -111,7 +112,7 @@ public class Tx0Service {
     //
     // 1 change output
     //
-    HD_Address changeAddress = depositAndPremixWallet.getNextAddress();
+    HD_Address changeAddress = depositWallet.getNextAddress();
     String changeAddressBech32 = bech32Util.toBech32(changeAddress, params);
     TransactionOutput txChange =
         bech32Util.getTransactionOutput(changeAddressBech32, changeValue, params);
@@ -137,7 +138,7 @@ public class Tx0Service {
       }
     } else {
       // pay to deposit
-      feeAddressBech32 = bech32Util.toBech32(depositAndPremixWallet.getNextAddress(), params);
+      feeAddressBech32 = bech32Util.toBech32(depositWallet.getNextAddress(), params);
       if (log.isDebugEnabled()) {
         log.debug("Tx0 out (fee->deposit): address=" + feeAddressBech32 + " (" + fee + " sats)");
       }

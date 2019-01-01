@@ -50,11 +50,13 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 public class Application implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int ACCOUNT_DEPOSIT_AND_PREMIX = 0;
+  private static final int ACCOUNT_DEPOSIT = 0;
+  private static final int ACCOUNT_PREMIX = Integer.MAX_VALUE - 2;
   private static final int ACCOUNT_POSTMIX = Integer.MAX_VALUE - 1;
   private static final int SLEEP_LOOPWALLET_ON_ERROR = 30000;
-  private static final int CLI_VERSION = 2;
-  private static final String INDEX_DEPOSIT_AND_PREMIX = "depositAndPremix";
+  private static final int CLI_VERSION = 3;
+  private static final String INDEX_DEPOSIT = "deposit";
+  private static final String INDEX_PREMIX = "premix";
   private static final String INDEX_POSTMIX = "postmix";
   private static final String INDEX_FEE = "fee";
   private static final String INDEX_CLI_VERSION = "cliVersion";
@@ -151,8 +153,8 @@ public class Application implements ApplicationRunner {
                   CliUtils.sha256Hash(seedPassphrase + seedWords + params.getId());
               FileIndexHandler fileIndexHandler =
                   new FileIndexHandler(computeIndexFile(walletIdentifier));
-              IIndexHandler depositAndPremixIndexHandler =
-                  fileIndexHandler.getIndexHandler(INDEX_DEPOSIT_AND_PREMIX);
+              IIndexHandler depositIndexHandler = fileIndexHandler.getIndexHandler(INDEX_DEPOSIT);
+              IIndexHandler premixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_PREMIX);
               IIndexHandler postmixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_POSTMIX);
               IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
               // --postmix-index
@@ -165,13 +167,12 @@ public class Application implements ApplicationRunner {
               boolean initBip84 = (fileIndexHandler.get(FileIndexHandler.BIP84_INITIALIZED) != 1);
 
               // init wallets
-              Bip84ApiWallet depositAndPremixWallet =
+              Bip84ApiWallet depositWallet =
                   new Bip84ApiWallet(
-                      bip84w,
-                      ACCOUNT_DEPOSIT_AND_PREMIX,
-                      depositAndPremixIndexHandler,
-                      samouraiApi,
-                      initBip84);
+                      bip84w, ACCOUNT_DEPOSIT, depositIndexHandler, samouraiApi, initBip84);
+              Bip84ApiWallet premixWallet =
+                  new Bip84ApiWallet(
+                      bip84w, ACCOUNT_PREMIX, premixIndexHandler, samouraiApi, initBip84);
               Bip84ApiWallet postmixWallet =
                   new Bip84ApiWallet(
                       bip84w, ACCOUNT_POSTMIX, postmixIndexHandler, samouraiApi, initBip84);
@@ -181,14 +182,20 @@ public class Application implements ApplicationRunner {
                   params,
                   samouraiApi,
                   rpcClientService,
-                  depositAndPremixWallet,
+                  depositWallet,
+                  premixWallet,
                   postmixWallet,
                   cliVersionHandler);
               RunTx0 runTx0 =
-                  new RunTx0(params, samouraiApi, rpcClientService, depositAndPremixWallet);
+                  new RunTx0(params, samouraiApi, rpcClientService, depositWallet, premixWallet);
               RunAggregateAndConsolidateWallet runAggregateAndConsolidateWallet =
                   new RunAggregateAndConsolidateWallet(
-                      params, samouraiApi, rpcClientService, depositAndPremixWallet, postmixWallet);
+                      params,
+                      samouraiApi,
+                      rpcClientService,
+                      depositWallet,
+                      premixWallet,
+                      postmixWallet);
 
               // save initialized state
               if (initBip84) {
@@ -197,13 +204,19 @@ public class Application implements ApplicationRunner {
 
               // log zpubs
               if (log.isDebugEnabled()) {
-                String depositAndPremixZpub = depositAndPremixWallet.getZpub();
+                String depositZpub = depositWallet.getZpub();
+                String premixZpub = premixWallet.getZpub();
                 String postmixZpub = postmixWallet.getZpub();
                 log.debug(
-                    "Using wallet depositAndPremix: accountIndex="
-                        + depositAndPremixWallet.getAccountIndex()
+                    "Using wallet deposit: accountIndex="
+                        + depositWallet.getAccountIndex()
                         + ", zpub="
-                        + depositAndPremixZpub);
+                        + depositZpub);
+                log.debug(
+                    "Using wallet premix: accountIndex="
+                        + premixWallet.getAccountIndex()
+                        + ", zpub="
+                        + premixZpub);
                 log.debug(
                     "Using wallet postmix: accountIndex="
                         + postmixWallet.getAccountIndex()
@@ -233,8 +246,7 @@ public class Application implements ApplicationRunner {
                 String toAddress = appArgs.getAggregatePostmix();
                 if (toAddress != null) {
                   log.info(" • Moving funds to: " + toAddress);
-                  new RunAggregateWallet(
-                          params, samouraiApi, rpcClientService, depositAndPremixWallet)
+                  new RunAggregateWallet(params, samouraiApi, rpcClientService, depositWallet)
                       .run(toAddress);
                 }
               } else {
@@ -253,7 +265,7 @@ public class Application implements ApplicationRunner {
                     new RunMixWallet(
                         config,
                         torClient,
-                        depositAndPremixWallet,
+                        premixWallet,
                         postmixWallet,
                         clientDelay * 1000,
                         clients);
@@ -267,7 +279,8 @@ public class Application implements ApplicationRunner {
                         config,
                         runTx0,
                         runMixWallet,
-                        depositAndPremixWallet,
+                        depositWallet,
+                        premixWallet,
                         optionalRunAggregateAndConsolidateWallet);
                 int i = 1;
                 int errors = 0;
@@ -429,7 +442,8 @@ public class Application implements ApplicationRunner {
       NetworkParameters params,
       SamouraiApi samouraiApi,
       Optional<RpcClientService> rpcClientService,
-      Bip84ApiWallet depositAndPremixWallet,
+      Bip84ApiWallet depositWallet,
+      Bip84ApiWallet premixWallet,
       Bip84ApiWallet postmixWallet,
       IIndexHandler cliVersionHandler)
       throws Exception {
@@ -447,7 +461,13 @@ public class Application implements ApplicationRunner {
       log.debug(" • Upgrading cli: " + lastVersion + " -> " + CLI_VERSION);
     }
     new RunUpgradeCli(
-            params, samouraiApi, rpcClientService, depositAndPremixWallet, postmixWallet, appArgs)
+            params,
+            samouraiApi,
+            rpcClientService,
+            depositWallet,
+            premixWallet,
+            postmixWallet,
+            appArgs)
         .run(lastVersion);
 
     // set new version
