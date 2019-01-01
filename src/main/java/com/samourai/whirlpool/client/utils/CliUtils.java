@@ -34,7 +34,7 @@ public class CliUtils {
   }
 
   public static void printUtxos(List<UnspentResponse.UnspentOutput> utxos) {
-    String lineFormat = "| %7s | %10s | %70s | %50s | %16s |\n";
+    String lineFormat = "| %10s | %10s | %70s | %50s | %16s |\n";
     StringBuilder sb = new StringBuilder();
     sb.append(String.format(lineFormat, "BALANCE", "CONFIRMS", "UTXO", "ADDRESS", "PATH"));
     sb.append(String.format(lineFormat, "(btc)", "", "", "", ""));
