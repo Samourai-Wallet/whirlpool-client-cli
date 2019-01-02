@@ -54,8 +54,7 @@ public class RunLoopWallet {
       throws Exception {
     // fetch unspent utx0s
     log.info(" • Fetching unspent outputs from premix...");
-    List<UnspentResponse.UnspentOutput> utxos =
-        premixWallet.fetchUtxos().stream().collect(Collectors.toList());
+    List<UnspentResponse.UnspentOutput> utxos = premixWallet.fetchUtxos();
 
     if (log.isDebugEnabled()) {
       log.debug("Found " + utxos.size() + " utxo from premix:");
