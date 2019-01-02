@@ -37,16 +37,7 @@ public class RunAggregateAndConsolidateWallet {
   public boolean run() throws Exception {
     // consolidate postmix
     log.info(" • Consolidating postmix -> deposit...");
-    boolean success =
-        new RunAggregateWallet(params, samouraiApi, rpcClientService, postmixWallet)
-            .run(depositWallet);
-    if (!success) {
-      return false;
-    }
-
-    // delay to let API detect the broadcasted tx
-    log.info("Refreshing utxos...");
-    Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
+    new RunAggregateWallet(params, samouraiApi, rpcClientService, postmixWallet).run(depositWallet);
 
     // consolidate premix
     log.info(" • Consolidating premix -> deposit...");
@@ -54,7 +45,9 @@ public class RunAggregateAndConsolidateWallet {
 
     // consolidate deposit
     log.info(" • Consolidating deposit...");
-    new RunAggregateWallet(params, samouraiApi, rpcClientService, depositWallet).run(depositWallet);
-    return true;
+    boolean success =
+        new RunAggregateWallet(params, samouraiApi, rpcClientService, depositWallet)
+            .run(depositWallet);
+    return success;
   }
 }
