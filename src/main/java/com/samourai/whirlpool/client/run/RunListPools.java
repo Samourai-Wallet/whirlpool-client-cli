@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.client.run;
 
-import com.samourai.whirlpool.client.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.beans.Pools;
 import java.lang.invoke.MethodHandles;
@@ -41,7 +41,7 @@ public class RunListPools {
           String.format(
               lineFormat,
               pool.getPoolId(),
-              CliUtils.satToBtc(pool.getDenomination()),
+              ClientUtils.satToBtc(pool.getDenomination()),
               pool.getMixStatus(),
               pool.getMixNbConfirmed() + " / " + pool.getNbRegistered(),
               pool.getElapsedTime() / 1000 + "s",

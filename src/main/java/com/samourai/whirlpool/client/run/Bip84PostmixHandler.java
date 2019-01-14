@@ -1,12 +1,12 @@
 package com.samourai.whirlpool.client.run;
 
+import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.client.mix.handler.IPostmixHandler;
 import com.samourai.whirlpool.client.mix.handler.IPremixHandler;
 import com.samourai.whirlpool.client.mix.handler.PremixHandler;
 import com.samourai.whirlpool.client.mix.handler.UtxoWithBalance;
-import com.samourai.whirlpool.client.utils.Bip84Wallet;
 import java.lang.invoke.MethodHandles;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.NetworkParameters;

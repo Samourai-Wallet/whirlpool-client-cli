@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.client.utils;
 
-import com.samourai.api.beans.UnspentResponse;
+import com.samourai.api.client.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
 import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -23,29 +23,6 @@ import org.slf4j.LoggerFactory;
 
 public class CliUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  private static final long TX_BYTES_PER_INPUT = 70;
-  private static final long TX_BYTES_PER_OUTPUT = 31;
-  private static final long TX_BYTES_PER_OPRETURN = 20;
-  private static final long MIN_RELAY_FEE_PER_BYTE = 1;
-
-  public static double satToBtc(long sat) {
-    return sat / 100000000.0;
-  }
-
-  public static void printUtxos(List<UnspentResponse.UnspentOutput> utxos) {
-    String lineFormat = "| %10s | %10s | %70s | %50s | %16s |\n";
-    StringBuilder sb = new StringBuilder();
-    sb.append(String.format(lineFormat, "BALANCE", "CONFIRMS", "UTXO", "ADDRESS", "PATH"));
-    sb.append(String.format(lineFormat, "(btc)", "", "", "", ""));
-    for (UnspentResponse.UnspentOutput o : utxos) {
-      String utxo = o.tx_hash + ":" + o.tx_output_n;
-      sb.append(
-          String.format(
-              lineFormat, CliUtils.satToBtc(o.value), o.confirmations, utxo, o.addr, o.getPath()));
-    }
-    log.info("\n" + sb.toString());
-  }
 
   public static List<UnspentResponse.UnspentOutput> filterUtxoMustMix(
       Pool pool, List<UnspentResponse.UnspentOutput> utxos) {
@@ -80,54 +57,6 @@ public class CliUtils {
     } else {
       throw new BroadcastException(tx);
     }
-  }
-
-  public static long estimateTxBytes(int nbInputs, int nbOutputs) {
-    long bytes = TX_BYTES_PER_INPUT * nbInputs + TX_BYTES_PER_OUTPUT * nbOutputs;
-    if (log.isDebugEnabled()) {
-      log.debug("tx size estimation: " + bytes + "b (" + nbInputs + " ins, " + nbOutputs + "outs)");
-    }
-
-    // TODO
-    if (nbInputs == 1 && nbOutputs == 1) {
-      return 191;
-    }
-    return bytes;
-  }
-
-  public static long estimateOpReturnBytes(byte[] opReturnValue) {
-    long bytes = TX_BYTES_PER_OPRETURN + opReturnValue.length;
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "OP_RETURN size estimation: "
-              + bytes
-              + "b ("
-              + opReturnValue.length
-              + " + "
-              + TX_BYTES_PER_OPRETURN
-              + ")");
-    }
-    return bytes;
-  }
-
-  public static long computeMinerFee(int nbInputs, int nbOutputs, long feePerByte) {
-    long bytes = estimateTxBytes(nbInputs, nbOutputs);
-    return computeMinerFee(bytes, feePerByte);
-  }
-
-  public static long computeMinerFee(long bytes, long feePerByte) {
-    if (feePerByte < MIN_RELAY_FEE_PER_BYTE) {
-      if (log.isDebugEnabled()) {
-        log.debug(
-            "minerFee = " + feePerByte + "s/b => MIN_RELAY_FEE " + MIN_RELAY_FEE_PER_BYTE + "s/b");
-      }
-      feePerByte = MIN_RELAY_FEE_PER_BYTE;
-    }
-    long minerFee = bytes * feePerByte;
-    if (log.isDebugEnabled()) {
-      log.debug("minerFee = " + minerFee + " (" + bytes + "b, " + feePerByte + "s/b)");
-    }
-    return minerFee;
   }
 
   public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {

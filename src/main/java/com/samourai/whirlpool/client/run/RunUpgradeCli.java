@@ -1,12 +1,12 @@
 package com.samourai.whirlpool.client.run;
 
-import com.samourai.api.SamouraiApi;
+import com.samourai.api.client.SamouraiApi;
 import com.samourai.rpc.client.RpcClientService;
+import com.samourai.wallet.client.Bip84ApiWallet;
+import com.samourai.wallet.client.indexHandler.MemoryIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.whirlpool.client.ApplicationArgs;
-import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
-import com.samourai.whirlpool.client.utils.indexHandler.MemoryIndexHandler;
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import org.bitcoinj.core.NetworkParameters;

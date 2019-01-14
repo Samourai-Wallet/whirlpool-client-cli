@@ -1,15 +1,16 @@
 package com.samourai.whirlpool.client.run;
 
-import com.samourai.api.SamouraiApi;
-import com.samourai.api.beans.UnspentResponse;
+import com.samourai.api.client.SamouraiApi;
+import com.samourai.api.client.beans.UnspentResponse;
 import com.samourai.rpc.client.RpcClientService;
+import com.samourai.wallet.client.Bip84ApiWallet;
+import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.tx0.TxAggregateService;
-import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
-import com.samourai.whirlpool.client.utils.Bip84Wallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +59,7 @@ public class RunAggregateWallet {
     }
     if (log.isDebugEnabled()) {
       log.debug("Found " + utxos.size() + " utxo to aggregate:");
-      CliUtils.printUtxos(utxos);
+      ClientUtils.logUtxos(utxos);
     }
 
     boolean success = false;
@@ -88,7 +89,7 @@ public class RunAggregateWallet {
         success = true;
 
         log.info("Refreshing utxos...");
-        Thread.sleep(SamouraiApi.SLEEP_REFRESH_UTXOS);
+        samouraiApi.refreshUtxos();
       }
       round++;
     }

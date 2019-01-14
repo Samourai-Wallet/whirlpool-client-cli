@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.client;
 
-import com.samourai.api.SamouraiApi;
+import com.samourai.api.client.SamouraiApi;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.http.client.JavaHttpClient;
 import com.samourai.rpc.client.JSONRpcClientServiceImpl;
@@ -8,6 +8,9 @@ import com.samourai.rpc.client.RpcClientService;
 import com.samourai.stomp.client.IStompClient;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.tor.client.JavaTorClient;
+import com.samourai.wallet.client.Bip84ApiWallet;
+import com.samourai.wallet.client.indexHandler.FileIndexHandler;
+import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.util.FormatsUtilGeneric;
@@ -21,11 +24,9 @@ import com.samourai.whirlpool.client.run.RunMixUtxo;
 import com.samourai.whirlpool.client.run.RunMixWallet;
 import com.samourai.whirlpool.client.run.RunTx0;
 import com.samourai.whirlpool.client.run.RunUpgradeCli;
-import com.samourai.whirlpool.client.utils.Bip84ApiWallet;
 import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
-import com.samourai.whirlpool.client.utils.indexHandler.FileIndexHandler;
-import com.samourai.whirlpool.client.utils.indexHandler.IIndexHandler;
+import com.samourai.whirlpool.client.wallet.CliWallet;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
@@ -50,15 +51,9 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 public class Application implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int ACCOUNT_DEPOSIT = 0;
-  private static final int ACCOUNT_PREMIX = Integer.MAX_VALUE - 2;
-  private static final int ACCOUNT_POSTMIX = Integer.MAX_VALUE - 1;
   private static final int SLEEP_LOOPWALLET_ON_ERROR = 30000;
   private static final int CLI_VERSION = 3;
-  private static final String INDEX_DEPOSIT = "deposit";
-  private static final String INDEX_PREMIX = "premix";
-  private static final String INDEX_POSTMIX = "postmix";
-  private static final String INDEX_FEE = "fee";
+
   private static final String INDEX_CLI_VERSION = "cliVersion";
 
   private ApplicationArgs appArgs;
@@ -153,29 +148,20 @@ public class Application implements ApplicationRunner {
                   CliUtils.sha256Hash(seedPassphrase + seedWords + params.getId());
               FileIndexHandler fileIndexHandler =
                   new FileIndexHandler(computeIndexFile(walletIdentifier));
-              IIndexHandler depositIndexHandler = fileIndexHandler.getIndexHandler(INDEX_DEPOSIT);
-              IIndexHandler premixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_PREMIX);
-              IIndexHandler postmixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_POSTMIX);
-              IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
-              // --postmix-index
-              Integer postmixIndex = appArgs.getPostmixIndex();
-              if (postmixIndex != null) {
-                postmixIndexHandler.set(postmixIndex);
-              }
-
-              // init bip84 at first run
-              boolean initBip84 = (fileIndexHandler.get(FileIndexHandler.BIP84_INITIALIZED) != 1);
 
               // init wallets
-              Bip84ApiWallet depositWallet =
-                  new Bip84ApiWallet(
-                      bip84w, ACCOUNT_DEPOSIT, depositIndexHandler, samouraiApi, initBip84);
-              Bip84ApiWallet premixWallet =
-                  new Bip84ApiWallet(
-                      bip84w, ACCOUNT_PREMIX, premixIndexHandler, samouraiApi, initBip84);
-              Bip84ApiWallet postmixWallet =
-                  new Bip84ApiWallet(
-                      bip84w, ACCOUNT_POSTMIX, postmixIndexHandler, samouraiApi, initBip84);
+              CliWallet cliWallet =
+                  CliWallet.get(
+                      params,
+                      samouraiApi,
+                      whirlpoolClient,
+                      seedWords,
+                      seedPassphrase,
+                      fileIndexHandler);
+              Bip84ApiWallet depositWallet = cliWallet.getDepositWallet();
+              Bip84ApiWallet premixWallet = cliWallet.getPremixWallet();
+              Bip84ApiWallet postmixWallet = cliWallet.getPostmixWallet();
+
               IIndexHandler cliVersionHandler =
                   fileIndexHandler.getIndexHandler(INDEX_CLI_VERSION, CLI_VERSION);
               checkUpgrade(
@@ -186,8 +172,8 @@ public class Application implements ApplicationRunner {
                   premixWallet,
                   postmixWallet,
                   cliVersionHandler);
-              RunTx0 runTx0 =
-                  new RunTx0(params, samouraiApi, rpcClientService, depositWallet, premixWallet);
+
+              RunTx0 runTx0 = new RunTx0(cliWallet);
               RunAggregateAndConsolidateWallet runAggregateAndConsolidateWallet =
                   new RunAggregateAndConsolidateWallet(
                       params,
@@ -196,11 +182,6 @@ public class Application implements ApplicationRunner {
                       depositWallet,
                       premixWallet,
                       postmixWallet);
-
-              // save initialized state
-              if (initBip84) {
-                fileIndexHandler.set(FileIndexHandler.BIP84_INITIALIZED, 1);
-              }
 
               // log zpubs
               if (log.isDebugEnabled()) {
@@ -227,12 +208,7 @@ public class Application implements ApplicationRunner {
               Optional<Integer> tx0Arg = appArgs.getTx0();
               if (tx0Arg.isPresent()) {
                 // go tx0
-                runTx0.runTx0(
-                    pool,
-                    tx0Arg.get(),
-                    pools.getFeePaymentCode(),
-                    pools.getFeePayload(),
-                    feeIndexHandler);
+                runTx0.runTx0(pool, tx0Arg.get());
               } else if (appArgs.isAggregatePostmix()) {
                 if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
                   throw new NotifiableException(
@@ -252,10 +228,6 @@ public class Application implements ApplicationRunner {
               } else {
                 // go loop wallet
                 int iterationDelay = appArgs.getIterationDelay();
-                iterationDelay =
-                    Math.max(
-                        SamouraiApi.SLEEP_REFRESH_UTXOS / 1000,
-                        iterationDelay); // wait for API to refresh
                 int clientDelay = appArgs.getClientDelay();
                 int clients = appArgs.getClients();
                 if (torClient.isPresent()) {
@@ -277,8 +249,10 @@ public class Application implements ApplicationRunner {
                 RunLoopWallet runLoopWallet =
                     new RunLoopWallet(
                         config,
+                        samouraiApi,
                         runTx0,
                         runMixWallet,
+                        cliWallet.getTx0Service(),
                         depositWallet,
                         premixWallet,
                         optionalRunAggregateAndConsolidateWallet);
@@ -286,13 +260,7 @@ public class Application implements ApplicationRunner {
                 int errors = 0;
                 while (true) {
                   try {
-                    boolean success =
-                        runLoopWallet.run(
-                            pool,
-                            clients,
-                            pools.getFeePaymentCode(),
-                            pools.getFeePayload(),
-                            feeIndexHandler);
+                    boolean success = runLoopWallet.run(pool, clients);
                     if (!success) {
                       throw new NotifiableException("Iteration failed");
                     }
