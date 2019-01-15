@@ -1,14 +1,13 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.api.client.SamouraiApi;
-import com.samourai.rpc.client.RpcClientService;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.client.indexHandler.MemoryIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.whirlpool.client.ApplicationArgs;
+import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import java.lang.invoke.MethodHandles;
-import java.util.Optional;
 import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,7 @@ public class RunUpgradeCli {
 
   private NetworkParameters params;
   private SamouraiApi samouraiApi;
-  private Optional<RpcClientService> rpcClientService;
+  private PushTxService pushTxService;
   private Bip84ApiWallet depositWallet;
   private Bip84ApiWallet premixWallet;
   private Bip84ApiWallet postmixWallet;
@@ -30,14 +29,14 @@ public class RunUpgradeCli {
   public RunUpgradeCli(
       NetworkParameters params,
       SamouraiApi samouraiApi,
-      Optional<RpcClientService> rpcClientService,
+      PushTxService pushTxService,
       Bip84ApiWallet depositWallet,
       Bip84ApiWallet premixWallet,
       Bip84ApiWallet postmixWallet,
       ApplicationArgs appArgs) {
     this.params = params;
     this.samouraiApi = samouraiApi;
-    this.rpcClientService = rpcClientService;
+    this.pushTxService = pushTxService;
     this.depositWallet = depositWallet;
     this.premixWallet = premixWallet;
     this.postmixWallet = postmixWallet;
@@ -60,7 +59,7 @@ public class RunUpgradeCli {
   private void upgradeV1() throws Exception {
     // consolidate premix to force new tx0
     log.info(" • Upgrade to new tx0 payload: consolidating premix wallet...");
-    new RunAggregateWallet(params, samouraiApi, rpcClientService, premixWallet).run(depositWallet);
+    new RunAggregateWallet(params, samouraiApi, pushTxService, premixWallet).run(depositWallet);
   }
 
   private void upgradeV2() throws Exception {
@@ -89,11 +88,10 @@ public class RunUpgradeCli {
         new Bip84ApiWallet(bip44w, ACCOUNT_POSTMIX, new MemoryIndexHandler(), samouraiApi, false);
 
     log.info(" • Upgrade to BIP84: transferring BIP44 to BIP84: depositAndPremix...");
-    new RunAggregateWallet(params, samouraiApi, rpcClientService, depositAndPremixWallet44)
+    new RunAggregateWallet(params, samouraiApi, pushTxService, depositAndPremixWallet44)
         .run(depositWallet);
     log.info(" • Upgrade to BIP84: transferring BIP44 to BIP84: postmix...");
-    new RunAggregateWallet(params, samouraiApi, rpcClientService, postmixWallet44)
-        .run(depositWallet);
+    new RunAggregateWallet(params, samouraiApi, pushTxService, postmixWallet44).run(depositWallet);
   }
 
   private void upgradeV3() throws Exception {
@@ -103,6 +101,6 @@ public class RunUpgradeCli {
     premixWallet.getIndexHandler().set(0);
 
     log.info(" • Upgrade premix wallet: aggregate deposit...");
-    new RunAggregateWallet(params, samouraiApi, rpcClientService, depositWallet).run(depositWallet);
+    new RunAggregateWallet(params, samouraiApi, pushTxService, depositWallet).run(depositWallet);
   }
 }

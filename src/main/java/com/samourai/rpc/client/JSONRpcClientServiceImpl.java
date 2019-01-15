@@ -1,15 +1,15 @@
 package com.samourai.rpc.client;
 
+import com.samourai.whirlpool.client.wallet.pushTx.AbstractPushTxService;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.Optional;
-import org.bitcoinj.core.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
 
-public class JSONRpcClientServiceImpl implements RpcClientService {
+public class JSONRpcClientServiceImpl extends AbstractPushTxService implements RpcClientService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private BitcoinJSONRPCClient rpcClient;
   private String expectedChain;
@@ -87,15 +87,17 @@ public class JSONRpcClientServiceImpl implements RpcClientService {
   }
 
   @Override
-  public void broadcastTransaction(Transaction tx) throws Exception {
-    String txid = tx.getHashAsString();
-
+  public void pushTx(String txHex) throws Exception {
     try {
-      log.info("Broadcasting tx " + txid);
-      rpcClient.sendRawTransaction(org.bitcoinj.core.Utils.HEX.encode(tx.bitcoinSerialize()));
+      if (log.isDebugEnabled()) {
+        log.debug("Broadcasting tx... " + txHex);
+      } else {
+        log.info("Broadcasting tx...");
+      }
+      rpcClient.sendRawTransaction(txHex);
     } catch (Exception e) {
-      log.error("Unable to broadcast tx " + txid, e);
-      throw new Exception("Unable to broadcast tx");
+      log.error("Unable to broadcast tx: " + txHex, e);
+      throw new Exception("Unable to broadcast tx: " + txHex);
     }
   }
 }

@@ -9,7 +9,7 @@ import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
-import com.samourai.whirlpool.client.utils.PushTxService;
+import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +35,7 @@ public class CliWallet extends WhirlpoolWallet {
   public static CliWallet get(
       NetworkParameters params,
       SamouraiApi samouraiApi,
+      PushTxService pushTxService,
       WhirlpoolClient whirlpoolClient,
       String seedWords,
       String seedPassphrase,
@@ -69,7 +70,7 @@ public class CliWallet extends WhirlpoolWallet {
     return new CliWallet(
         params,
         samouraiApi,
-        samouraiApi,
+        pushTxService,
         tx0Service,
         whirlpoolClient,
         feeIndexHandler,
@@ -87,7 +88,8 @@ public class CliWallet extends WhirlpoolWallet {
       IIndexHandler feeIndexHandler,
       Bip84ApiWallet depositWallet,
       Bip84ApiWallet premixWallet,
-      Bip84ApiWallet postmixWallet) {
+      Bip84ApiWallet postmixWallet)
+      throws Exception {
     super(
         params,
         samouraiApi,

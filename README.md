@@ -10,7 +10,7 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 ```
 java -jar target/whirlpool-client-version-run.jar --network={main,test} --server=host:port
 [--ssl=true] [--tor=true] [--debug] [--pool=] [--scode=] [--test-mode]
-[--rpc-client-url=http://user:password@host:port] {args...}
+[--pushtx=auto|interactive|http://user:password@host:port] {args...}
 ```
 
 ### Required arguments:
@@ -24,7 +24,10 @@ java -jar target/whirlpool-client-version-run.jar --network={main,test} --server
 - pool: id of the pool to join
 - scode: optional scode to use for tx0
 - test-mode: disable tx0 checks, only available when enabled on server
-- rpc-client-url: rpc url to connect to your own bitcoin node for broadcasting tx0 or aggregate transactions (warning: connection is not encrypted, use on trusted network only). If not provided, client will show rawtx and stop to let you broadcast it manually.
+- pushtx: specify how to broadcast transactions (tx0, aggregate).
+    * auto: by default, tx are broadcasted through Samourai service.
+    * interactive: print raw tx and pause to let you broadcast it manually.
+    * http://user:password@host:port: rpc connection to your own bitcoin node (connection is not encrypted, use on trusted network only).
 
 ### List pools
 ```

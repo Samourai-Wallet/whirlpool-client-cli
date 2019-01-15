@@ -34,10 +34,12 @@ public class ApplicationArgs {
   private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
-  private static final String ARG_RPC_CLIENT_URL = "rpc-client-url";
+  private static final String ARG_PUSHTX = "pushtx";
+  private static final String PUSHTX_AUTO = "auto";
+  private static final String PUSHTX_INTERACTIVE = "interactive";
   private static final String ARG_TOR = "tor";
   public static final String USAGE =
-      "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub= --rpc-client-url] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0]";
+      "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub=] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0] [--pushtx=auto|interactive|auto|interactive|http://user:password@host:port]";
   private static final String UTXO_SEPARATOR = "-";
 
   private ApplicationArguments args;
@@ -231,8 +233,16 @@ public class ApplicationArgs {
     return args.containsOption(ARG_AUTO_AGGREGATE_POSTMIX);
   }
 
-  public String getRpcClientUrl() {
-    return optionalOption(ARG_RPC_CLIENT_URL);
+  public String getPushTx() {
+    return requireOption(ARG_PUSHTX, PUSHTX_AUTO);
+  }
+
+  public boolean isPushTxAuto() {
+    return PUSHTX_AUTO.equals(getPushTx());
+  }
+
+  public boolean isPushTxInteractive() {
+    return PUSHTX_INTERACTIVE.equals(getPushTx());
   }
 
   public boolean isTor() {

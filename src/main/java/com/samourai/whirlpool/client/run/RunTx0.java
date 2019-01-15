@@ -11,7 +11,7 @@ public class RunTx0 {
     this.cliWallet = cliWallet;
   }
 
-  public Tx0 runTx0(Pool pool, int nbOutputsMin) throws Exception {
-    return cliWallet.tx0(pool, nbOutputsMin);
+  public Tx0 runTx0(Pool pool, int nbOutputs) throws Exception {
+    return cliWallet.tx0(pool, nbOutputs, 1);
   }
 }

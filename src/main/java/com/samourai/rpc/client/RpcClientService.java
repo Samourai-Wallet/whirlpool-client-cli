@@ -1,12 +1,8 @@
 package com.samourai.rpc.client;
 
+import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import java.util.Optional;
-import org.bitcoinj.core.Transaction;
 
-public interface RpcClientService {
-  boolean testConnectivity();
-
+public interface RpcClientService extends PushTxService {
   Optional<RpcRawTransactionResponse> getRawTransaction(String txid);
-
-  void broadcastTransaction(Transaction tx) throws Exception;
 }

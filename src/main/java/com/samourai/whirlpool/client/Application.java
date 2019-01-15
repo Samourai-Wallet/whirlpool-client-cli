@@ -4,7 +4,6 @@ import com.samourai.api.client.SamouraiApi;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.http.client.JavaHttpClient;
 import com.samourai.rpc.client.JSONRpcClientServiceImpl;
-import com.samourai.rpc.client.RpcClientService;
 import com.samourai.stomp.client.IStompClient;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.tor.client.JavaTorClient;
@@ -14,7 +13,6 @@ import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.util.FormatsUtilGeneric;
-import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.RunAggregateAndConsolidateWallet;
 import com.samourai.whirlpool.client.run.RunAggregateWallet;
@@ -25,8 +23,10 @@ import com.samourai.whirlpool.client.run.RunMixWallet;
 import com.samourai.whirlpool.client.run.RunTx0;
 import com.samourai.whirlpool.client.run.RunUpgradeCli;
 import com.samourai.whirlpool.client.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.InteractivePushTxService;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.wallet.CliWallet;
+import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
@@ -140,8 +140,11 @@ public class Application implements ApplicationRunner {
                       paynymIndex,
                       mixs);
             } else {
-              Optional<RpcClientService> rpcClientService = computeRpcClientService(appArgs);
               SamouraiApi samouraiApi = new SamouraiApi(config.getHttpClient());
+              PushTxService pushTxService = computePushTxService(samouraiApi);
+              if (!pushTxService.testConnectivity()) {
+                throw new NotifiableException("Unable to connect to pushTxService");
+              }
 
               // indexes
               String walletIdentifier =
@@ -154,6 +157,7 @@ public class Application implements ApplicationRunner {
                   CliWallet.get(
                       params,
                       samouraiApi,
+                      pushTxService,
                       whirlpoolClient,
                       seedWords,
                       seedPassphrase,
@@ -167,7 +171,7 @@ public class Application implements ApplicationRunner {
               checkUpgrade(
                   params,
                   samouraiApi,
-                  rpcClientService,
+                  pushTxService,
                   depositWallet,
                   premixWallet,
                   postmixWallet,
@@ -178,7 +182,7 @@ public class Application implements ApplicationRunner {
                   new RunAggregateAndConsolidateWallet(
                       params,
                       samouraiApi,
-                      rpcClientService,
+                      pushTxService,
                       depositWallet,
                       premixWallet,
                       postmixWallet);
@@ -222,7 +226,7 @@ public class Application implements ApplicationRunner {
                 String toAddress = appArgs.getAggregatePostmix();
                 if (toAddress != null) {
                   log.info(" • Moving funds to: " + toAddress);
-                  new RunAggregateWallet(params, samouraiApi, rpcClientService, depositWallet)
+                  new RunAggregateWallet(params, samouraiApi, pushTxService, depositWallet)
                       .run(toAddress);
                 }
               } else {
@@ -280,8 +284,6 @@ public class Application implements ApplicationRunner {
                     if (iterationDelay > 0) {
                       Thread.sleep(iterationDelay * 1000);
                     }
-                  } catch (BroadcastException e) {
-                    CliUtils.broadcastTxInstruction(e);
                   } catch (Exception e) {
                     log.error(e.getMessage());
                     errors++;
@@ -325,12 +327,6 @@ public class Application implements ApplicationRunner {
           new RunListPools().run(pools);
           log.info("Tip: use --pool argument to select a pool");
         }
-      } catch (BroadcastException e) {
-        try {
-          CliUtils.broadcastTxInstruction(e);
-        } catch (NotifiableException ee) {
-          log.error(e.getMessage());
-        }
       } catch (NotifiableException e) {
         log.error(e.getMessage());
       } catch (Exception e) {
@@ -372,19 +368,24 @@ public class Application implements ApplicationRunner {
     return config;
   }
 
-  private Optional<RpcClientService> computeRpcClientService(ApplicationArgs appArgs)
-      throws Exception {
-    String rpcClientUrl = appArgs.getRpcClientUrl();
-    if (rpcClientUrl == null) {
-      return Optional.empty();
+  private PushTxService computePushTxService(SamouraiApi samouraiApi) {
+    if (appArgs.isPushTxInteractive()) {
+      // interactive
+      return new InteractivePushTxService();
     }
-    NetworkParameters params = appArgs.getNetworkParameters();
-    boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(params);
-    RpcClientService rpcClientService = new JSONRpcClientServiceImpl(rpcClientUrl, isTestnet);
-    if (!rpcClientService.testConnectivity()) {
-      throw new NotifiableException("Unable to connect to rpc-client-url");
+    if (!appArgs.isPushTxAuto()) {
+      // rpc client
+      NetworkParameters params = appArgs.getNetworkParameters();
+      boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(params);
+      String rpcClientUrl = appArgs.getPushTx();
+      try {
+        return new JSONRpcClientServiceImpl(rpcClientUrl, isTestnet);
+      } catch (Exception e) {
+        log.error("Unable to initialize RpcClientService", e);
+      }
     }
-    return Optional.of(rpcClientService);
+    // samourai backend
+    return samouraiApi;
   }
 
   private File computeIndexFile(String walletIdentifier) throws NotifiableException {
@@ -409,7 +410,7 @@ public class Application implements ApplicationRunner {
   private void checkUpgrade(
       NetworkParameters params,
       SamouraiApi samouraiApi,
-      Optional<RpcClientService> rpcClientService,
+      PushTxService pushTxService,
       Bip84ApiWallet depositWallet,
       Bip84ApiWallet premixWallet,
       Bip84ApiWallet postmixWallet,
@@ -429,13 +430,7 @@ public class Application implements ApplicationRunner {
       log.debug(" • Upgrading cli: " + lastVersion + " -> " + CLI_VERSION);
     }
     new RunUpgradeCli(
-            params,
-            samouraiApi,
-            rpcClientService,
-            depositWallet,
-            premixWallet,
-            postmixWallet,
-            appArgs)
+            params, samouraiApi, pushTxService, depositWallet, premixWallet, postmixWallet, appArgs)
         .run(lastVersion);
 
     // set new version

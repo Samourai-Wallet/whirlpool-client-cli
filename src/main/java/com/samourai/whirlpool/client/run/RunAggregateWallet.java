@@ -2,19 +2,16 @@ package com.samourai.whirlpool.client.run;
 
 import com.samourai.api.client.SamouraiApi;
 import com.samourai.api.client.beans.UnspentResponse;
-import com.samourai.rpc.client.RpcClientService;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
-import com.samourai.whirlpool.client.exception.BroadcastException;
 import com.samourai.whirlpool.client.tx0.TxAggregateService;
-import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutPoint;
@@ -28,17 +25,17 @@ public class RunAggregateWallet {
 
   private NetworkParameters params;
   private SamouraiApi samouraiApi;
-  private Optional<RpcClientService> rpcClientService;
+  private PushTxService pushTxService;
   private Bip84ApiWallet sourceWallet;
 
   public RunAggregateWallet(
       NetworkParameters params,
       SamouraiApi samouraiApi,
-      Optional<RpcClientService> rpcClientService,
+      PushTxService pushTxService,
       Bip84ApiWallet sourceWallet) {
     this.params = params;
     this.samouraiApi = samouraiApi;
-    this.rpcClientService = rpcClientService;
+    this.pushTxService = pushTxService;
     this.sourceWallet = sourceWallet;
   }
 
@@ -80,12 +77,7 @@ public class RunAggregateWallet {
         }
 
         log.info("Aggregating " + subsetUtxos.size() + " utxos (pass #" + round + ")");
-        try {
-          runAggregate(subsetUtxos, toAddress);
-        } catch (BroadcastException e) {
-          CliUtils.broadcastTxInstruction(e);
-          // stay in the loop
-        }
+        runAggregate(subsetUtxos, toAddress);
         success = true;
 
         log.info("Refreshing utxos...");
@@ -119,6 +111,6 @@ public class RunAggregateWallet {
 
     // broadcast
     log.info(" • Broadcasting TxAggregate...");
-    CliUtils.broadcastOrNotify(rpcClientService, txAggregate);
+    pushTxService.pushTx(txAggregate);
   }
 }
