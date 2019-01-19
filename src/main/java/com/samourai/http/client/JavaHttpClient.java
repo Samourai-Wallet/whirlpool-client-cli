@@ -113,7 +113,15 @@ public class JavaHttpClient implements IHttpClient {
 
   private void checkResponseSuccess(HttpRequest request) throws HttpException {
     if (!request.ok()) {
-      throw new HttpException(new Exception("statusCode=" + request.code()), request.body());
+      throw new HttpException(
+          new Exception(
+              "httpRequest failed: statusCode="
+                  + request.code()
+                  + " for "
+                  + request.method()
+                  + " "
+                  + request.url()),
+          request.body());
     }
   }
 }

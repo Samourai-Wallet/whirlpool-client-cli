@@ -88,12 +88,12 @@ public class JSONRpcClientServiceImpl extends AbstractPushTxService implements R
 
   @Override
   public void pushTx(String txHex) throws Exception {
+    if (log.isDebugEnabled()) {
+      log.debug("pushTx... " + txHex);
+    } else {
+      log.info("pushTx tx..." + txHex);
+    }
     try {
-      if (log.isDebugEnabled()) {
-        log.debug("Broadcasting tx... " + txHex);
-      } else {
-        log.info("Broadcasting tx...");
-      }
       rpcClient.sendRawTransaction(txHex);
     } catch (Exception e) {
       log.error("Unable to broadcast tx: " + txHex, e);
