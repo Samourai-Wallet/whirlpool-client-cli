@@ -3,8 +3,8 @@ package com.samourai.whirlpool.client.tx0;
 import com.samourai.wallet.bip69.BIP69InputComparator;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
+import com.samourai.wallet.util.FeeUtil;
 import com.samourai.wallet.util.TxUtil;
-import com.samourai.whirlpool.client.utils.FeeUtils;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +40,9 @@ public class TxAggregateService {
     long inputsValue = spendFromOutpoints.stream().mapToLong(o -> o.getValue().getValue()).sum();
 
     Transaction tx = new Transaction(params);
-    long minerFee = FeeUtils.computeMinerFee(spendFromOutpoints.size(), 1, feeSatPerByte);
+    long minerFee =
+        FeeUtil.getInstance()
+            .estimatedFeeSegwit(spendFromOutpoints.size(), 0, 0, 1, 0, feeSatPerByte);
     long destinationValue = inputsValue - minerFee;
 
     // 1 output
