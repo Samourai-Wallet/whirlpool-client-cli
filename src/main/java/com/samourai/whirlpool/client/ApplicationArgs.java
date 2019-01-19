@@ -38,6 +38,7 @@ public class ApplicationArgs {
   private static final String PUSHTX_AUTO = "auto";
   private static final String PUSHTX_INTERACTIVE = "interactive";
   private static final String ARG_TOR = "tor";
+  private static final String ARG_LISTEN = "listen";
   public static final String USAGE =
       "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub=] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0] [--pushtx=auto|interactive|auto|interactive|http://user:password@host:port]";
   private static final String UTXO_SEPARATOR = "-";
@@ -247,6 +248,10 @@ public class ApplicationArgs {
 
   public boolean isTor() {
     return Boolean.parseBoolean(requireOption(ARG_TOR, "true"));
+  }
+
+  public boolean isListen() {
+    return Boolean.parseBoolean(requireOption(ARG_LISTEN, "false"));
   }
 
   private String optionalOption(String name) {

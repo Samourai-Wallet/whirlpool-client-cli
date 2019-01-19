@@ -17,6 +17,7 @@ import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.RunAggregateAndConsolidateWallet;
 import com.samourai.whirlpool.client.run.RunAggregateWallet;
 import com.samourai.whirlpool.client.run.RunListPools;
+import com.samourai.whirlpool.client.run.RunListen;
 import com.samourai.whirlpool.client.run.RunLoopWallet;
 import com.samourai.whirlpool.client.run.RunMixUtxo;
 import com.samourai.whirlpool.client.run.RunMixWallet;
@@ -209,113 +210,117 @@ public class Application implements ApplicationRunner {
                         + postmixZpub);
               }
 
-              Optional<Integer> tx0Arg = appArgs.getTx0();
-              if (tx0Arg.isPresent()) {
-                // go tx0
-                runTx0.runTx0(pool, tx0Arg.get());
-              } else if (appArgs.isAggregatePostmix()) {
-                if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
-                  throw new NotifiableException(
-                      "AggregatePostmix cannot be run on mainnet for privacy reasons.");
-                }
-
-                // go aggregate and consolidate
-                runAggregateAndConsolidateWallet.run();
-
-                // should we move to a specific address?
-                String toAddress = appArgs.getAggregatePostmix();
-                if (toAddress != null) {
-                  log.info(" • Moving funds to: " + toAddress);
-                  new RunAggregateWallet(params, samouraiApi, pushTxService, depositWallet)
-                      .run(toAddress);
-                }
+              if (appArgs.isListen()) {
+                new RunListen().run();
               } else {
-                // go loop wallet
-                int iterationDelay = appArgs.getIterationDelay();
-                int clientDelay = appArgs.getClientDelay();
-                int clients = appArgs.getClients();
-                if (torClient.isPresent()) {
-                  torClient.get().setNbPrivateConnexions(clients * 2);
-                }
-                RunMixWallet runMixWallet =
-                    new RunMixWallet(
-                        config,
-                        torClient,
-                        premixWallet,
-                        postmixWallet,
-                        clientDelay * 1000,
-                        clients);
-                Optional<RunAggregateAndConsolidateWallet>
-                    optionalRunAggregateAndConsolidateWallet =
-                        appArgs.isAutoAggregatePostmix()
-                            ? Optional.of(runAggregateAndConsolidateWallet)
-                            : Optional.empty();
-                RunLoopWallet runLoopWallet =
-                    new RunLoopWallet(
-                        config,
-                        samouraiApi,
-                        runTx0,
-                        runMixWallet,
-                        cliWallet.getTx0Service(),
-                        depositWallet,
-                        premixWallet,
-                        optionalRunAggregateAndConsolidateWallet);
-                int i = 1;
-                int errors = 0;
-                while (true) {
-                  try {
-                    boolean success = runLoopWallet.run(pool, clients);
-                    if (!success) {
-                      throw new NotifiableException("Iteration failed");
-                    }
+                Optional<Integer> tx0Arg = appArgs.getTx0();
+                if (tx0Arg.isPresent()) {
+                  // go tx0
+                  runTx0.runTx0(pool, tx0Arg.get());
+                } else if (appArgs.isAggregatePostmix()) {
+                  if (!FormatsUtilGeneric.getInstance().isTestNet(params)) {
+                    throw new NotifiableException(
+                        "AggregatePostmix cannot be run on mainnet for privacy reasons.");
+                  }
 
-                    log.info(
-                        " ✔ Cycle #"
-                            + i
-                            + " SUCCESS. Next cycle in "
-                            + iterationDelay
-                            + "s...  (total success: "
-                            + (i - errors)
-                            + ", errors: "
-                            + errors
-                            + ", postmixIndex: "
-                            + postmixWallet.getIndexHandler().get()
-                            + ")");
-                    if (iterationDelay > 0) {
-                      Thread.sleep(iterationDelay * 1000);
-                    }
-                  } catch (Exception e) {
-                    log.error(e.getMessage());
-                    errors++;
-                    if (e instanceof NotifiableException) {
-                      // don't log exception
-                      log.error(
-                          " ✖ Cycle #"
+                  // go aggregate and consolidate
+                  runAggregateAndConsolidateWallet.run();
+
+                  // should we move to a specific address?
+                  String toAddress = appArgs.getAggregatePostmix();
+                  if (toAddress != null) {
+                    log.info(" • Moving funds to: " + toAddress);
+                    new RunAggregateWallet(params, samouraiApi, pushTxService, depositWallet)
+                        .run(toAddress);
+                  }
+                } else {
+                  // go loop wallet
+                  int iterationDelay = appArgs.getIterationDelay();
+                  int clientDelay = appArgs.getClientDelay();
+                  int clients = appArgs.getClients();
+                  if (torClient.isPresent()) {
+                    torClient.get().setNbPrivateConnexions(clients * 2);
+                  }
+                  RunMixWallet runMixWallet =
+                      new RunMixWallet(
+                          config,
+                          torClient,
+                          premixWallet,
+                          postmixWallet,
+                          clientDelay * 1000,
+                          clients);
+                  Optional<RunAggregateAndConsolidateWallet>
+                      optionalRunAggregateAndConsolidateWallet =
+                          appArgs.isAutoAggregatePostmix()
+                              ? Optional.of(runAggregateAndConsolidateWallet)
+                              : Optional.empty();
+                  RunLoopWallet runLoopWallet =
+                      new RunLoopWallet(
+                          config,
+                          samouraiApi,
+                          runTx0,
+                          runMixWallet,
+                          cliWallet.getTx0Service(),
+                          depositWallet,
+                          premixWallet,
+                          optionalRunAggregateAndConsolidateWallet);
+                  int i = 1;
+                  int errors = 0;
+                  while (true) {
+                    try {
+                      boolean success = runLoopWallet.run(pool, clients);
+                      if (!success) {
+                        throw new NotifiableException("Iteration failed");
+                      }
+
+                      log.info(
+                          " ✔ Cycle #"
                               + i
-                              + " FAILED, retrying in "
-                              + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
-                              + "s (total errors: "
+                              + " SUCCESS. Next cycle in "
+                              + iterationDelay
+                              + "s...  (total success: "
+                              + (i - errors)
+                              + ", errors: "
                               + errors
                               + ", postmixIndex: "
                               + postmixWallet.getIndexHandler().get()
                               + ")");
-                    } else {
-                      // log exception
-                      log.error(
-                          " ✖ Cycle #"
-                              + i
-                              + " FAILED, retrying in "
-                              + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
-                              + "s (total errors: "
-                              + errors
-                              + ", postmixIndex: "
-                              + postmixWallet.getIndexHandler().get()
-                              + ")",
-                          e);
+                      if (iterationDelay > 0) {
+                        Thread.sleep(iterationDelay * 1000);
+                      }
+                    } catch (Exception e) {
+                      log.error(e.getMessage());
+                      errors++;
+                      if (e instanceof NotifiableException) {
+                        // don't log exception
+                        log.error(
+                            " ✖ Cycle #"
+                                + i
+                                + " FAILED, retrying in "
+                                + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
+                                + "s (total errors: "
+                                + errors
+                                + ", postmixIndex: "
+                                + postmixWallet.getIndexHandler().get()
+                                + ")");
+                      } else {
+                        // log exception
+                        log.error(
+                            " ✖ Cycle #"
+                                + i
+                                + " FAILED, retrying in "
+                                + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
+                                + "s (total errors: "
+                                + errors
+                                + ", postmixIndex: "
+                                + postmixWallet.getIndexHandler().get()
+                                + ")",
+                            e);
+                      }
+                      Thread.sleep(SLEEP_LOOPWALLET_ON_ERROR);
                     }
-                    Thread.sleep(SLEEP_LOOPWALLET_ON_ERROR);
+                    i++;
                   }
-                  i++;
                 }
               }
             }
