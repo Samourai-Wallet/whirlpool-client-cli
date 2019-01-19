@@ -3,6 +3,7 @@ package com.samourai.whirlpool.client;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.CliUtils;
 import java.lang.invoke.MethodHandles;
+import java.util.Iterator;
 import java.util.Optional;
 import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
@@ -258,7 +259,11 @@ public class ApplicationArgs {
     if (!args.getOptionNames().contains(name)) {
       return null;
     }
-    return args.getOptionValues(name).iterator().next();
+    Iterator<String> iter = args.getOptionValues(name).iterator();
+    if (!iter.hasNext()) {
+      return "true";
+    }
+    return iter.next();
   }
 
   private String requireOption(String name) {

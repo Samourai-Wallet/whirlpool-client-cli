@@ -12,6 +12,7 @@ import com.samourai.wallet.client.indexHandler.FileIndexHandler;
 import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
+import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.run.RunAggregateAndConsolidateWallet;
@@ -229,7 +230,15 @@ public class Application implements ApplicationRunner {
                   // should we move to a specific address?
                   String toAddress = appArgs.getAggregatePostmix();
                   if (toAddress != null) {
-                    log.info(" • Moving funds to: " + toAddress);
+                    if ("true".equals(toAddress)) {
+                      // aggregate to deposit
+                      toAddress =
+                          Bech32UtilGeneric.getInstance()
+                              .toBech32(depositWallet.getNextAddress(), params);
+                      log.info(" • Moving funds to deposit: " + toAddress);
+                    } else {
+                      log.info(" • Moving funds to: " + toAddress);
+                    }
                     new RunAggregateWallet(params, samouraiApi, pushTxService, depositWallet)
                         .run(toAddress);
                   }
