@@ -61,7 +61,7 @@ public class ApplicationArgs {
   }
 
   public boolean isSsl() {
-    return Boolean.parseBoolean(requireOption(ARG_SSL, "true"));
+    return optionalBoolean(ARG_SSL, true);
   }
 
   public NetworkParameters getNetworkParameters() {
@@ -248,17 +248,21 @@ public class ApplicationArgs {
   }
 
   public boolean isTor() {
-    return Boolean.parseBoolean(requireOption(ARG_TOR, "true"));
+    return optionalBoolean(ARG_TOR, true);
   }
 
   public boolean isListen() {
-    return Boolean.parseBoolean(requireOption(ARG_LISTEN, "false"));
+    return optionalBoolean(ARG_LISTEN, false);
   }
 
-  private String optionalOption(String name) {
+  private String requireOption(String name, String defaultValue) {
     if (!args.getOptionNames().contains(name)) {
-      return null;
+      if (log.isDebugEnabled()) {
+        log.debug("--" + name + "=" + defaultValue + " (default value)");
+      }
+      return defaultValue;
     }
+    // --param (with no value) => "true"
     Iterator<String> iter = args.getOptionValues(name).iterator();
     if (!iter.hasNext()) {
       return "true";
@@ -267,19 +271,18 @@ public class ApplicationArgs {
   }
 
   private String requireOption(String name) {
-    if (!args.getOptionNames().contains(name) || !args.getOptionValues(name).iterator().hasNext()) {
+    String value = requireOption(name, null);
+    if (value == null) {
       throw new IllegalArgumentException("Missing required option: " + name);
     }
-    return args.getOptionValues(name).iterator().next();
+    return value;
   }
 
-  private String requireOption(String name, String defaultValue) {
-    if (!args.getOptionNames().contains(name) || !args.getOptionValues(name).iterator().hasNext()) {
-      if (log.isDebugEnabled()) {
-        log.debug("--" + name + "=" + defaultValue + " (default value)");
-      }
-      return defaultValue;
-    }
-    return args.getOptionValues(name).iterator().next();
+  private boolean optionalBoolean(String name, boolean defaultValue) {
+    return Boolean.parseBoolean(requireOption(name, Boolean.toString(defaultValue)));
+  }
+
+  private String optionalOption(String name) {
+    return requireOption(name, null);
   }
 }
