@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.run;
+package com.samourai.whirlpool.cli.run;
 
 import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.wallet.hd.HD_Address;

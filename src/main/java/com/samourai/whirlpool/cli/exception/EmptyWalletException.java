@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.exception;
+package com.samourai.whirlpool.cli.exception;
 
 public class EmptyWalletException extends Exception {
 

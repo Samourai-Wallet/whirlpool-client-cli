@@ -1,7 +1,7 @@
-package com.samourai.whirlpool.client.run;
+package com.samourai.whirlpool.cli.run;
 
+import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.tx0.Tx0;
-import com.samourai.whirlpool.client.wallet.CliWallet;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 
 public class RunTx0 {

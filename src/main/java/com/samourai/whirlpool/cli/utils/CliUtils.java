@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.utils;
+package com.samourai.whirlpool.cli.utils;
 
 import com.samourai.api.client.beans.UnspentResponse;
 import com.samourai.whirlpool.client.exception.NotifiableException;

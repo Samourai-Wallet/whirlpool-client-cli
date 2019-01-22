@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client;
+package com.samourai.whirlpool.cli;
 
 import com.samourai.whirlpool.client.mix.listener.MixStep;
 import com.samourai.whirlpool.client.mix.listener.MixSuccess;

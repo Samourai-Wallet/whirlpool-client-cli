@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.client.run;
 
-import com.samourai.whirlpool.client.Application;
+import com.samourai.whirlpool.cli.Application;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

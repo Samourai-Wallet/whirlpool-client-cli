@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.run;
+package com.samourai.whirlpool.cli.run;
 
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;

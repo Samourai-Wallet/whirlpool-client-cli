@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.run;
+package com.samourai.whirlpool.cli.run;
 
 import com.samourai.api.client.SamouraiApi;
 import com.samourai.wallet.client.Bip84ApiWallet;

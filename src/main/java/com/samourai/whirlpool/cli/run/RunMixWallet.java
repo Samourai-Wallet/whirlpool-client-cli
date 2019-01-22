@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.run;
+package com.samourai.whirlpool.cli.run;
 
 import com.samourai.api.client.beans.UnspentResponse;
 import com.samourai.stomp.client.JavaStompClient;

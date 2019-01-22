@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.run;
+package com.samourai.whirlpool.cli.run;
 
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;

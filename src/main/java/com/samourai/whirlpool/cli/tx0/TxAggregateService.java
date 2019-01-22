@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.tx0;
+package com.samourai.whirlpool.cli.tx0;
 
 import com.samourai.wallet.bip69.BIP69InputComparator;
 import com.samourai.wallet.hd.HD_Address;

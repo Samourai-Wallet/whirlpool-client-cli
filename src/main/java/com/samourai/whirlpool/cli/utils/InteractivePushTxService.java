@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.utils;
+package com.samourai.whirlpool.cli.utils;
 
 import com.samourai.whirlpool.client.wallet.pushTx.AbstractPushTxService;
 

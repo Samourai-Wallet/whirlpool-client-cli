@@ -1,7 +1,7 @@
 package com.samourai.stomp.client;
 
 import com.samourai.tor.client.JavaTorClient;
-import com.samourai.whirlpool.client.Application;
+import com.samourai.whirlpool.cli.Application;
 import java.util.Map;
 import java.util.Optional;
 import javax.websocket.MessageHandler;

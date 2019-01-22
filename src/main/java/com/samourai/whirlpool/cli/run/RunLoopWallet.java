@@ -1,12 +1,11 @@
-package com.samourai.whirlpool.client.run;
+package com.samourai.whirlpool.cli.run;
 
 import com.samourai.api.client.SamouraiApi;
 import com.samourai.api.client.beans.UnspentResponse;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
-import com.samourai.whirlpool.client.exception.EmptyWalletException;
+import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
-import com.samourai.whirlpool.client.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
@@ -96,7 +95,7 @@ public class RunLoopWallet {
   private void doRunTx0(Pool pool, int feeSatPerByte, int missingMustMixUtxos) throws Exception {
     try {
       runTx0.runTx0(pool, OUTPUTS_PER_TX0);
-    } catch (EmptyWalletException e) {
+    } catch (com.samourai.whirlpool.cli.exception.EmptyWalletException e) {
       // premixAndDeposit is empty => autoRefill when possible
       long missingBalance =
           tx0Service.computeSpendFromBalanceMin(pool, feeSatPerByte, missingMustMixUtxos);

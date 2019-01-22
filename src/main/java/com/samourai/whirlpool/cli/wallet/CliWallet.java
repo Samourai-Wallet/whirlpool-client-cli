@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.client.wallet;
+package com.samourai.whirlpool.cli.wallet;
 
 import com.samourai.api.client.SamouraiApi;
 import com.samourai.wallet.client.Bip84ApiWallet;
@@ -9,6 +9,7 @@ import com.samourai.wallet.hd.HD_WalletFactoryGeneric;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
