@@ -27,7 +27,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
             <version>${spring.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -97,7 +97,7 @@
                 <version>${spring.version}</version>
                 <configuration>
                     <fork>true</fork>
-                    <mainClass>com.samourai.whirlpool.client.Application</mainClass>
+                    <mainClass>com.samourai.whirlpool.cli.Application</mainClass>
                 </configuration>
                 <executions>
                     <execution>
