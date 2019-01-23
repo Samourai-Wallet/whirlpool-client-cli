@@ -1,0 +1,82 @@
+package com.samourai.whirlpool.cli.config;
+
+import com.samourai.http.client.IHttpClient;
+import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
+import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
+import com.samourai.whirlpool.cli.services.CliPushTxService;
+import com.samourai.whirlpool.cli.services.JavaStompClientService;
+import com.samourai.whirlpool.cli.services.SamouraiApiService;
+import com.samourai.whirlpool.client.WhirlpoolClient;
+import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
+import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
+import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
+import java.lang.invoke.MethodHandles;
+import org.apache.commons.lang3.StringUtils;
+import org.bitcoinj.core.NetworkParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+
+@Configuration
+@EnableCaching
+public class CliServicesConfig {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  protected CliConfig whirlpoolCliConfig;
+
+  public CliServicesConfig(CliConfig whirlpoolCliConfig) {
+    this.whirlpoolCliConfig = whirlpoolCliConfig;
+  }
+
+  @Bean
+  TaskExecutor taskExecutor() {
+    return new SimpleAsyncTaskExecutor();
+  }
+
+  @Bean
+  HD_WalletFactoryJava hdWalletFactory() {
+    return HD_WalletFactoryJava.getInstance();
+  }
+
+  @Bean
+  Bech32UtilGeneric bech32Util() {
+    return Bech32UtilGeneric.getInstance();
+  }
+
+  @Bean
+  NetworkParameters networkParameters(CliConfig cliConfig) {
+    return cliConfig.getNetworkParameters();
+  }
+
+  @Bean
+  WhirlpoolClient whirlpoolClient(WhirlpoolClientConfig whirlpoolClientConfig) {
+    return WhirlpoolClientImpl.newClient(whirlpoolClientConfig);
+  }
+
+  @Bean
+  WhirlpoolClientConfig whirlpoolClientConfig(
+      CliConfig cliConfig, IHttpClient httpClient, JavaStompClientService javaStompClientService) {
+    WhirlpoolClientConfig config =
+        new WhirlpoolClientConfig(
+            httpClient,
+            javaStompClientService,
+            cliConfig.getServer().getUrl(),
+            cliConfig.getNetworkParameters());
+    config.setSsl(cliConfig.getServer().isSsl());
+
+    String scode = cliConfig.getScode();
+    if (!StringUtils.isEmpty(scode)) {
+      config.setScode(scode);
+    }
+    return config;
+  }
+
+  @Bean
+  PushTxService pushTxService(CliConfig cliConfig, SamouraiApiService samouraiApiService) {
+    return new CliPushTxService(cliConfig, samouraiApiService);
+  }
+}

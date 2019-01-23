@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.cli.run;
+package com.samourai.whirlpool.cli.services;
 
 import com.samourai.api.client.SamouraiApi;
 import com.samourai.api.client.beans.UnspentResponse;
@@ -6,7 +6,8 @@ import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
-import com.samourai.whirlpool.cli.tx0.TxAggregateService;
+import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import java.lang.invoke.MethodHandles;
@@ -17,37 +18,51 @@ import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-public class RunAggregateWallet {
+@Service
+public class WalletAggregateService {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final int AGGREGATED_UTXOS_PER_TX = 500;
-  protected static final Bech32UtilGeneric bech32Util = Bech32UtilGeneric.getInstance();
 
-  private NetworkParameters params;
   private SamouraiApi samouraiApi;
   private PushTxService pushTxService;
-  private Bip84ApiWallet sourceWallet;
+  private NetworkParameters params;
+  private CliConfig cliConfig;
+  private CliWalletService cliWalletService;
+  private Bech32UtilGeneric bech32Util;
+  private TxAggregateService txAggregateService;
 
-  public RunAggregateWallet(
-      NetworkParameters params,
+  public WalletAggregateService(
       SamouraiApi samouraiApi,
       PushTxService pushTxService,
-      Bip84ApiWallet sourceWallet) {
-    this.params = params;
+      NetworkParameters params,
+      CliConfig cliConfig,
+      CliWalletService cliWalletService,
+      Bech32UtilGeneric bech32Util,
+      TxAggregateService txAggregateService) {
     this.samouraiApi = samouraiApi;
     this.pushTxService = pushTxService;
-    this.sourceWallet = sourceWallet;
+    this.params = params;
+    this.cliConfig = cliConfig;
+    this.cliWalletService = cliWalletService;
+    this.bech32Util = bech32Util;
+    this.txAggregateService = txAggregateService;
   }
 
-  public boolean run(Bip84Wallet destinationWallet) throws Exception {
-    return run(null, destinationWallet);
+  public boolean toWallet(Bip84ApiWallet sourceWallet, Bip84Wallet destinationWallet)
+      throws Exception {
+    return doAggregate(sourceWallet, null, destinationWallet);
   }
 
-  public boolean run(String destinationAddress) throws Exception {
-    return run(destinationAddress, null);
+  public boolean toAddress(Bip84ApiWallet sourceWallet, String destinationAddress)
+      throws Exception {
+    return doAggregate(sourceWallet, destinationAddress, null);
   }
 
-  private boolean run(String destinationAddress, Bip84Wallet destinationWallet) throws Exception {
+  private boolean doAggregate(
+      Bip84ApiWallet sourceWallet, String destinationAddress, Bip84Wallet destinationWallet)
+      throws Exception {
     List<UnspentResponse.UnspentOutput> utxos = sourceWallet.fetchUtxos();
     if (utxos.isEmpty()) {
       // maybe you need to declare zpub as bip84 with /multiaddr?bip84=
@@ -77,10 +92,9 @@ public class RunAggregateWallet {
         }
 
         log.info("Aggregating " + subsetUtxos.size() + " utxos (pass #" + round + ")");
-        runAggregate(subsetUtxos, toAddress);
+        txAggregate(sourceWallet, subsetUtxos, toAddress);
         success = true;
 
-        log.info("Refreshing utxos...");
         samouraiApi.refreshUtxos();
       }
       round++;
@@ -88,7 +102,10 @@ public class RunAggregateWallet {
     return success;
   }
 
-  private void runAggregate(List<UnspentResponse.UnspentOutput> postmixUtxos, String toAddress)
+  private void txAggregate(
+      Bip84ApiWallet sourceWallet,
+      List<UnspentResponse.UnspentOutput> postmixUtxos,
+      String toAddress)
       throws Exception {
     List<TransactionOutPoint> spendFromOutPoints = new ArrayList<>();
     List<HD_Address> spendFromAddresses = new ArrayList<>();
@@ -103,8 +120,8 @@ public class RunAggregateWallet {
 
     // tx
     Transaction txAggregate =
-        new TxAggregateService(params)
-            .txAggregate(spendFromOutPoints, spendFromAddresses, toAddress, feeSatPerByte);
+        txAggregateService.txAggregate(
+            spendFromOutPoints, spendFromAddresses, toAddress, feeSatPerByte);
 
     log.info("txAggregate:");
     log.info(txAggregate.toString());
@@ -112,5 +129,26 @@ public class RunAggregateWallet {
     // broadcast
     log.info(" • Broadcasting TxAggregate...");
     pushTxService.pushTx(txAggregate);
+  }
+
+  public boolean consolidateTestnet() throws Exception {
+    if (!cliConfig.isTestnet()) {
+      throw new NotifiableException(
+          "consolidateTestnet cannot be run on mainnet for privacy reasons.");
+    }
+
+    Bip84ApiWallet depositWallet = cliWalletService.getCliWallet().getDepositWallet();
+    Bip84ApiWallet premixWallet = cliWalletService.getCliWallet().getPremixWallet();
+    Bip84ApiWallet postmixWallet = cliWalletService.getCliWallet().getPostmixWallet();
+
+    log.info(" • Consolidating postmix -> deposit...");
+    toWallet(postmixWallet, depositWallet);
+
+    log.info(" • Consolidating premix -> deposit...");
+    toWallet(premixWallet, depositWallet);
+
+    log.info(" • Consolidating deposit...");
+    boolean success = toWallet(depositWallet, depositWallet);
+    return success;
   }
 }

@@ -1,14 +1,17 @@
 package com.samourai.stomp.client;
 
-import com.samourai.tor.client.JavaTorClient;
 import com.samourai.whirlpool.cli.Application;
+import com.samourai.whirlpool.cli.services.CliTorClientService;
 import java.util.Map;
-import java.util.Optional;
 import javax.websocket.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.*;
+import org.springframework.messaging.simp.stomp.ConnectionLostException;
+import org.springframework.messaging.simp.stomp.StompCommand;
+import org.springframework.messaging.simp.stomp.StompHeaders;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
@@ -21,10 +24,10 @@ public class JavaStompClient implements IStompClient {
   private String stompSessionId;
 
   private StompHeaders connectedHeaders;
-  private Optional<JavaTorClient> torClient;
+  private CliTorClientService torClientService;
 
-  public JavaStompClient(Optional<JavaTorClient> torClient) {
-    this.torClient = torClient;
+  public JavaStompClient(CliTorClientService torClientService) {
+    this.torClientService = torClientService;
   }
 
   @Override

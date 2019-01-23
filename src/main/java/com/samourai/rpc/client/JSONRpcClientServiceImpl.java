@@ -21,8 +21,13 @@ public class JSONRpcClientServiceImpl extends AbstractPushTxService implements R
     log.info("Instanciating JSONRpcClientServiceImpl");
     this.expectedChain = isTestnet ? CHAIN_TESTNET : CHAIN_MAINNET;
 
-    URL url = new URL(rpcClientUrl);
-    this.rpcClient = new BitcoinJSONRPCClient(url);
+    try {
+      URL url = new URL(rpcClientUrl);
+      this.rpcClient = new BitcoinJSONRPCClient(url);
+    } catch (Exception e) {
+      // more understandable exception
+      throw new Exception("Unable to connect to RPC client");
+    }
   }
 
   @Override

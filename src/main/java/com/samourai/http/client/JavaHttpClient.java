@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kevinsawicki.http.HttpRequest;
 import com.samourai.tor.client.JavaTorClient;
 import com.samourai.tor.client.JavaTorConnexion;
+import com.samourai.whirlpool.cli.services.CliTorClientService;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.Map;
@@ -15,17 +16,18 @@ import org.slf4j.LoggerFactory;
 public class JavaHttpClient implements IHttpClient {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private Optional<JavaTorClient> torClient;
+  private CliTorClientService torClientService;
   private ObjectMapper objectMapper;
 
-  public JavaHttpClient(Optional<JavaTorClient> torClient) {
-    this.torClient = torClient;
+  public JavaHttpClient(CliTorClientService torClientService) {
+    this.torClientService = torClientService;
     this.objectMapper = new ObjectMapper();
     objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
   }
 
   @Override
   public <T> T parseJson(String urlStr, Class<T> entityClass) throws HttpException {
+    Optional<JavaTorClient> torClient = torClientService.getTorClient();
     try {
       HttpRequest request;
       if (torClient.isPresent()) {
@@ -51,6 +53,7 @@ public class JavaHttpClient implements IHttpClient {
 
   @Override
   public void postJsonOverTor(String urlStr, Object bodyObj) throws HttpException {
+    Optional<JavaTorClient> torClient = torClientService.getTorClient();
     JavaTorConnexion privateTorConnexion = null;
     try {
       String jsonBody = objectMapper.writeValueAsString(bodyObj);
@@ -82,6 +85,7 @@ public class JavaHttpClient implements IHttpClient {
 
   @Override
   public void postUrlEncoded(String urlStr, Map<String, String> body) throws HttpException {
+    Optional<JavaTorClient> torClient = torClientService.getTorClient();
     String bodyUrlEncoded = HttpRequest.append("", body).substring(1); // remove starting '?'
     JavaTorConnexion privateTorConnexion = null;
     try {

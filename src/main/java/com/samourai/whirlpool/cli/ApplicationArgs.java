@@ -1,12 +1,12 @@
 package com.samourai.whirlpool.cli;
 
+import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -23,12 +23,10 @@ public class ApplicationArgs {
   private static final String ARG_UTXO_BALANCE = "utxo-balance";
   private static final String ARG_SEED_PASSPHRASE = "seed-passphrase";
   private static final String ARG_SEED_WORDS = "seed-words";
-  private static final String ARG_PAYNYM_INDEX = "paynym-index";
   private static final String ARG_SERVER = "server";
   private static final String ARG_SSL = "ssl";
   private static final String ARG_MIXS = "mixs";
   private static final String ARG_POOL_ID = "pool";
-  private static final String ARG_TESTMODE = "test-mode";
   private static final String ARG_SCODE = "scode";
   private static final String ARG_TX0 = "tx0";
   private static final String ARG_CLIENTS = "clients";
@@ -37,12 +35,10 @@ public class ApplicationArgs {
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
   private static final String ARG_PUSHTX = "pushtx";
-  private static final String PUSHTX_AUTO = "auto";
-  private static final String PUSHTX_INTERACTIVE = "interactive";
   private static final String ARG_TOR = "tor";
   private static final String ARG_LISTEN = "listen";
   public static final String USAGE =
-      "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub=] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0] [--pushtx=auto|interactive|auto|interactive|http://user:password@host:port]";
+      "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub=] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0] [--pushtx=auto|interactive|http://user:password@host:port]";
   private static final String UTXO_SEPARATOR = "-";
 
   private ApplicationArguments args;
@@ -51,25 +47,44 @@ public class ApplicationArgs {
     this.args = args;
   }
 
-  public boolean isDebug() {
-    return args.containsOption(ARG_DEBUG);
-  }
+  public void override(CliConfig cliConfig) {
+    String value;
+    Boolean valueBool;
 
-  public String getServer() {
-    String server = requireOption(ARG_SERVER, "127.0.0.1:8080");
-    Assert.notNull(server, "server is null");
-    return server;
-  }
+    value = optionalOption(ARG_SERVER);
+    if (value != null) {
+      cliConfig.getServer().setUrl(value);
+    }
 
-  public boolean isSsl() {
-    return optionalBoolean(ARG_SSL, true);
-  }
+    valueBool = optionalBoolean(ARG_SSL);
+    if (valueBool != null) {
+      cliConfig.getServer().setSsl(valueBool);
+    }
 
-  public NetworkParameters getNetworkParameters() {
-    String networkId = requireOption(ARG_NETWORK_ID);
-    NetworkParameters params = NetworkParameters.fromPmtProtocolID(networkId);
-    Assert.notNull(params, "unknown network");
-    return params;
+    value = optionalOption(ARG_NETWORK_ID);
+    if (value != null) {
+      cliConfig.setNetwork(value);
+    }
+
+    value = optionalOption(ARG_SCODE);
+    if (value != null) {
+      cliConfig.setScode(value);
+    }
+
+    value = optionalOption(ARG_PUSHTX);
+    if (value != null) {
+      cliConfig.setPushtx(value);
+    }
+
+    valueBool = optionalBoolean(ARG_TOR);
+    if (valueBool != null) {
+      cliConfig.setTor(valueBool);
+    }
+
+    valueBool = optionalBoolean(ARG_DEBUG);
+    if (valueBool != null) {
+      cliConfig.setDebug(valueBool);
+    }
   }
 
   public String getPoolId() {
@@ -134,19 +149,6 @@ public class ApplicationArgs {
     return seedPassphrase;
   }
 
-  public int getPaynymIndex() {
-    int paynymIndex = 0;
-    try {
-      String paynymIndexStr = optionalOption(ARG_PAYNYM_INDEX);
-      if (paynymIndexStr != null) {
-        paynymIndex = Integer.parseInt(paynymIndexStr);
-      }
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_PAYNYM_INDEX);
-    }
-    return paynymIndex;
-  }
-
   public int getMixs() {
     final int mixs;
     try {
@@ -156,14 +158,6 @@ public class ApplicationArgs {
       throw new IllegalArgumentException("Numeric value expected for option: " + ARG_MIXS);
     }
     return mixs;
-  }
-
-  public boolean isTestMode() {
-    return args.containsOption(ARG_TESTMODE);
-  }
-
-  public String getScode() {
-    return optionalOption(ARG_SCODE);
   }
 
   public Optional<Integer> getTx0() {
@@ -236,22 +230,6 @@ public class ApplicationArgs {
     return args.containsOption(ARG_AUTO_AGGREGATE_POSTMIX);
   }
 
-  public String getPushTx() {
-    return requireOption(ARG_PUSHTX, PUSHTX_AUTO);
-  }
-
-  public boolean isPushTxAuto() {
-    return PUSHTX_AUTO.equals(getPushTx());
-  }
-
-  public boolean isPushTxInteractive() {
-    return PUSHTX_INTERACTIVE.equals(getPushTx());
-  }
-
-  public boolean isTor() {
-    return optionalBoolean(ARG_TOR, true);
-  }
-
   public static boolean isMainListen(String[] mainArgs) {
     return mainBoolean(mainArgs, ARG_LISTEN, false);
   }
@@ -280,12 +258,13 @@ public class ApplicationArgs {
     return value;
   }
 
-  private boolean optionalBoolean(String name, boolean defaultValue) {
-    return Boolean.parseBoolean(requireOption(name, Boolean.toString(defaultValue)));
-  }
-
   private String optionalOption(String name) {
     return requireOption(name, null);
+  }
+
+  private Boolean optionalBoolean(String name) {
+    String value = optionalOption(name);
+    return value != null ? Boolean.parseBoolean(value) : null;
   }
 
   private static String mainArg(String[] mainArgs, String name, String defaultValue) {

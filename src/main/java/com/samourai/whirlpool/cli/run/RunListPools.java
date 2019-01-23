@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.run;
 
+import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.beans.Pools;
@@ -10,9 +11,15 @@ import org.slf4j.LoggerFactory;
 public class RunListPools {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public RunListPools() {}
+  private WhirlpoolClient whirlpoolClient;
 
-  public void run(Pools pools) {
+  public RunListPools(WhirlpoolClient whirlpoolClient) {
+    this.whirlpoolClient = whirlpoolClient;
+  }
+
+  public void run() throws Exception {
+    Pools pools = whirlpoolClient.fetchPools();
+
     // show available pools
     String lineFormat = "| %15s | %6s | %15s | %22s | %12s | %15s | %13s |\n";
     StringBuilder sb = new StringBuilder();

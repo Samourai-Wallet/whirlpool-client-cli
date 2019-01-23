@@ -1,7 +1,9 @@
-package com.samourai.whirlpool.cli.utils;
+package com.samourai.whirlpool.cli.services;
 
+import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.wallet.pushTx.AbstractPushTxService;
 
+// NOT autowired: wrapped with CliPushTxService
 public class InteractivePushTxService extends AbstractPushTxService {
 
   @Override

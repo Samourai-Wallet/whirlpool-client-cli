@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.cli.tx0;
+package com.samourai.whirlpool.cli.services;
 
 import com.samourai.wallet.bip69.BIP69InputComparator;
 import com.samourai.wallet.hd.HD_Address;
@@ -20,14 +20,17 @@ import org.bitcoinj.core.TransactionOutput;
 import org.bouncycastle.util.encoders.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
+@Service
 public class TxAggregateService {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final NetworkParameters params;
-  private final Bech32UtilGeneric bech32Util = Bech32UtilGeneric.getInstance();
+  private Bech32UtilGeneric bech32Util;
 
-  public TxAggregateService(NetworkParameters params) {
+  public TxAggregateService(NetworkParameters params, Bech32UtilGeneric bech32Util) {
     this.params = params;
+    this.bech32Util = bech32Util;
   }
 
   public Transaction txAggregate(

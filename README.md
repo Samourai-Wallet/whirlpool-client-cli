@@ -9,7 +9,7 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 ## General usage
 ```
 java -jar target/whirlpool-client-version-run.jar --network={main,test} --server=host:port
-[--ssl=true] [--tor=true] [--debug] [--pool=] [--scode=] [--test-mode]
+[--ssl=true] [--tor=true] [--debug] [--pool=] [--scode=]
 [--pushtx=auto|interactive|http://user:password@host:port] {args...}
 ```
 
@@ -23,7 +23,6 @@ java -jar target/whirlpool-client-version-run.jar --network={main,test} --server
 - debug: display more logs for debugging
 - pool: id of the pool to join
 - scode: optional scode to use for tx0
-- test-mode: disable tx0 checks, only available when enabled on server
 - pushtx: specify how to broadcast transactions (tx0, aggregate).
     * auto: by default, tx are broadcasted through Samourai service.
     * interactive: print raw tx and pause to let you broadcast it manually.
@@ -66,18 +65,16 @@ You need a valid pre-mix utxo (output of a valid tx0) to mix.
 ```
 --network={main,test} --server=host:port --pool=
 --utxo= --utxo-key= --utxo-balance=
-[--paynym-index=0]
 [--mixs=1]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000 --paynym-index=5
+java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000
 ```
 - utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)
 - utxo-key: ECKey for pre-mix input
 - utxo-balance: pre-mix input balance (in satoshis). Whole utxo-balance balance will be spent.
-- paynym-index: paynym index to use for computing post-mix address to receive the funds
 - mixs: (1 to N) number of mixes to complete. Client will keep running until completing this number of mixes.
 
 
