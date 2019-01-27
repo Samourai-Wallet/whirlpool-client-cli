@@ -41,13 +41,8 @@ public class CliWalletService extends WhirlpoolWalletService {
   private static final String INDEX_POSTMIX_CHANGE = "postmix_change";
   private static final String INDEX_FEE = "fee";
 
-  private static final String FEE_XPUB =
-      "vpub5YS8pQgZKVbrSn9wtrmydDWmWMjHrxL2mBCZ81BDp7Z2QyCgTLZCrnBprufuoUJaQu1ZeiRvUkvdQTNqV6hS96WbbVZgweFxYR1RXYkBcKt";
-  private static final long FEE_VALUE = 10000; // TODO
-
   private CliConfig cliConfig;
   private SamouraiApiService samouraiApiService;
-  private PushTxService pushTxService;
   private WhirlpoolClient whirlpoolClient;
   private FileIndexHandler fileIndexHandler;
   private HD_WalletFactoryJava hdWalletFactory;
@@ -61,17 +56,17 @@ public class CliWalletService extends WhirlpoolWalletService {
       CliConfig cliConfig,
       SamouraiApiService samouraiApiService,
       PushTxService pushTxService,
+      Tx0Service tx0Service,
       WhirlpoolClient whirlpoolClient,
       HD_WalletFactoryJava hdWalletFactory) {
     super(
         cliConfig.getNetworkParameters(),
         samouraiApiService,
         pushTxService,
-        new Tx0Service(cliConfig.getNetworkParameters(), FEE_XPUB, FEE_VALUE),
+        tx0Service,
         whirlpoolClient);
     this.cliConfig = cliConfig;
     this.samouraiApiService = samouraiApiService;
-    this.pushTxService = pushTxService;
     this.whirlpoolClient = whirlpoolClient;
     this.hdWalletFactory = hdWalletFactory;
   }

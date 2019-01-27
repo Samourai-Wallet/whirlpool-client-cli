@@ -14,6 +14,7 @@ import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
@@ -54,6 +55,7 @@ public class Application implements ApplicationRunner {
   @Autowired private Bech32UtilGeneric bech32Util;
   @Autowired private WalletAggregateService walletAggregateService;
   @Autowired private CliTorClientService torClientService;
+  @Autowired private Tx0Service tx0Service;
 
   public static void main(String... args) {
     // start REST api if --listen
@@ -130,7 +132,8 @@ public class Application implements ApplicationRunner {
                   cliWalletService,
                   bech32Util,
                   walletAggregateService,
-                  torClientService)
+                  torClientService,
+                  tx0Service)
               .run();
         } else {
           // execute requested command
@@ -142,7 +145,8 @@ public class Application implements ApplicationRunner {
                   cliWalletService,
                   bech32Util,
                   walletAggregateService,
-                  torClientService)
+                  torClientService,
+                  tx0Service)
               .run();
         }
       }

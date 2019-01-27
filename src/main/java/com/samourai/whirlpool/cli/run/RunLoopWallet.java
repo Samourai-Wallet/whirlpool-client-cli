@@ -10,6 +10,7 @@ import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
@@ -31,6 +32,7 @@ public class RunLoopWallet {
   private SamouraiApi samouraiApi;
   private CliWalletService cliWalletService;
   private WalletAggregateService walletAggregateService;
+  private Tx0Service tx0Service;
 
   public RunLoopWallet(
       CliTorClientService torClientService,
@@ -38,13 +40,15 @@ public class RunLoopWallet {
       WhirlpoolClientConfig whirlpoolClientConfig,
       SamouraiApi samouraiApi,
       CliWalletService cliWalletService,
-      WalletAggregateService walletAggregateService) {
+      WalletAggregateService walletAggregateService,
+      Tx0Service tx0Service) {
     this.torClientService = torClientService;
     this.bech32Util = bech32Util;
     this.whirlpoolClientConfig = whirlpoolClientConfig;
     this.samouraiApi = samouraiApi;
     this.cliWalletService = cliWalletService;
     this.walletAggregateService = walletAggregateService;
+    this.tx0Service = tx0Service;
   }
 
   public void run(
@@ -174,25 +178,52 @@ public class RunLoopWallet {
     boolean success = false;
     while (!success) {
       try {
-        cliWalletService.tx0(pool.getPoolId(), OUTPUTS_PER_TX0, missingMustMixUtxos);
+        cliWalletService.tx0(pool.getPoolId(), OUTPUTS_PER_TX0, 1);
         success = true;
       } catch (EmptyWalletException e) {
         // deposit is empty => autoRefill when possible
-        autoRefill(e.getBalanceRequired(), isAutoAggregatePostmix);
+
+        long requiredBalance =
+            tx0Service.computeSpendFromBalanceMin(pool, samouraiApi.fetchFees(), OUTPUTS_PER_TX0)
+                * missingMustMixUtxos;
+        autoRefill(requiredBalance, isAutoAggregatePostmix);
       }
     }
   }
 
-  private void autoRefill(long missingBalance, boolean isAutoAggregatePostmix) throws Exception {
+  private void autoRefill(long requiredBalance, boolean isAutoAggregatePostmix) throws Exception {
     Bip84ApiWallet depositWallet = cliWalletService.getCliWallet().getDepositWallet();
+    Bip84ApiWallet premixWallet = cliWalletService.getCliWallet().getPremixWallet();
+    Bip84ApiWallet postmixWallet = cliWalletService.getCliWallet().getPostmixWallet();
+
+    // check total balance
+    long depositBalance = depositWallet.fetchBalance();
+    long premixBalance = premixWallet.fetchBalance();
+    long postmixBalance = postmixWallet.fetchBalance();
+    long totalBalance = depositBalance + premixBalance + postmixBalance;
+    if (log.isDebugEnabled()) {
+      log.debug("depositBalance=" + depositBalance);
+      log.debug("premixBalance=" + premixBalance);
+      log.debug("postmixBalance=" + postmixBalance);
+      log.debug("totalBalance=" + totalBalance);
+    }
+
+    long missingBalance = totalBalance - requiredBalance;
+    if (log.isDebugEnabled()) {
+      log.debug("requiredBalance=" + requiredBalance + " => missingBalance=" + missingBalance);
+    }
+    if (totalBalance < requiredBalance) {
+      throw new EmptyWalletException("Insufficient balance to continue", missingBalance);
+    }
+
     String depositAddress =
         Bech32UtilGeneric.getInstance()
             .toBech32(
                 depositWallet.getNextAddress(false), whirlpoolClientConfig.getNetworkParameters());
     String message =
-        "depositWallet is empty. I need at least "
+        "Insufficient balance to continue. I need at least "
             + ClientUtils.satToBtc(missingBalance)
-            + "btc (+ fees) to continue.\nPlease make a deposit to "
+            + "btc to continue.\nPlease make a deposit to "
             + depositAddress;
     if (!isAutoAggregatePostmix) {
       CliUtils.waitUserAction(message);

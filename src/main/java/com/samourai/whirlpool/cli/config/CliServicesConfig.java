@@ -7,6 +7,7 @@ import com.samourai.whirlpool.cli.services.CliPushTxService;
 import com.samourai.whirlpool.cli.services.JavaStompClientService;
 import com.samourai.whirlpool.cli.services.SamouraiApiService;
 import com.samourai.whirlpool.client.WhirlpoolClient;
+import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
@@ -78,5 +79,13 @@ public class CliServicesConfig {
   @Bean
   PushTxService pushTxService(CliConfig cliConfig, SamouraiApiService samouraiApiService) {
     return new CliPushTxService(cliConfig, samouraiApiService);
+  }
+
+  @Bean
+  Tx0Service tx0Service(CliConfig cliConfig) {
+    return new Tx0Service(
+        cliConfig.getNetworkParameters(),
+        cliConfig.getFee().getXpub(),
+        cliConfig.getFee().getValue());
   }
 }

@@ -8,6 +8,7 @@ import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.client.WhirlpoolClient;
+import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.beans.Pools;
@@ -28,6 +29,7 @@ public class RunCliCommand {
   private Bech32UtilGeneric bech32Util;
   private WalletAggregateService walletAggregateService;
   private CliTorClientService torClientService;
+  private Tx0Service tx0Service;
 
   public RunCliCommand(
       ApplicationArgs appArgs,
@@ -37,7 +39,8 @@ public class RunCliCommand {
       CliWalletService cliWalletService,
       Bech32UtilGeneric bech32Util,
       WalletAggregateService walletAggregateService,
-      CliTorClientService torClientService) {
+      CliTorClientService torClientService,
+      Tx0Service tx0Service) {
     this.appArgs = appArgs;
     this.samouraiApi = samouraiApi;
     this.whirlpoolClient = whirlpoolClient;
@@ -46,6 +49,7 @@ public class RunCliCommand {
     this.bech32Util = bech32Util;
     this.walletAggregateService = walletAggregateService;
     this.torClientService = torClientService;
+    this.tx0Service = tx0Service;
   }
 
   public void run() throws Exception {
@@ -103,7 +107,8 @@ public class RunCliCommand {
                 whirlpoolClientConfig,
                 samouraiApi,
                 cliWalletService,
-                walletAggregateService);
+                walletAggregateService,
+                tx0Service);
         runLoopWallet.run(pool, iterationDelay, nbClients, clientDelay, isAutoAggregatePostmix);
       }
     }

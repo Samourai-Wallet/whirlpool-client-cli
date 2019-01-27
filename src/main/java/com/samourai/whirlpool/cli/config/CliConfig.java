@@ -19,6 +19,7 @@ public class CliConfig {
   @NotEmpty private String pushtx;
   @NotEmpty private boolean tor;
   @NotEmpty private boolean debug;
+  @NotEmpty private FeeConfig fee;
 
   private static final String PUSHTX_AUTO = "auto";
   private static final String PUSHTX_INTERACTIVE = "interactive";
@@ -89,6 +90,14 @@ public class CliConfig {
     this.debug = debug;
   }
 
+  public FeeConfig getFee() {
+    return fee;
+  }
+
+  public void setFee(FeeConfig fee) {
+    this.fee = fee;
+  }
+
   public static class ServerConfig {
     @NotEmpty private String url;
     @NotEmpty private boolean ssl;
@@ -107,6 +116,27 @@ public class CliConfig {
 
     public void setSsl(boolean ssl) {
       this.ssl = ssl;
+    }
+  }
+
+  public static class FeeConfig {
+    @NotEmpty private String xpub;
+    @NotEmpty private long value;
+
+    public String getXpub() {
+      return xpub;
+    }
+
+    public void setXpub(String xpub) {
+      this.xpub = xpub;
+    }
+
+    public long getValue() {
+      return value;
+    }
+
+    public void setValue(long value) {
+      this.value = value;
     }
   }
 
