@@ -13,6 +13,7 @@ import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.beans.Pools;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CliWalletService {
+public class CliWalletService extends WhirlpoolWalletService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int ACCOUNT_DEPOSIT = 0;
@@ -33,8 +34,11 @@ public class CliWalletService {
 
   public static final String INDEX_BIP84_INITIALIZED = "bip84init";
   private static final String INDEX_DEPOSIT = "deposit";
+  private static final String INDEX_DEPOSIT_CHANGE = "deposit_change";
   private static final String INDEX_PREMIX = "premix";
+  private static final String INDEX_PREMIX_CHANGE = "premix_change";
   private static final String INDEX_POSTMIX = "postmix";
+  private static final String INDEX_POSTMIX_CHANGE = "postmix_change";
   private static final String INDEX_FEE = "fee";
 
   private static final String FEE_XPUB =
@@ -59,6 +63,12 @@ public class CliWalletService {
       PushTxService pushTxService,
       WhirlpoolClient whirlpoolClient,
       HD_WalletFactoryJava hdWalletFactory) {
+    super(
+        cliConfig.getNetworkParameters(),
+        samouraiApiService,
+        pushTxService,
+        new Tx0Service(cliConfig.getNetworkParameters(), FEE_XPUB, FEE_VALUE),
+        whirlpoolClient);
     this.cliConfig = cliConfig;
     this.samouraiApiService = samouraiApiService;
     this.pushTxService = pushTxService;
@@ -83,17 +93,37 @@ public class CliWalletService {
 
     // deposit, premix & postmix wallets
     IIndexHandler depositIndexHandler = fileIndexHandler.getIndexHandler(INDEX_DEPOSIT);
+    IIndexHandler depositChangeIndexHandler =
+        fileIndexHandler.getIndexHandler(INDEX_DEPOSIT_CHANGE);
     IIndexHandler premixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_PREMIX);
+    IIndexHandler premixChangeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_PREMIX_CHANGE);
     IIndexHandler postmixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_POSTMIX);
+    IIndexHandler postmixChangeIndexHandler =
+        fileIndexHandler.getIndexHandler(INDEX_POSTMIX_CHANGE);
     Bip84ApiWallet depositWallet =
         new Bip84ApiWallet(
-            bip84w, ACCOUNT_DEPOSIT, depositIndexHandler, samouraiApiService, initBip84);
+            bip84w,
+            ACCOUNT_DEPOSIT,
+            depositIndexHandler,
+            depositChangeIndexHandler,
+            samouraiApiService,
+            initBip84);
     Bip84ApiWallet premixWallet =
         new Bip84ApiWallet(
-            bip84w, ACCOUNT_PREMIX, premixIndexHandler, samouraiApiService, initBip84);
+            bip84w,
+            ACCOUNT_PREMIX,
+            premixIndexHandler,
+            premixChangeIndexHandler,
+            samouraiApiService,
+            initBip84);
     Bip84ApiWallet postmixWallet =
         new Bip84ApiWallet(
-            bip84w, ACCOUNT_POSTMIX, postmixIndexHandler, samouraiApiService, initBip84);
+            bip84w,
+            ACCOUNT_POSTMIX,
+            postmixIndexHandler,
+            postmixChangeIndexHandler,
+            samouraiApiService,
+            initBip84);
 
     // save initialized state
     if (initBip84) {
@@ -124,18 +154,8 @@ public class CliWalletService {
 
     // services
     IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
-    Tx0Service tx0Service = new Tx0Service(params, FEE_XPUB, FEE_VALUE);
     this.cliWallet =
-        new CliWallet(
-            params,
-            samouraiApiService,
-            pushTxService,
-            tx0Service,
-            whirlpoolClient,
-            feeIndexHandler,
-            depositWallet,
-            premixWallet,
-            postmixWallet);
+        new CliWallet(openWallet(feeIndexHandler, depositWallet, premixWallet, postmixWallet));
     return cliWallet;
   }
 

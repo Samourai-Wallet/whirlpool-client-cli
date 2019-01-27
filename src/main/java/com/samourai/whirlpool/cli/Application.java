@@ -105,7 +105,7 @@ public class Application implements ApplicationRunner {
       new Context(params);
 
       // no arg => show pools list
-      if (!isListen && appArgs.getPoolId() == null) {
+      if (appArgs.getPoolId() == null) {
         new RunListPools(whirlpoolClient).run();
         log.info("Tip: use --pool argument to select a pool");
       } else {
@@ -122,7 +122,16 @@ public class Application implements ApplicationRunner {
 
         if (isListen) {
           // --listen => listen for API commands
-          log.info("Starting listening API...");
+          new RunCliCommand(
+                  appArgs,
+                  samouraiApi,
+                  whirlpoolClient,
+                  whirlpoolClientConfig,
+                  cliWalletService,
+                  bech32Util,
+                  walletAggregateService,
+                  torClientService)
+              .run();
         } else {
           // execute requested command
           new RunCliCommand(
