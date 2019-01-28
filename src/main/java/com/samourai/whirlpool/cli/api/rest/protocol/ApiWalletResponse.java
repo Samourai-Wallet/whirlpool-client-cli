@@ -1,44 +1,27 @@
 package com.samourai.whirlpool.cli.api.rest.protocol;
 
 import com.samourai.whirlpool.cli.wallet.CliWallet;
-import java.util.Collection;
-import java.util.stream.Collectors;
 
 public class ApiWalletResponse {
-  private Collection<ApiUtxo> utxosDeposit;
-  private Collection<ApiUtxo> utxosPremix;
-  private Collection<ApiUtxo> utxosPostmix;
+  private ApiWallet deposit;
+  private ApiWallet premix;
+  private ApiWallet postmix;
 
   public ApiWalletResponse(CliWallet cliWallet) throws Exception {
-    this.utxosDeposit =
-        cliWallet
-            .getUtxosDeposit()
-            .stream()
-            .map(utxo -> new ApiUtxo(utxo))
-            .collect(Collectors.toList());
-    this.utxosPremix =
-        cliWallet
-            .getUtxosPremix()
-            .stream()
-            .map(utxo -> new ApiUtxo(utxo))
-            .collect(Collectors.toList());
-    this.utxosPostmix =
-        cliWallet
-            .getUtxosPostmix()
-            .stream()
-            .map(utxo -> new ApiUtxo(utxo))
-            .collect(Collectors.toList());
+    this.deposit = new ApiWallet(cliWallet.getUtxosDeposit());
+    this.premix = new ApiWallet(cliWallet.getUtxosPremix());
+    this.postmix = new ApiWallet(cliWallet.getUtxosPostmix());
   }
 
-  public Collection<ApiUtxo> getUtxosDeposit() {
-    return utxosDeposit;
+  public ApiWallet getDeposit() {
+    return deposit;
   }
 
-  public Collection<ApiUtxo> getUtxosPremix() {
-    return utxosPremix;
+  public ApiWallet getPremix() {
+    return premix;
   }
 
-  public Collection<ApiUtxo> getUtxosPostmix() {
-    return utxosPostmix;
+  public ApiWallet getPostmix() {
+    return postmix;
   }
 }

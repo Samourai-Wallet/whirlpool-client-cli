@@ -107,6 +107,9 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 ```
 - aggregate-postmix: move funds back to premix-wallet. Or --aggregate-postmix=address to move funds to a specific address.
 
+### API
+whirlpool-client-cli can be managed with a REST API. See [README-API.md]
+
 ## Build instructions
 Build with maven:
 
