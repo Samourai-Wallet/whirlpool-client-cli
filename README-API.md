@@ -5,7 +5,7 @@ whirlpool-client-cli exposes a REST API when started with --listen.
 
 ## Wallet
 
-### Wallet status: ```GET /wallet```
+### Wallet status: ```GET /rest/wallet```
 ```
 {
     deposit: {
@@ -23,7 +23,7 @@ whirlpool-client-cli exposes a REST API when started with --listen.
 }
 ```
 
-### Deposit: ```GET /wallet/deposit[?increment=false]```
+### Deposit: ```GET /rest/wallet/deposit[?increment=false]```
 Parameters:
 * Use increment=true make sure this address won't be reused.
 ```

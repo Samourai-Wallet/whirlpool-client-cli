@@ -33,9 +33,11 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 
 /** Command-line client. */
 @SpringBootApplication
+@ServletComponentScan(value = "com.samourai.whirlpool.cli.config.filters")
 public class Application implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
