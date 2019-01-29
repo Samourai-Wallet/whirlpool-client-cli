@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.api.rest.wallet;
 
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
+import com.samourai.whirlpool.cli.api.rest.AbstractRestController;
 import com.samourai.whirlpool.cli.api.rest.protocol.ApiDepositResponse;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
@@ -11,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class DepositController {
-  private static final String ENDPOINT = "/wallet/deposit";
+public class DepositController extends AbstractRestController {
+  public static final String ENDPOINT = "/wallet/deposit";
 
   @Autowired private CliWalletService cliWalletService;
   @Autowired private Bech32UtilGeneric bech32Util;
