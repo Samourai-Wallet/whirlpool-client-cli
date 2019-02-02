@@ -12,6 +12,7 @@ import com.samourai.whirlpool.cli.run.RunUpgradeCli;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
+import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
@@ -103,6 +104,8 @@ public class Application implements ApplicationRunner {
         log.debug("config/override: " + entry.getKey() + ": " + entry.getValue());
       }
     }
+
+    CliWallet cliWallet = null;
     try {
       // initialize bitcoinj context
       NetworkParameters params = cliConfig.getNetworkParameters();
@@ -120,23 +123,16 @@ public class Application implements ApplicationRunner {
 
         // init wallet
         cliWalletService.openWallet(appArgs.getSeedWords(), appArgs.getSeedPassphrase());
+        cliWallet = cliWalletService.getCliWallet();
 
         // check upgrade wallet
         checkUpgradeWallet();
 
         if (isListen) {
           // --listen => listen for API commands
-          new RunCliCommand(
-                  appArgs,
-                  samouraiApi,
-                  whirlpoolClient,
-                  whirlpoolClientConfig,
-                  cliWalletService,
-                  bech32Util,
-                  walletAggregateService,
-                  torClientService,
-                  tx0Service)
-              .run();
+          cliWallet.start();
+          // keep cli running
+          keepRunning();
         } else {
           // execute requested command
           new RunCliCommand(
@@ -161,11 +157,27 @@ public class Application implements ApplicationRunner {
       log.error("", e);
     }
 
+    // stop cliWallet
+    if (cliWallet != null && cliWallet.isStarted()) {
+      cliWallet.stop();
+    }
+
     // disconnect
     if (torClient.isPresent()) {
       torClient.get().disconnect();
     }
     stompClient.disconnect();
+  }
+
+  private void keepRunning() {
+    while (true) {
+      try {
+        synchronized (this) {
+          wait();
+        }
+      } catch (InterruptedException e) {
+      }
+    }
   }
 
   private void checkUpgradeWallet() throws Exception {
