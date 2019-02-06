@@ -20,6 +20,7 @@ public class CliConfig {
   @NotEmpty private boolean tor;
   @NotEmpty private boolean debug;
   @NotEmpty private FeeConfig fee;
+  @NotEmpty private MixConfig mixConfig;
 
   private static final String PUSHTX_AUTO = "auto";
   private static final String PUSHTX_INTERACTIVE = "interactive";
@@ -98,6 +99,14 @@ public class CliConfig {
     this.fee = fee;
   }
 
+  public MixConfig getMixConfig() {
+    return mixConfig;
+  }
+
+  public void setMixConfig(MixConfig mixConfig) {
+    this.mixConfig = mixConfig;
+  }
+
   public static class ServerConfig {
     @NotEmpty private String url;
     @NotEmpty private boolean ssl;
@@ -140,6 +149,18 @@ public class CliConfig {
     }
   }
 
+  public static class MixConfig {
+    @NotEmpty private int maxClients;
+
+    public int getMaxClients() {
+      return maxClients;
+    }
+
+    public void setMaxClients(int maxClients) {
+      this.maxClients = maxClients;
+    }
+  }
+
   public Map<String, String> getConfigInfo() {
     Map<String, String> configInfo = new LinkedHashMap<>();
     configInfo.put(
@@ -153,6 +174,13 @@ public class CliConfig {
     configInfo.put("pushtx", pushtx);
     configInfo.put("tor", Boolean.toString(tor));
     configInfo.put("debug", Boolean.toString(debug));
+    configInfo.put(
+        "fee",
+        "xpub="
+            + fee.xpub.substring(0, 6)
+            + "..."
+            + fee.xpub.substring(fee.xpub.length() - 4, fee.xpub.length()));
+    configInfo.put("mix", "maxClients=" + mixConfig.getMaxClients());
     return configInfo;
   }
 }

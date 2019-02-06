@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 public class CliWallet extends WhirlpoolWallet {
   private final Logger log = LoggerFactory.getLogger(CliWallet.class);
 
-  public CliWallet(WhirlpoolWallet whirlpoolWallet) throws Exception {
-    super(whirlpoolWallet);
+  public CliWallet(WhirlpoolWallet whirlpoolWallet, int maxMixClients) throws Exception {
+    super(whirlpoolWallet, maxMixClients);
   }
 
   @Override
