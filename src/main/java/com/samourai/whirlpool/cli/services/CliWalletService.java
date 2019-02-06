@@ -11,12 +11,9 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
-import com.samourai.whirlpool.client.whirlpool.beans.Pool;
-import com.samourai.whirlpool.client.whirlpool.beans.Pools;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import org.bitcoinj.core.NetworkParameters;
@@ -43,14 +40,12 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   private CliConfig cliConfig;
   private SamouraiApiService samouraiApiService;
-  private WhirlpoolClient whirlpoolClient;
   private FileIndexHandler fileIndexHandler;
   private HD_WalletFactoryJava hdWalletFactory;
 
   // available when wallet is opened
   private CliWallet cliWallet = null;
   private HD_Wallet bip84w = null;
-  private Pools pools = null;
 
   public CliWalletService(
       CliConfig cliConfig,
@@ -64,10 +59,10 @@ public class CliWalletService extends WhirlpoolWalletService {
         samouraiApiService,
         pushTxService,
         tx0Service,
-        whirlpoolClient);
+        whirlpoolClient,
+        cliConfig.getMixConfig().getMaxClients());
     this.cliConfig = cliConfig;
     this.samouraiApiService = samouraiApiService;
-    this.whirlpoolClient = whirlpoolClient;
     this.hdWalletFactory = hdWalletFactory;
   }
 
@@ -150,19 +145,15 @@ public class CliWalletService extends WhirlpoolWalletService {
     // services
     IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
     this.cliWallet =
-        new CliWallet(openWallet(feeIndexHandler, depositWallet, premixWallet, postmixWallet));
+        new CliWallet(
+            openWallet(feeIndexHandler, depositWallet, premixWallet, postmixWallet),
+            cliConfig.getMixConfig().getMaxClients());
     return cliWallet;
   }
 
   public void closeWallet() {
     this.cliWallet = null;
     this.bip84w = null;
-    this.pools = null;
-  }
-
-  public Tx0 tx0(String poolId, int nbOutputsPreferred, int nbOutputsMin) throws Exception {
-    Pool pool = findPool(poolId);
-    return getCliWallet().tx0(pool, nbOutputsPreferred, nbOutputsMin);
   }
 
   public CliWallet getCliWallet() throws NoWalletException {
@@ -181,21 +172,6 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   public FileIndexHandler getFileIndexHandler() {
     return fileIndexHandler;
-  }
-
-  private Pool findPool(String poolId) throws Exception {
-    Pool pool = getPools().findPoolById(poolId);
-    if (pool == null) {
-      throw new NotifiableException("Pool not found: " + poolId);
-    }
-    return pool;
-  }
-
-  private Pools getPools() throws Exception {
-    if (this.pools == null) {
-      this.pools = whirlpoolClient.fetchPools();
-    }
-    return this.pools;
   }
 
   private File computeIndexFile(String walletIdentifier) throws NotifiableException {

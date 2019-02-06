@@ -7,8 +7,10 @@ import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
+import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
+import com.samourai.whirlpool.client.wallet.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.client.whirlpool.beans.Pools;
@@ -73,7 +75,9 @@ public class RunCliCommand {
       if (tx0Arg.isPresent()) {
         // go tx0
         int nbOutputs = tx0Arg.get();
-        cliWalletService.tx0(poolId, nbOutputs, 1);
+        CliWallet cliWallet = cliWalletService.getCliWallet();
+        WhirlpoolUtxo spendFrom = cliWallet.findUtxoDepositForTx0(pool, nbOutputs, 1);
+        cliWallet.tx0(pool, nbOutputs, spendFrom);
       } else if (appArgs.isAggregatePostmix()) {
         // go aggregate and consolidate
         walletAggregateService.consolidateTestnet();

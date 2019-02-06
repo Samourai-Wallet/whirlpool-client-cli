@@ -8,10 +8,12 @@ import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.client.wallet.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
@@ -178,7 +180,9 @@ public class RunLoopWallet {
     boolean success = false;
     while (!success) {
       try {
-        cliWalletService.tx0(pool.getPoolId(), OUTPUTS_PER_TX0, 1);
+        CliWallet cliWallet = cliWalletService.getCliWallet();
+        WhirlpoolUtxo spendFrom = cliWallet.findUtxoDepositForTx0(pool, OUTPUTS_PER_TX0, 1);
+        cliWallet.tx0(pool, OUTPUTS_PER_TX0, spendFrom);
         success = true;
       } catch (EmptyWalletException e) {
         // deposit is empty => autoRefill when possible

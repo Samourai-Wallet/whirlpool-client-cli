@@ -1,6 +1,8 @@
 package com.samourai.whirlpool.cli.api.rest.protocol;
 
 import com.samourai.api.client.beans.UnspentResponse.UnspentOutput;
+import com.samourai.whirlpool.client.wallet.WhirlpoolUtxo;
+import com.samourai.whirlpool.client.wallet.WhirlpoolUtxoStatus;
 
 public class ApiUtxo {
   private String hash;
@@ -8,17 +10,16 @@ public class ApiUtxo {
   private long value;
   private int confirmations;
   private String path;
+  private WhirlpoolUtxoStatus status;
 
-  public ApiUtxo(UnspentOutput utxo) {
-    this(utxo.tx_hash, utxo.tx_output_n, utxo.value, utxo.confirmations, utxo.xpub.path);
-  }
-
-  public ApiUtxo(String hash, int index, long value, int confirmations, String path) {
-    this.hash = hash;
-    this.index = index;
-    this.value = value;
-    this.confirmations = confirmations;
-    this.path = path;
+  public ApiUtxo(WhirlpoolUtxo whirlpoolUtxo) {
+    UnspentOutput utxo = whirlpoolUtxo.getUtxo();
+    this.hash = utxo.tx_hash;
+    this.index = utxo.tx_output_n;
+    this.value = utxo.value;
+    this.confirmations = utxo.confirmations;
+    this.path = utxo.xpub.path;
+    this.status = whirlpoolUtxo.getStatus();
   }
 
   public String getHash() {
@@ -39,5 +40,9 @@ public class ApiUtxo {
 
   public String getPath() {
     return path;
+  }
+
+  public WhirlpoolUtxoStatus getStatus() {
+    return status;
   }
 }
