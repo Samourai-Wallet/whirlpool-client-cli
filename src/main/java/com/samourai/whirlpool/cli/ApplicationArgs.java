@@ -30,7 +30,6 @@ public class ApplicationArgs {
   private static final String ARG_SCODE = "scode";
   private static final String ARG_TX0 = "tx0";
   private static final String ARG_CLIENTS = "clients";
-  private static final String ARG_ITERATION_DELAY = "iteration-delay";
   private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
@@ -50,6 +49,7 @@ public class ApplicationArgs {
   public void override(CliConfig cliConfig) {
     String value;
     Boolean valueBool;
+    Integer valueInt;
 
     value = optionalOption(ARG_SERVER);
     if (value != null) {
@@ -84,6 +84,16 @@ public class ApplicationArgs {
     valueBool = optionalBoolean(ARG_DEBUG);
     if (valueBool != null) {
       cliConfig.setDebug(valueBool);
+    }
+
+    valueInt = optionalInt(ARG_CLIENTS);
+    if (valueInt != null) {
+      cliConfig.getMix().setClients(valueInt);
+    }
+
+    valueInt = optionalInt(ARG_CLIENT_DELAY);
+    if (valueInt != null) {
+      cliConfig.getMix().setClientDelay(valueInt);
     }
   }
 
@@ -175,49 +185,6 @@ public class ApplicationArgs {
     return Optional.of(tx0);
   }
 
-  public int getClients() {
-    int clients;
-    try {
-      String valueStr = requireOption(ARG_CLIENTS, "1");
-      clients = Integer.parseInt(valueStr);
-      if (clients <= 0) {
-        throw new IllegalArgumentException("Positive value expected for option: " + ARG_CLIENTS);
-      }
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_CLIENTS);
-    }
-    return clients;
-  }
-
-  public int getIterationDelay() {
-    int delay;
-    try {
-      delay = Integer.parseInt(requireOption(ARG_ITERATION_DELAY, "0"));
-      if (delay < 0) {
-        throw new IllegalArgumentException(
-            "Positive value expected for option: " + ARG_ITERATION_DELAY);
-      }
-    } catch (Exception e) {
-      throw new IllegalArgumentException(
-          "Numeric value expected for option: " + ARG_ITERATION_DELAY);
-    }
-    return delay;
-  }
-
-  public int getClientDelay() {
-    int delay;
-    try {
-      delay = Integer.parseInt(requireOption(ARG_CLIENT_DELAY, "60"));
-      if (delay < 0) {
-        throw new IllegalArgumentException(
-            "Positive value expected for option: " + ARG_CLIENT_DELAY);
-      }
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_CLIENT_DELAY);
-    }
-    return delay;
-  }
-
   public boolean isAggregatePostmix() {
     return args.containsOption(ARG_AGGREGATE_POSTMIX);
   }
@@ -265,6 +232,11 @@ public class ApplicationArgs {
   private Boolean optionalBoolean(String name) {
     String value = optionalOption(name);
     return value != null ? Boolean.parseBoolean(value) : null;
+  }
+
+  private Integer optionalInt(String name) {
+    String value = optionalOption(name);
+    return value != null ? Integer.parseInt(value) : null;
   }
 
   private static String mainArg(String[] mainArgs, String name, String defaultValue) {

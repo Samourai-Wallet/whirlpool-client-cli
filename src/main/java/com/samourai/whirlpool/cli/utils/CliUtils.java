@@ -1,11 +1,12 @@
 package com.samourai.whirlpool.cli.utils;
 
-import com.samourai.api.client.beans.UnspentResponse;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.io.Console;
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,28 +20,30 @@ import org.slf4j.LoggerFactory;
 public class CliUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static List<UnspentResponse.UnspentOutput> filterUtxoMustMix(
-      Pool pool, List<UnspentResponse.UnspentOutput> utxos) {
+  public static List<WhirlpoolUtxo> filterUtxoMustMix(
+      Pool pool, Collection<WhirlpoolUtxo> whirlpoolUtxos) {
     long balanceMin =
         WhirlpoolProtocol.computeInputBalanceMin(
             pool.getDenomination(), false, pool.getMinerFeeMin());
     long balanceMax =
         WhirlpoolProtocol.computeInputBalanceMax(
             pool.getDenomination(), false, pool.getMinerFeeMax());
-    List<UnspentResponse.UnspentOutput> mustMixUtxos =
-        utxos
+    List<WhirlpoolUtxo> mustMixUtxos =
+        whirlpoolUtxos
             .stream()
-            .filter(utxo -> utxo.value >= balanceMin && utxo.value <= balanceMax)
+            .filter(
+                whirlpoolUtxo ->
+                    whirlpoolUtxo.getUtxo().value >= balanceMin
+                        && whirlpoolUtxo.getUtxo().value <= balanceMax)
             .collect(Collectors.toList());
     return mustMixUtxos;
   }
 
-  public static List<UnspentResponse.UnspentOutput> filterUtxoUniqueHash(
-      List<UnspentResponse.UnspentOutput> utxos) {
-    List<UnspentResponse.UnspentOutput> mustMixUtxos =
+  public static List<WhirlpoolUtxo> filterUtxoUniqueHash(Collection<WhirlpoolUtxo> utxos) {
+    List<WhirlpoolUtxo> mustMixUtxos =
         utxos
             .stream()
-            .filter(distinctByKey(UnspentResponse.UnspentOutput::getTxHash))
+            .filter(distinctByKey(whirlpoolUtxo -> whirlpoolUtxo.getUtxo().tx_hash))
             .collect(Collectors.toList());
     return mustMixUtxos;
   }

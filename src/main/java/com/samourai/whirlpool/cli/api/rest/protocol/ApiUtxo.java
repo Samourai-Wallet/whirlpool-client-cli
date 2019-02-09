@@ -1,8 +1,8 @@
 package com.samourai.whirlpool.cli.api.rest.protocol;
 
 import com.samourai.api.client.beans.UnspentResponse.UnspentOutput;
-import com.samourai.whirlpool.client.wallet.WhirlpoolUtxo;
-import com.samourai.whirlpool.client.wallet.WhirlpoolUtxoStatus;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoStatus;
 
 public class ApiUtxo {
   private String hash;

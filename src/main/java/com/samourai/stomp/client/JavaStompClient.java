@@ -100,6 +100,11 @@ public class JavaStompClient implements IStompClient {
     }
   }
 
+  @Override
+  public IStompClient copyForNewClient() {
+    return new JavaStompClient(torClientService);
+  }
+
   private StompSessionHandlerAdapter computeStompSessionHandler(
       final MessageHandler.Whole<Throwable> onDisconnect) {
     return new StompSessionHandlerAdapter() {

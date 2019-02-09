@@ -8,22 +8,22 @@ import org.slf4j.LoggerFactory;
 public class CliWallet extends WhirlpoolWallet {
   private final Logger log = LoggerFactory.getLogger(CliWallet.class);
 
-  public CliWallet(WhirlpoolWallet whirlpoolWallet, int maxMixClients) throws Exception {
-    super(whirlpoolWallet, maxMixClients);
+  public CliWallet(WhirlpoolWallet whirlpoolWallet) {
+    super(whirlpoolWallet);
   }
 
   @Override
-  public Bip84ApiWallet getDepositWallet() {
-    return super.getDepositWallet();
+  public Bip84ApiWallet getWalletDeposit() {
+    return super.getWalletDeposit();
   }
 
   @Override
-  public Bip84ApiWallet getPremixWallet() {
-    return super.getPremixWallet();
+  public Bip84ApiWallet getWalletPremix() {
+    return super.getWalletPremix();
   }
 
   @Override
-  public Bip84ApiWallet getPostmixWallet() {
-    return super.getPostmixWallet();
+  public Bip84ApiWallet getWalletPostmix() {
+    return super.getWalletPostmix();
   }
 }

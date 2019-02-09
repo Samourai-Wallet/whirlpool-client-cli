@@ -1,178 +1,101 @@
 package com.samourai.whirlpool.cli.run;
 
 import com.samourai.api.client.SamouraiApi;
-import com.samourai.api.client.beans.UnspentResponse;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
-import com.samourai.whirlpool.cli.services.CliTorClientService;
+import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.utils.ClientUtils;
-import com.samourai.whirlpool.client.wallet.WhirlpoolUtxo;
-import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
+import com.samourai.whirlpool.client.wallet.beans.MixOrchestratorState;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolWalletState;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RunLoopWallet {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private static final int SLEEP_LOOPWALLET = 5000;
   private static final int SLEEP_LOOPWALLET_ON_ERROR = 30000;
   private static final int OUTPUTS_PER_TX0 = 5;
 
-  private CliTorClientService torClientService;
-  private Bech32UtilGeneric bech32Util;
-  private WhirlpoolClientConfig whirlpoolClientConfig;
+  private CliConfig cliConfig;
   private SamouraiApi samouraiApi;
   private CliWalletService cliWalletService;
   private WalletAggregateService walletAggregateService;
   private Tx0Service tx0Service;
 
   public RunLoopWallet(
-      CliTorClientService torClientService,
-      Bech32UtilGeneric bech32Util,
-      WhirlpoolClientConfig whirlpoolClientConfig,
+      CliConfig cliConfig,
       SamouraiApi samouraiApi,
       CliWalletService cliWalletService,
       WalletAggregateService walletAggregateService,
       Tx0Service tx0Service) {
-    this.torClientService = torClientService;
-    this.bech32Util = bech32Util;
-    this.whirlpoolClientConfig = whirlpoolClientConfig;
+    this.cliConfig = cliConfig;
     this.samouraiApi = samouraiApi;
     this.cliWalletService = cliWalletService;
     this.walletAggregateService = walletAggregateService;
     this.tx0Service = tx0Service;
   }
 
-  public void run(
-      Pool pool, int iterationDelay, int nbClients, int clientDelay, boolean isAutoAggregatePostmix)
-      throws Exception {
-    int i = 1;
-    int errors = 0;
+  public void run(Pool pool, boolean isAutoAggregatePostmix) throws Exception {
     while (true) {
-      Bip84ApiWallet premixWallet = cliWalletService.getCliWallet().getPremixWallet();
-      Bip84ApiWallet postmixWallet = cliWalletService.getCliWallet().getPostmixWallet();
+      // wait for wallet startup... then wait for clientDelay before checking again...
+      Thread.sleep((cliConfig.getMix().getClientDelay() * 1000) + SLEEP_LOOPWALLET);
       try {
-        boolean success =
-            runLoopIteration(premixWallet, pool, nbClients, clientDelay, isAutoAggregatePostmix);
-        if (!success) {
-          throw new NotifiableException("Iteration failed");
-        }
-
-        log.info(
-            " ✔ Cycle #"
-                + i
-                + " SUCCESS. Next cycle in "
-                + iterationDelay
-                + "s...  (total success: "
-                + (i - errors)
-                + ", errors: "
-                + errors
-                + ", postmixIndex: "
-                + postmixWallet.getIndexHandler().get()
-                + ")");
-        if (iterationDelay > 0) {
-          Thread.sleep(iterationDelay * 1000);
-        }
+        runLoopIteration(pool, isAutoAggregatePostmix);
       } catch (Exception e) {
-        log.error(e.getMessage());
-        errors++;
         if (e instanceof NotifiableException) {
-          // don't log exception
-          log.error(
-              " ✖ Cycle #"
-                  + i
-                  + " FAILED, retrying in "
-                  + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
-                  + "s (total errors: "
-                  + errors
-                  + ", postmixIndex: "
-                  + postmixWallet.getIndexHandler().get()
-                  + ")");
+          log.error(e.getMessage());
         } else {
-          // log exception
-          log.error(
-              " ✖ Cycle #"
-                  + i
-                  + " FAILED, retrying in "
-                  + (SLEEP_LOOPWALLET_ON_ERROR / 1000)
-                  + "s (total errors: "
-                  + errors
-                  + ", postmixIndex: "
-                  + postmixWallet.getIndexHandler().get()
-                  + ")",
-              e);
+          log.error("", e);
         }
         Thread.sleep(SLEEP_LOOPWALLET_ON_ERROR);
       }
-      i++;
     }
   }
 
-  private boolean runLoopIteration(
-      Bip84ApiWallet premixWallet,
-      Pool pool,
-      int nbClients,
-      int clientDelay,
-      boolean isAutoAggregatePostmix)
-      throws Exception {
-    // find mustMixUtxos
-    List<UnspentResponse.UnspentOutput> mustMixUtxosUnique =
-        fetchMustMixUtxosUnique(premixWallet, pool);
-    List<UnspentResponse.UnspentOutput> liquidityUtxos = new ArrayList<>(); // TODO
-    int missingMustMixUtxos =
-        computeMissingMustMixUtxos(nbClients, mustMixUtxosUnique, liquidityUtxos);
+  private void runLoopIteration(Pool pool, boolean isAutoAggregatePostmix) throws Exception {
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    WhirlpoolWalletState whirlpoolWalletState = whirlpoolWallet.getState();
+    MixOrchestratorState mixState = whirlpoolWalletState.getMixState();
+    log.info(
+        "[Whirlpool state] "
+            + mixState.getNbMixing()
+            + "/"
+            + mixState.getNbMax()
+            + " threads, "
+            + mixState.getNbIdle()
+            + " idle, "
+            + mixState.getNbQueued()
+            + " to mix");
 
-    // do we have enough mustMixUtxo?
-    while (missingMustMixUtxos > 0) {
+    int iThread = 1;
+    for (WhirlpoolUtxo whirlpoolUtxo : mixState.getUtxosMixing()) {
+      log.info("[Thread " + iThread + "] " + whirlpoolUtxo.toString());
+      iThread++;
+    }
+
+    int missingMustMixUtxos = whirlpoolWalletState.getMixState().getNbIdle();
+    if (missingMustMixUtxos > 0) {
+      if (log.isDebugEnabled()) {
+        log.info("=> Idle threads detected, running " + missingMustMixUtxos + " Tx0s...");
+      }
       // not enough mustMixUtxos => Tx0
       for (int i = 0; i < missingMustMixUtxos; i++) {
         log.info(" • Tx0 (" + (i + 1) + "/" + missingMustMixUtxos + ")...");
         doRunTx0(pool, missingMustMixUtxos, isAutoAggregatePostmix);
-
         samouraiApi.refreshUtxos();
       }
-
-      // refetch utxos
-      samouraiApi.refreshUtxos();
-      mustMixUtxosUnique = fetchMustMixUtxosUnique(premixWallet, pool);
-      liquidityUtxos = new ArrayList<>(); // TODO
-      missingMustMixUtxos =
-          computeMissingMustMixUtxos(nbClients, mustMixUtxosUnique, liquidityUtxos);
     }
-    log.info(" • New mix...");
-    RunMixWallet runMixWallet =
-        new RunMixWallet(whirlpoolClientConfig, torClientService, cliWalletService, bech32Util);
-    return runMixWallet.runMix(mustMixUtxosUnique, pool, nbClients, clientDelay);
-  }
-
-  private List<UnspentResponse.UnspentOutput> fetchMustMixUtxosUnique(
-      Bip84ApiWallet premixWallet, Pool pool) throws Exception {
-    // fetch unspent utx0s
-    log.info(" • Fetching unspent outputs from premix...");
-    List<UnspentResponse.UnspentOutput> utxos = premixWallet.fetchUtxos();
-
-    if (log.isDebugEnabled()) {
-      log.debug("Found " + utxos.size() + " utxo from premix:");
-      ClientUtils.logUtxos(utxos);
-    }
-
-    // find mustMixUtxos
-    List<UnspentResponse.UnspentOutput> mustMixUtxosUnique =
-        CliUtils.filterUtxoUniqueHash(CliUtils.filterUtxoMustMix(pool, utxos));
-    if (log.isDebugEnabled()) {
-      log.debug("Found " + mustMixUtxosUnique.size() + " unique mustMixUtxo");
-    }
-    return mustMixUtxosUnique;
   }
 
   private void doRunTx0(Pool pool, int missingMustMixUtxos, boolean isAutoAggregatePostmix)
@@ -180,9 +103,9 @@ public class RunLoopWallet {
     boolean success = false;
     while (!success) {
       try {
-        CliWallet cliWallet = cliWalletService.getCliWallet();
-        WhirlpoolUtxo spendFrom = cliWallet.findUtxoDepositForTx0(pool, OUTPUTS_PER_TX0, 1);
-        cliWallet.tx0(pool, OUTPUTS_PER_TX0, spendFrom);
+        WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+        WhirlpoolUtxo spendFrom = whirlpoolWallet.findUtxoDepositForTx0(pool, OUTPUTS_PER_TX0, 1);
+        whirlpoolWallet.tx0(pool, OUTPUTS_PER_TX0, spendFrom);
         success = true;
       } catch (EmptyWalletException e) {
         // deposit is empty => autoRefill when possible
@@ -196,9 +119,9 @@ public class RunLoopWallet {
   }
 
   private void autoRefill(long requiredBalance, boolean isAutoAggregatePostmix) throws Exception {
-    Bip84ApiWallet depositWallet = cliWalletService.getCliWallet().getDepositWallet();
-    Bip84ApiWallet premixWallet = cliWalletService.getCliWallet().getPremixWallet();
-    Bip84ApiWallet postmixWallet = cliWalletService.getCliWallet().getPostmixWallet();
+    Bip84ApiWallet depositWallet = cliWalletService.getSessionWallet().getWalletDeposit();
+    Bip84ApiWallet premixWallet = cliWalletService.getSessionWallet().getWalletPremix();
+    Bip84ApiWallet postmixWallet = cliWalletService.getSessionWallet().getWalletPostmix();
 
     // check total balance
     long depositBalance = depositWallet.fetchBalance();
@@ -222,8 +145,7 @@ public class RunLoopWallet {
 
     String depositAddress =
         Bech32UtilGeneric.getInstance()
-            .toBech32(
-                depositWallet.getNextAddress(false), whirlpoolClientConfig.getNetworkParameters());
+            .toBech32(depositWallet.getNextAddress(false), cliConfig.getNetworkParameters());
     String message =
         "Insufficient balance to continue. I need at least "
             + ClientUtils.satToBtc(missingBalance)
@@ -242,26 +164,5 @@ public class RunLoopWallet {
     }
 
     samouraiApi.refreshUtxos();
-  }
-
-  private int computeMissingMustMixUtxos(
-      int nbClients,
-      List<UnspentResponse.UnspentOutput> mustMixUtxos,
-      List<UnspentResponse.UnspentOutput> liquidityUtxos) {
-    int missingAnonymitySet = nbClients - (mustMixUtxos.size() + liquidityUtxos.size());
-    int missingMustMixUtxos = missingAnonymitySet > 0 ? missingAnonymitySet : 0;
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "Next mix needs "
-              + nbClients
-              + " utxos. I have "
-              + mustMixUtxos.size()
-              + " unique mustMixUtxo and "
-              + liquidityUtxos.size()
-              + " unique liquidityUtxo =>  "
-              + missingMustMixUtxos
-              + " more mustMixUtxo needed");
-    }
-    return missingMustMixUtxos;
   }
 }

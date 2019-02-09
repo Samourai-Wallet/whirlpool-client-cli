@@ -1,16 +1,16 @@
 package com.samourai.whirlpool.cli.api.rest.protocol;
 
-import com.samourai.whirlpool.cli.wallet.CliWallet;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 
 public class ApiWalletResponse {
   private ApiWallet deposit;
   private ApiWallet premix;
   private ApiWallet postmix;
 
-  public ApiWalletResponse(CliWallet cliWallet) throws Exception {
-    this.deposit = new ApiWallet(cliWallet.getUtxosDeposit());
-    this.premix = new ApiWallet(cliWallet.getUtxosPremix());
-    this.postmix = new ApiWallet(cliWallet.getUtxosPostmix());
+  public ApiWalletResponse(WhirlpoolWallet whirlpoolWallet) throws Exception {
+    this.deposit = new ApiWallet(whirlpoolWallet.getUtxosDeposit());
+    this.premix = new ApiWallet(whirlpoolWallet.getUtxosPremix());
+    this.postmix = new ApiWallet(whirlpoolWallet.getUtxosPostmix());
   }
 
   public ApiWallet getDeposit() {

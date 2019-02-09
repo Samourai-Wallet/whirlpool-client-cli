@@ -20,7 +20,7 @@ public class CliConfig {
   @NotEmpty private boolean tor;
   @NotEmpty private boolean debug;
   @NotEmpty private FeeConfig fee;
-  @NotEmpty private MixConfig mixConfig;
+  @NotEmpty private MixConfig mix;
 
   private static final String PUSHTX_AUTO = "auto";
   private static final String PUSHTX_INTERACTIVE = "interactive";
@@ -99,12 +99,12 @@ public class CliConfig {
     this.fee = fee;
   }
 
-  public MixConfig getMixConfig() {
-    return mixConfig;
+  public MixConfig getMix() {
+    return mix;
   }
 
-  public void setMixConfig(MixConfig mixConfig) {
-    this.mixConfig = mixConfig;
+  public void setMix(MixConfig mix) {
+    this.mix = mix;
   }
 
   public static class ServerConfig {
@@ -150,14 +150,23 @@ public class CliConfig {
   }
 
   public static class MixConfig {
-    @NotEmpty private int maxClients;
+    @NotEmpty private int clients;
+    @NotEmpty private int clientDelay;
 
-    public int getMaxClients() {
-      return maxClients;
+    public int getClients() {
+      return clients;
     }
 
-    public void setMaxClients(int maxClients) {
-      this.maxClients = maxClients;
+    public void setClients(int clients) {
+      this.clients = clients;
+    }
+
+    public int getClientDelay() {
+      return clientDelay;
+    }
+
+    public void setClientDelay(int clientDelay) {
+      this.clientDelay = clientDelay;
     }
   }
 
@@ -180,7 +189,7 @@ public class CliConfig {
             + fee.xpub.substring(0, 6)
             + "..."
             + fee.xpub.substring(fee.xpub.length() - 4, fee.xpub.length()));
-    configInfo.put("mix", "maxClients=" + mixConfig.getMaxClients());
+    configInfo.put("mix", "clients=" + mix.getClients() + ", clientDelay=" + mix.getClientDelay());
     return configInfo;
   }
 }

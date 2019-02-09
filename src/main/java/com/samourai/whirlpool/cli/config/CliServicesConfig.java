@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli.config;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
+import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.services.CliPushTxService;
 import com.samourai.whirlpool.cli.services.JavaStompClientService;
 import com.samourai.whirlpool.cli.services.SamouraiApiService;
@@ -16,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +36,16 @@ public class CliServicesConfig {
 
   public CliServicesConfig(CliConfig whirlpoolCliConfig) {
     this.whirlpoolCliConfig = whirlpoolCliConfig;
+  }
+
+  @Bean
+  ApplicationArgs applicationArgs(ApplicationArguments applicationArguments) {
+    ApplicationArgs appArgs = new ApplicationArgs(applicationArguments);
+
+    // override configuration file with cli args
+    appArgs.override(whirlpoolCliConfig);
+
+    return appArgs;
   }
 
   @Bean

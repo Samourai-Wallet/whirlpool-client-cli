@@ -12,11 +12,11 @@ import com.samourai.whirlpool.cli.run.RunUpgradeCli;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
-import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import java.lang.invoke.MethodHandles;
@@ -48,6 +48,7 @@ public class Application implements ApplicationRunner {
 
   private static boolean isListen;
 
+  @Autowired private ApplicationArgs appArgs;
   @Autowired private CliConfig cliConfig;
   @Autowired private CliWalletService cliWalletService;
   @Autowired private WhirlpoolClient whirlpoolClient;
@@ -80,11 +81,6 @@ public class Application implements ApplicationRunner {
       }
     }
 
-    ApplicationArgs appArgs = new ApplicationArgs(args);
-
-    // override configuration file with cli args
-    appArgs.override(cliConfig);
-
     // enable debug logs with --debug
     if (cliConfig.isDebug()) {
       LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
@@ -105,7 +101,7 @@ public class Application implements ApplicationRunner {
       }
     }
 
-    CliWallet cliWallet = null;
+    WhirlpoolWallet whirlpoolWallet = null;
     try {
       // initialize bitcoinj context
       NetworkParameters params = cliConfig.getNetworkParameters();
@@ -123,20 +119,23 @@ public class Application implements ApplicationRunner {
 
         // init wallet
         cliWalletService.openWallet(appArgs.getSeedWords(), appArgs.getSeedPassphrase());
-        cliWallet = cliWalletService.getCliWallet();
+        whirlpoolWallet = cliWalletService.getSessionWallet();
 
         // check upgrade wallet
         checkUpgradeWallet();
 
+        // start wallet
+        whirlpoolWallet.start();
+
         if (isListen) {
           // --listen => listen for API commands
-          cliWallet.start();
           // keep cli running
           keepRunning();
         } else {
           // execute requested command
           new RunCliCommand(
                   appArgs,
+                  cliConfig,
                   samouraiApi,
                   whirlpoolClient,
                   whirlpoolClientConfig,
@@ -158,8 +157,8 @@ public class Application implements ApplicationRunner {
     }
 
     // stop cliWallet
-    if (cliWallet != null && cliWallet.isStarted()) {
-      cliWallet.stop();
+    if (whirlpoolWallet != null && whirlpoolWallet.isStarted()) {
+      whirlpoolWallet.stop();
     }
 
     // disconnect

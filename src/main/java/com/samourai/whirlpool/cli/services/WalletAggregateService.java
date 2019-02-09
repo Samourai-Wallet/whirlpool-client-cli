@@ -137,9 +137,9 @@ public class WalletAggregateService {
           "consolidateTestnet cannot be run on mainnet for privacy reasons.");
     }
 
-    Bip84ApiWallet depositWallet = cliWalletService.getCliWallet().getDepositWallet();
-    Bip84ApiWallet premixWallet = cliWalletService.getCliWallet().getPremixWallet();
-    Bip84ApiWallet postmixWallet = cliWalletService.getCliWallet().getPostmixWallet();
+    Bip84ApiWallet depositWallet = cliWalletService.getSessionWallet().getWalletDeposit();
+    Bip84ApiWallet premixWallet = cliWalletService.getSessionWallet().getWalletPremix();
+    Bip84ApiWallet postmixWallet = cliWalletService.getSessionWallet().getWalletPostmix();
 
     log.info(" • Consolidating postmix -> deposit...");
     toWallet(postmixWallet, depositWallet);
