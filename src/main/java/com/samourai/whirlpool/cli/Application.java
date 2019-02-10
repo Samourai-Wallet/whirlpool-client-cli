@@ -46,7 +46,7 @@ public class Application implements ApplicationRunner {
 
   private static final String INDEX_CLI_VERSION = "cliVersion";
 
-  private static boolean isListen;
+  private static Integer listenPort;
 
   @Autowired private ApplicationArgs appArgs;
   @Autowired private CliConfig cliConfig;
@@ -63,8 +63,12 @@ public class Application implements ApplicationRunner {
 
   public static void main(String... args) {
     // start REST api if --listen
-    isListen = ApplicationArgs.isMainListen(args);
-    WebApplicationType wat = isListen ? WebApplicationType.SERVLET : WebApplicationType.NONE;
+    listenPort = ApplicationArgs.getMainListen(args);
+    WebApplicationType wat =
+        listenPort != null ? WebApplicationType.SERVLET : WebApplicationType.NONE;
+    if (listenPort != null) {
+      System.setProperty("server.port", Integer.toString(listenPort));
+    }
     new SpringApplicationBuilder(Application.class).web(wat).run(args);
   }
 
@@ -99,6 +103,7 @@ public class Application implements ApplicationRunner {
       for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
         log.debug("config/override: " + entry.getKey() + ": " + entry.getValue());
       }
+      log.debug("config/initial: listen: " + (listenPort != null ? listenPort : "false"));
     }
 
     WhirlpoolWallet whirlpoolWallet = null;
@@ -127,7 +132,7 @@ public class Application implements ApplicationRunner {
         // start wallet
         whirlpoolWallet.start();
 
-        if (isListen) {
+        if (listenPort != null) {
           // --listen => listen for API commands
           // keep cli running
           keepRunning();

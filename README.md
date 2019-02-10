@@ -8,7 +8,7 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 
 ## General usage
 ```
-java -jar target/whirlpool-client-version-run.jar --network={main,test} --server=host:port [--listen]
+java -jar target/whirlpool-client-version-run.jar --network={main,test} --server=host:port [--listen[=8899]]
 [--ssl=true] [--tor=true] [--debug] [--pool=] [--scode=]
 [--pushtx=auto|interactive|http://user:password@host:port] {args...}
 ```

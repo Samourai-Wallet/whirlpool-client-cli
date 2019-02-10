@@ -15,6 +15,7 @@ import org.springframework.util.Assert;
 /** Parsing command-line client arguments. */
 public class ApplicationArgs {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final int LISTEN_DEFAULT_PORT = 8899;
 
   private static final String ARG_DEBUG = "debug";
   private static final String ARG_NETWORK_ID = "network";
@@ -197,8 +198,8 @@ public class ApplicationArgs {
     return args.containsOption(ARG_AUTO_AGGREGATE_POSTMIX);
   }
 
-  public static boolean isMainListen(String[] mainArgs) {
-    return mainBoolean(mainArgs, ARG_LISTEN, false);
+  public static Integer getMainListen(String[] mainArgs) {
+    return mainInteger(mainArgs, ARG_LISTEN, null, LISTEN_DEFAULT_PORT);
   }
 
   private String requireOption(String name, String defaultValue) {
@@ -239,24 +240,43 @@ public class ApplicationArgs {
     return value != null ? Integer.parseInt(value) : null;
   }
 
-  private static String mainArg(String[] mainArgs, String name, String defaultValue) {
+  private static String mainArg(
+      String[] mainArgs,
+      String name,
+      String defaultValueWhenNotPresent,
+      String defaultValueWhenPresent) {
     Optional<String> argFound =
         Stream.of(mainArgs).filter(s -> s.startsWith("--" + name)).findFirst();
 
     // arg not found
     if (!argFound.isPresent()) {
-      return defaultValue;
+      return defaultValueWhenNotPresent;
     }
 
     // --param (with no value) => "true"
     String[] argSplit = argFound.get().split("=");
     if (argSplit.length == 1) {
-      return "true";
+      return defaultValueWhenPresent;
     }
     return argSplit[1];
   }
 
-  private static boolean mainBoolean(String[] mainArgs, String name, boolean defaultValue) {
-    return Boolean.parseBoolean(mainArg(mainArgs, name, Boolean.toString(defaultValue)));
+  private static Integer mainInteger(
+      String[] mainArgs,
+      String name,
+      Integer defaultValueWhenNotPresent,
+      Integer defaultValueWhenPresent) {
+    String str =
+        mainArg(
+            mainArgs,
+            name,
+            defaultValueWhenNotPresent != null
+                ? Integer.toString(defaultValueWhenNotPresent)
+                : null,
+            defaultValueWhenPresent != null ? Integer.toString(defaultValueWhenPresent) : null);
+    if (str == null) {
+      return null;
+    }
+    return Integer.parseInt(str);
   }
 }
