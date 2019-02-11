@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.api.rest;
 
-import com.samourai.whirlpool.cli.api.rest.protocol.CliApi;
+import com.samourai.whirlpool.cli.api.protocol.CliApi;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpHeaders;

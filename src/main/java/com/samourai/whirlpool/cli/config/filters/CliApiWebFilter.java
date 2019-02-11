@@ -1,7 +1,7 @@
 package com.samourai.whirlpool.cli.config.filters;
 
-import com.samourai.whirlpool.cli.api.rest.protocol.CliApi;
-import com.samourai.whirlpool.cli.api.rest.protocol.CliApiEndpoint;
+import com.samourai.whirlpool.cli.api.protocol.CliApi;
+import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import java.io.IOException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;

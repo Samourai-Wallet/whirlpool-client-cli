@@ -71,7 +71,7 @@ public class RunLoopWallet {
         "[Whirlpool state] "
             + mixState.getNbMixing()
             + "/"
-            + mixState.getNbMax()
+            + mixState.getMaxClients()
             + " threads, "
             + mixState.getNbIdle()
             + " idle, "

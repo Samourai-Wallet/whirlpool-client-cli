@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.cli.api.rest.protocol;
+package com.samourai.whirlpool.cli.api.protocol;
 
 public class CliApi {
   public static final String API_VERSION = "0.2";

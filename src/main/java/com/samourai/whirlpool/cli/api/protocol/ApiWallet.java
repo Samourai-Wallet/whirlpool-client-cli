@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.cli.api.rest.protocol;
+package com.samourai.whirlpool.cli.api.protocol;
 
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import java.util.Collection;

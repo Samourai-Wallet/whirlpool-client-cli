@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.config.security;
 
-import com.samourai.whirlpool.cli.api.rest.protocol.CliApiEndpoint;
+import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,7 +12,11 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @EnableWebSecurity
 public class CliWebSecurityConfig extends WebSecurityConfigurerAdapter {
   private static final String[] REST_ENDPOINTS =
-      new String[] {CliApiEndpoint.REST_WALLET, CliApiEndpoint.REST_WALLET_DEPOSIT};
+      new String[] {
+        CliApiEndpoint.REST_MIX,
+        CliApiEndpoint.REST_WALLET_UTXOS,
+        CliApiEndpoint.REST_WALLET_DEPOSIT
+      };
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
