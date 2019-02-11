@@ -14,10 +14,10 @@ java -jar target/whirlpool-client-version-run.jar --server=host:port [--network=
 ```
 
 ### Required arguments:
-- network: (main,test) bitcoin network to use. Client will abort if server runs on a different network.
 - server: (host:port) server to connect to
 
 ### Optional arguments:
+- network: (main,test) bitcoin network to use. Client will abort if server runs on a different network.
 - listen: enable API for remote commands
 - ssl: enable or disable SSL
 - tor: enable or disable TOR

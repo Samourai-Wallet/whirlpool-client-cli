@@ -14,12 +14,15 @@ public class ApiUtxo {
 
   private WhirlpoolAccount account;
   private WhirlpoolUtxoStatus status;
+  private Integer progressPercent;
+  private String progressLabel;
   private String poolId;
   private int priority;
   private int mixsTarget;
   private int mixsDone;
   private String message;
   private String error;
+  private Long lastActivityElapsed;
 
   public ApiUtxo(WhirlpoolUtxo whirlpoolUtxo) {
     UnspentOutput utxo = whirlpoolUtxo.getUtxo();
@@ -31,12 +34,18 @@ public class ApiUtxo {
 
     this.account = whirlpoolUtxo.getAccount();
     this.status = whirlpoolUtxo.getStatus();
+    this.progressPercent = whirlpoolUtxo.getProgressPercent();
+    this.progressLabel = whirlpoolUtxo.getProgressLabel();
     this.poolId = whirlpoolUtxo.getPool() != null ? whirlpoolUtxo.getPool().getPoolId() : null;
     this.priority = whirlpoolUtxo.getPriority();
     this.mixsTarget = whirlpoolUtxo.getMixsTarget();
     this.mixsDone = whirlpoolUtxo.getMixsDone();
     this.message = whirlpoolUtxo.getMessage();
     this.error = whirlpoolUtxo.getError();
+    this.lastActivityElapsed =
+        whirlpoolUtxo.getLastActivity() != null
+            ? System.currentTimeMillis() - whirlpoolUtxo.getLastActivity()
+            : null;
   }
 
   public String getHash() {
@@ -67,6 +76,14 @@ public class ApiUtxo {
     return status;
   }
 
+  public Integer getProgressPercent() {
+    return progressPercent;
+  }
+
+  public String getProgressLabel() {
+    return progressLabel;
+  }
+
   public String getPoolId() {
     return poolId;
   }
@@ -89,5 +106,9 @@ public class ApiUtxo {
 
   public String getError() {
     return error;
+  }
+
+  public Long getLastActivityElapsed() {
+    return lastActivityElapsed;
   }
 }

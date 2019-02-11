@@ -50,12 +50,15 @@ Parameters:
         "path":"M/0/166",
         "account":"PREMIX",
         "status":"MIX_STARTED",
+        "progressPercent":"10",
+        "progressLabel":"CONNECTING",
         "poolId":"0.01btc",
         "priority":5,
         "mixsTarget":1,
         "mixsDone":0,
         "message":" - [MIX 1/1] ▮▮▮▮▮▯▯▯▯▯ (5/10) CONFIRMED_INPUT : joined a mix!",
-        "error":null
+        "error":null,
+        "lastActivityElapsed": 23001
     }]
 }
 ```
