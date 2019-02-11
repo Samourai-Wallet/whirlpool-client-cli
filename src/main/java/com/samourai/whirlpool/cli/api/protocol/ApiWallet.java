@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.api.protocol;
 
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoPriorityComparator;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ public class ApiWallet {
     this.utxos =
         whirlpoolUtxos
             .stream()
+            .sorted(new WhirlpoolUtxoPriorityComparator())
             .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo))
             .collect(Collectors.toList());
     this.balance =

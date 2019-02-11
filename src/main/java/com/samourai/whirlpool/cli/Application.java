@@ -129,10 +129,13 @@ public class Application implements ApplicationRunner {
         // check upgrade wallet
         checkUpgradeWallet();
 
-        // start wallet
-        whirlpoolWallet.start();
+        boolean runCommand = appArgs.isAggregatePostmix();
+        if (!runCommand) {
+          // start wallet
+          whirlpoolWallet.start();
+        }
 
-        if (listenPort != null) {
+        if (listenPort != null && !runCommand) {
           // --listen => listen for API commands
           // keep cli running
           keepRunning();
