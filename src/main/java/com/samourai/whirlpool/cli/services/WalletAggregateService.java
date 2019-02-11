@@ -7,6 +7,7 @@ import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
@@ -29,7 +30,6 @@ public class WalletAggregateService {
   private PushTxService pushTxService;
   private NetworkParameters params;
   private CliConfig cliConfig;
-  private CliWalletService cliWalletService;
   private Bech32UtilGeneric bech32Util;
   private TxAggregateService txAggregateService;
 
@@ -38,14 +38,12 @@ public class WalletAggregateService {
       PushTxService pushTxService,
       NetworkParameters params,
       CliConfig cliConfig,
-      CliWalletService cliWalletService,
       Bech32UtilGeneric bech32Util,
       TxAggregateService txAggregateService) {
     this.samouraiApi = samouraiApi;
     this.pushTxService = pushTxService;
     this.params = params;
     this.cliConfig = cliConfig;
-    this.cliWalletService = cliWalletService;
     this.bech32Util = bech32Util;
     this.txAggregateService = txAggregateService;
   }
@@ -131,15 +129,15 @@ public class WalletAggregateService {
     pushTxService.pushTx(txAggregate);
   }
 
-  public boolean consolidateTestnet() throws Exception {
+  public boolean consolidateTestnet(CliWallet cliWallet) throws Exception {
     if (!cliConfig.isTestnet()) {
       throw new NotifiableException(
           "consolidateTestnet cannot be run on mainnet for privacy reasons.");
     }
 
-    Bip84ApiWallet depositWallet = cliWalletService.getSessionWallet().getWalletDeposit();
-    Bip84ApiWallet premixWallet = cliWalletService.getSessionWallet().getWalletPremix();
-    Bip84ApiWallet postmixWallet = cliWalletService.getSessionWallet().getWalletPostmix();
+    Bip84ApiWallet depositWallet = cliWallet.getWalletDeposit();
+    Bip84ApiWallet premixWallet = cliWallet.getWalletPremix();
+    Bip84ApiWallet postmixWallet = cliWallet.getWalletPostmix();
 
     log.info(" • Consolidating postmix -> deposit...");
     toWallet(postmixWallet, depositWallet);

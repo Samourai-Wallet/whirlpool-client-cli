@@ -79,20 +79,6 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 - mixs: (1 to N) number of mixes to complete. Client will keep running until completing this number of mixes.
 
 
-### Tx0
-You need a wallet holding funds to split.
-```
---network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
---tx0=
-[--rpc-client-url=http://user:password@host:port]
-```
-
-Example:
-```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --tx0=10 --rpc-client-url=http://user:password@host:port
-```
-- tx0: number of pre-mix utxo to generate
-
 ### Aggregate postmix / move funds
 Move all postmix funds back to premix wallet and consolidate to a single UTXO.
 Only allowed on testnet for testing purpose.

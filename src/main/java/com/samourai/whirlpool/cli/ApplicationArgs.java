@@ -29,7 +29,6 @@ public class ApplicationArgs {
   private static final String ARG_MIXS = "mixs";
   private static final String ARG_POOL_ID = "pool";
   private static final String ARG_SCODE = "scode";
-  private static final String ARG_TX0 = "tx0";
   private static final String ARG_CLIENTS = "clients";
   private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
@@ -180,21 +179,6 @@ public class ApplicationArgs {
       throw new IllegalArgumentException("Numeric value expected for option: " + ARG_MIXS);
     }
     return mixs;
-  }
-
-  public Optional<Integer> getTx0() {
-    if (!args.containsOption(ARG_TX0)) {
-      return Optional.empty();
-    }
-    final int tx0;
-
-    try {
-      tx0 = Integer.parseInt(requireOption(ARG_TX0));
-      Assert.isTrue(tx0 > 0, "tx0 should be > 0");
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_TX0);
-    }
-    return Optional.of(tx0);
   }
 
   public boolean isAggregatePostmix() {

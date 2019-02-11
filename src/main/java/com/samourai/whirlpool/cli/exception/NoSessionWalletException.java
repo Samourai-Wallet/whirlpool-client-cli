@@ -2,9 +2,9 @@ package com.samourai.whirlpool.cli.exception;
 
 import com.samourai.whirlpool.client.exception.NotifiableException;
 
-public class NoWalletException extends NotifiableException {
+public class NoSessionWalletException extends NotifiableException {
 
-  public NoWalletException() {
+  public NoSessionWalletException() {
     super("No wallet opened. Please open a wallet first");
   }
 }

@@ -7,7 +7,7 @@ import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.exception.NoWalletException;
+import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.cli.wallet.CliWalletAccount;
@@ -42,6 +42,7 @@ public class CliWalletService extends WhirlpoolWalletService {
   private SamouraiApiService samouraiApiService;
   private FileIndexHandler fileIndexHandler;
   private HD_WalletFactoryJava hdWalletFactory;
+  private WalletAggregateService walletAggregateService;
 
   // available when wallet is opened
   private CliWallet sessionWallet = null;
@@ -55,7 +56,8 @@ public class CliWalletService extends WhirlpoolWalletService {
       Bech32UtilGeneric bech32Util,
       WhirlpoolClient whirlpoolClient,
       WhirlpoolClientConfig whirlpoolClientConfig,
-      HD_WalletFactoryJava hdWalletFactory) {
+      HD_WalletFactoryJava hdWalletFactory,
+      WalletAggregateService walletAggregateService) {
     super(
         cliConfig.getNetworkParameters(),
         samouraiApiService,
@@ -70,6 +72,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     this.cliConfig = cliConfig;
     this.samouraiApiService = samouraiApiService;
     this.hdWalletFactory = hdWalletFactory;
+    this.walletAggregateService = walletAggregateService;
   }
 
   public WhirlpoolWallet openWallet(String seedWords, String seedPassphrase) throws Exception {
@@ -152,7 +155,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
     WhirlpoolWallet whirlpoolWallet =
         openWallet(feeIndexHandler, depositWallet, premixWallet, postmixWallet);
-    this.sessionWallet = new CliWallet(whirlpoolWallet);
+    this.sessionWallet = new CliWallet(whirlpoolWallet, cliConfig, walletAggregateService);
     return sessionWallet;
   }
 
@@ -164,16 +167,16 @@ public class CliWalletService extends WhirlpoolWalletService {
     }
   }
 
-  public CliWallet getSessionWallet() throws NoWalletException {
+  public CliWallet getSessionWallet() throws NoSessionWalletException {
     if (sessionWallet == null) {
-      throw new NoWalletException();
+      throw new NoSessionWalletException();
     }
     return sessionWallet;
   }
 
-  public HD_Wallet getBip84w() throws NoWalletException {
+  public HD_Wallet getBip84w() throws NoSessionWalletException {
     if (bip84w == null) {
-      throw new NoWalletException();
+      throw new NoSessionWalletException();
     }
     return bip84w;
   }

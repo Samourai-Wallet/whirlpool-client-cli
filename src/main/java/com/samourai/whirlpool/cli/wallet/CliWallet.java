@@ -14,7 +14,10 @@ public class CliWallet extends WhirlpoolWallet {
   private CliConfig cliConfig;
   private WalletAggregateService walletAggregateService;
 
-  public CliWallet(WhirlpoolWallet whirlpoolWallet, CliConfig cliConfig, WalletAggregateService walletAggregateService) {
+  public CliWallet(
+      WhirlpoolWallet whirlpoolWallet,
+      CliConfig cliConfig,
+      WalletAggregateService walletAggregateService) {
     super(whirlpoolWallet);
     this.cliConfig = cliConfig;
     this.walletAggregateService = walletAggregateService;
@@ -24,7 +27,7 @@ public class CliWallet extends WhirlpoolWallet {
   public void onEmptyWalletException(EmptyWalletException e) {
     try {
       autoRefill(e);
-    } catch(Exception ee) {
+    } catch (Exception ee) {
       log.error("", ee);
 
       // default log
@@ -67,7 +70,7 @@ public class CliWallet extends WhirlpoolWallet {
 
     // auto aggregate postmix
     log.info(" • depositWallet wallet is empty. Aggregating postmix to refill it...");
-    boolean aggregateSuccess = walletAggregateService.consolidateTestnet();
+    boolean aggregateSuccess = walletAggregateService.consolidateTestnet(this);
     if (!aggregateSuccess) {
       CliUtils.waitUserAction(message);
     }
