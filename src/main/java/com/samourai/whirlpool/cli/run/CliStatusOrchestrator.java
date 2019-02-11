@@ -30,11 +30,14 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
     // log CLI status
     try {
       WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+      log.info("---------------------------------------------------------------------");
       log.info(
           "[CLI] SESSION WALLET is OPENED and "
               + (whirlpoolWallet.isStarted() ? "STARTED" : "STOPPED")
               + ", autoTx0="
               + cliConfig.getMix().isAutoTx0()
+              + ", autoMix="
+              + cliConfig.getMix().isAutoMix()
               + ", autoAggregatePostmix="
               + cliConfig.getMix().isAutoAggregatePostmix());
       WhirlpoolWalletState whirlpoolWalletState = whirlpoolWallet.getState();

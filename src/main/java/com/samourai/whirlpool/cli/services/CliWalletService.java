@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 public class CliWalletService extends WhirlpoolWalletService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private static final int AUTOMIX_DELAY = 3 * 60 * 1000; // automix rescan delay for premix
   public static final String INDEX_BIP84_INITIALIZED = "bip84init";
   private static final String INDEX_DEPOSIT = "deposit";
   private static final String INDEX_DEPOSIT_CHANGE = "deposit_change";
@@ -68,7 +69,8 @@ public class CliWalletService extends WhirlpoolWalletService {
         whirlpoolClientConfig,
         cliConfig.getMix().getClients(),
         cliConfig.getMix().getClientDelay(),
-        cliConfig.getMix().isAutoTx0() ? cliConfig.getMix().getClientDelay() + 5 : 0);
+        cliConfig.getMix().isAutoTx0() ? cliConfig.getMix().getClientDelay() + 5 : 0,
+        cliConfig.getMix().isAutoMix() ? AUTOMIX_DELAY : 0);
     this.cliConfig = cliConfig;
     this.samouraiApiService = samouraiApiService;
     this.hdWalletFactory = hdWalletFactory;

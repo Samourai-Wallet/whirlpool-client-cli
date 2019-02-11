@@ -35,6 +35,7 @@ public class ApplicationArgs {
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
   private static final String ARG_AUTO_TX0 = "auto-tx0";
+  private static final String ARG_AUTO_MIX = "auto-mix";
   private static final String ARG_PUSHTX = "pushtx";
   private static final String ARG_TOR = "tor";
   private static final String ARG_LISTEN = "listen";
@@ -76,6 +77,11 @@ public class ApplicationArgs {
     valueBool = optionalBoolean(ARG_AUTO_TX0);
     if (valueBool != null) {
       cliConfig.getMix().setAutoTx0(valueBool);
+    }
+
+    valueBool = optionalBoolean(ARG_AUTO_MIX);
+    if (valueBool != null) {
+      cliConfig.getMix().setAutoMix(valueBool);
     }
 
     valueBool = optionalBoolean(ARG_AUTO_AGGREGATE_POSTMIX);

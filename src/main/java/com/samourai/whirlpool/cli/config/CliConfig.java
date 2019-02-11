@@ -153,6 +153,7 @@ public class CliConfig {
     @NotEmpty private int clients;
     @NotEmpty private int clientDelay;
     @NotEmpty private boolean autoTx0;
+    @NotEmpty private boolean autoMix;
     @NotEmpty private boolean autoAggregatePostmix;
 
     public int getClients() {
@@ -177,6 +178,14 @@ public class CliConfig {
 
     public void setAutoTx0(boolean autoTx0) {
       this.autoTx0 = autoTx0;
+    }
+
+    public boolean isAutoMix() {
+      return autoMix;
+    }
+
+    public void setAutoMix(boolean autoMix) {
+      this.autoMix = autoMix;
     }
 
     public boolean isAutoAggregatePostmix() {

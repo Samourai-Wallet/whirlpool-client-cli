@@ -145,11 +145,8 @@ public class Application implements ApplicationRunner {
           // automatically tx0 when premix is empty
         }
 
-        // --listen => listen for API commands
-        if (listenPort != null) {
-          // keep cli running
-          keepRunning();
-        }
+        // keep cli running
+        keepRunning();
       }
     } catch (NotifiableException e) {
       log.error(e.getMessage());
