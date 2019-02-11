@@ -101,12 +101,15 @@ public class RunCliCommand {
         }
       } else {
         // go loop wallet
-        boolean isAutoAggregatePostmix = appArgs.isAutoAggregatePostmix();
         RunLoopWallet runLoopWallet =
             new RunLoopWallet(
                 cliConfig, samouraiApi, cliWalletService, walletAggregateService, tx0Service);
-        runLoopWallet.run(pool, isAutoAggregatePostmix);
+        runLoopWallet.run();
       }
     }
+  }
+
+  public static boolean hasCommandToRun(ApplicationArgs appArgs) {
+    return appArgs.isUtxo() || appArgs.getTx0().isPresent() || appArgs.isAggregatePostmix();
   }
 }

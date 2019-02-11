@@ -129,18 +129,8 @@ public class Application implements ApplicationRunner {
         // check upgrade wallet
         checkUpgradeWallet();
 
-        boolean runCommand = appArgs.isAggregatePostmix();
-        if (!runCommand) {
-          // start wallet
-          whirlpoolWallet.start();
-        }
-
-        if (listenPort != null && !runCommand) {
-          // --listen => listen for API commands
-          // keep cli running
-          keepRunning();
-        } else {
-          // execute requested command
+        if (RunCliCommand.hasCommandToRun(appArgs)) {
+          // execute specific command
           new RunCliCommand(
                   appArgs,
                   cliConfig,
@@ -153,6 +143,19 @@ public class Application implements ApplicationRunner {
                   torClientService,
                   tx0Service)
               .run();
+        } else {
+          // start wallet
+          whirlpoolWallet.start();
+
+          if (appArgs.isAutoTx0()) {
+            // automatically tx0 when premix is empty
+          }
+
+          // --listen => listen for API commands
+          if (listenPort != null) {
+            // keep cli running
+            keepRunning();
+          }
         }
       }
     } catch (NotifiableException e) {

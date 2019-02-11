@@ -65,7 +65,8 @@ public class CliWalletService extends WhirlpoolWalletService {
         whirlpoolClient,
         whirlpoolClientConfig,
         cliConfig.getMix().getClients(),
-        cliConfig.getMix().getClientDelay());
+        cliConfig.getMix().getClientDelay(),
+        cliConfig.getMix().isAutoTx0() ? cliConfig.getMix().getClientDelay() + 5 : 0);
     this.cliConfig = cliConfig;
     this.samouraiApiService = samouraiApiService;
     this.hdWalletFactory = hdWalletFactory;

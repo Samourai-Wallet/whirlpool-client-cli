@@ -15,7 +15,8 @@ public class CliWebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     // disable CSRF
-    http.csrf().disable()
+    http.csrf()
+        .disable()
 
         // authorize REST API
         .authorizeRequests()

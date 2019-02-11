@@ -34,6 +34,7 @@ public class ApplicationArgs {
   private static final String ARG_CLIENT_DELAY = "client-delay";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
+  private static final String ARG_AUTO_TX0 = "auto-tx0";
   private static final String ARG_PUSHTX = "pushtx";
   private static final String ARG_TOR = "tor";
   private static final String ARG_LISTEN = "listen";
@@ -70,6 +71,16 @@ public class ApplicationArgs {
     value = optionalOption(ARG_SCODE);
     if (value != null) {
       cliConfig.setScode(value);
+    }
+
+    valueBool = optionalBoolean(ARG_AUTO_TX0);
+    if (valueBool != null) {
+      cliConfig.getMix().setAutoTx0(valueBool);
+    }
+
+    valueBool = optionalBoolean(ARG_AUTO_AGGREGATE_POSTMIX);
+    if (valueBool != null) {
+      cliConfig.getMix().setAutoAggregatePostmix(valueBool);
     }
 
     value = optionalOption(ARG_PUSHTX);
@@ -194,8 +205,8 @@ public class ApplicationArgs {
     return optionalOption(ARG_AGGREGATE_POSTMIX);
   }
 
-  public boolean isAutoAggregatePostmix() {
-    return args.containsOption(ARG_AUTO_AGGREGATE_POSTMIX);
+  public boolean isAutoTx0() {
+    return args.containsOption(ARG_AUTO_TX0);
   }
 
   public static Integer getMainListen(String[] mainArgs) {
