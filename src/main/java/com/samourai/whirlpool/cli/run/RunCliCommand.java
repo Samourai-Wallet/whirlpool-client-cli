@@ -43,8 +43,6 @@ public class RunCliCommand {
   public void run() throws Exception {
     NetworkParameters params = whirlpoolClientConfig.getNetworkParameters();
     Pools pools = whirlpoolClient.fetchPools();
-    String poolId = appArgs.getPoolId();
-    Pool pool = pools.findPoolById(poolId);
 
     if (appArgs.isUtxo()) {
       // go whirlpool with UTXO
@@ -53,6 +51,9 @@ public class RunCliCommand {
       String utxoKey = appArgs.getUtxoKey();
       long utxoBalance = appArgs.getUtxoBalance();
       final int mixs = appArgs.getMixs();
+
+      String poolId = appArgs.getPoolId();
+      Pool pool = pools.findPoolById(poolId);
 
       new RunMixUtxo(whirlpoolClientConfig, cliWalletService, params)
           .run(pool, utxoHash, utxoIdx, utxoKey, utxoBalance, mixs);
@@ -75,12 +76,14 @@ public class RunCliCommand {
         }
         walletAggregateService.toAddress(depositWallet, toAddress);
       }
+    } else if (appArgs.isListPools()) {
+      new RunListPools(whirlpoolClient).run();
     } else {
       throw new Exception("Unknown command.");
     }
   }
 
   public static boolean hasCommandToRun(ApplicationArgs appArgs) {
-    return appArgs.isUtxo() || appArgs.isAggregatePostmix();
+    return appArgs.isUtxo() || appArgs.isAggregatePostmix() || appArgs.isListPools();
   }
 }

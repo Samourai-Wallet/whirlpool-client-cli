@@ -8,7 +8,6 @@ import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
-import com.samourai.whirlpool.cli.run.RunListPools;
 import com.samourai.whirlpool.cli.run.RunUpgradeCli;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
@@ -113,49 +112,43 @@ public class Application implements ApplicationRunner {
       NetworkParameters params = cliConfig.getNetworkParameters();
       new Context(params);
 
-      // no arg => show pools list
-      if (appArgs.getPoolId() == null) {
-        new RunListPools(whirlpoolClient).run();
-        log.info("Tip: use --pool argument to select a pool");
+      // check pushTxService
+      if (!pushTxService.testConnectivity()) {
+        throw new NotifiableException("Unable to connect to pushTxService");
+      }
+
+      // init wallet
+      cliWalletService.openWallet(appArgs.getSeedWords(), appArgs.getSeedPassphrase());
+      whirlpoolWallet = cliWalletService.getSessionWallet();
+
+      // check upgrade wallet
+      checkUpgradeWallet();
+
+      if (RunCliCommand.hasCommandToRun(appArgs)) {
+        // execute specific command
+        new RunCliCommand(
+                appArgs,
+                whirlpoolClient,
+                whirlpoolClientConfig,
+                cliWalletService,
+                bech32Util,
+                walletAggregateService)
+            .run();
       } else {
-        // check pushTxService
-        if (!pushTxService.testConnectivity()) {
-          throw new NotifiableException("Unable to connect to pushTxService");
+        // start wallet
+        whirlpoolWallet.start();
+
+        // log status
+        new CliStatusOrchestrator(CLI_STATUS_DELAY, cliWalletService, cliConfig).start();
+
+        if (appArgs.isAutoTx0()) {
+          // automatically tx0 when premix is empty
         }
 
-        // init wallet
-        cliWalletService.openWallet(appArgs.getSeedWords(), appArgs.getSeedPassphrase());
-        whirlpoolWallet = cliWalletService.getSessionWallet();
-
-        // check upgrade wallet
-        checkUpgradeWallet();
-
-        if (RunCliCommand.hasCommandToRun(appArgs)) {
-          // execute specific command
-          new RunCliCommand(
-                  appArgs,
-                  whirlpoolClient,
-                  whirlpoolClientConfig,
-                  cliWalletService,
-                  bech32Util,
-                  walletAggregateService)
-              .run();
-        } else {
-          // start wallet
-          whirlpoolWallet.start();
-
-          // log status
-          new CliStatusOrchestrator(CLI_STATUS_DELAY, cliWalletService, cliConfig).start();
-
-          if (appArgs.isAutoTx0()) {
-            // automatically tx0 when premix is empty
-          }
-
-          // --listen => listen for API commands
-          if (listenPort != null) {
-            // keep cli running
-            keepRunning();
-          }
+        // --listen => listen for API commands
+        if (listenPort != null) {
+          // keep cli running
+          keepRunning();
         }
       }
     } catch (NotifiableException e) {

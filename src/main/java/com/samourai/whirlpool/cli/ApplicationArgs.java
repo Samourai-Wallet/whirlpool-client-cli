@@ -27,6 +27,7 @@ public class ApplicationArgs {
   private static final String ARG_SERVER = "server";
   private static final String ARG_SSL = "ssl";
   private static final String ARG_MIXS = "mixs";
+  private static final String ARG_LIST_POOLS = "list-pools";
   private static final String ARG_POOL_ID = "pool";
   private static final String ARG_SCODE = "scode";
   private static final String ARG_CLIENTS = "clients";
@@ -179,6 +180,14 @@ public class ApplicationArgs {
       throw new IllegalArgumentException("Numeric value expected for option: " + ARG_MIXS);
     }
     return mixs;
+  }
+
+  public boolean isListPools() {
+    Boolean listPools = optionalBoolean(ARG_LIST_POOLS);
+    if (listPools == null) {
+      listPools = false;
+    }
+    return listPools;
   }
 
   public boolean isAggregatePostmix() {

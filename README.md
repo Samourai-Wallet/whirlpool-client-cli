@@ -8,8 +8,8 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 
 ## General usage
 ```
-java -jar target/whirlpool-client-version-run.jar --network={main,test} --server=host:port [--listen[=8899]]
-[--ssl=true] [--tor=true] [--debug] [--pool=] [--scode=]
+java -jar target/whirlpool-client-version-run.jar --server=host:port [--network=test{,main}] [--listen[=8899]]
+[--ssl=true] [--tor=true] [--debug] [--scode=]
 [--pushtx=auto|interactive|http://user:password@host:port] {args...}
 ```
 
@@ -22,7 +22,6 @@ java -jar target/whirlpool-client-version-run.jar --network={main,test} --server
 - ssl: enable or disable SSL
 - tor: enable or disable TOR
 - debug: display more logs for debugging
-- pool: id of the pool to join
 - scode: optional scode to use for tx0
 - pushtx: specify how to broadcast transactions (tx0, aggregate).
     * auto: by default, tx are broadcasted through Samourai service.
@@ -31,12 +30,12 @@ java -jar target/whirlpool-client-version-run.jar --network={main,test} --server
 
 ### List pools
 ```
---network={main,test} --server=host:port
+--server=host:port --list-pools
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port
+java -jar target/whirlpool-client-version-run.jar --server=host:port --list-pools
 ```
 
 ### Mix a wallet
@@ -46,7 +45,7 @@ You need a wallet holding funds to mix. The script will run the following automa
 3. Mix pre-mix utxos, and repeat
 
 ```
---network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
+--server=host:port [--rpc-client-url=http://user:password@host:port]
 [--clients=1] [--client-delay=5] [--auto-tx0] [--auto-aggregate-postmix]
 ```
 
@@ -64,7 +63,7 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 ### Mix specific utxo
 You need a valid pre-mix utxo (output of a valid tx0) to mix.
 ```
---network={main,test} --server=host:port --pool=
+--server=host:port --pool=
 --utxo= --utxo-key= --utxo-balance=
 [--mixs=1]
 ```
@@ -73,6 +72,7 @@ Example:
 ```
 java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000
 ```
+- pool: id of the pool to join
 - utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)
 - utxo-key: ECKey for pre-mix input
 - utxo-balance: pre-mix input balance (in satoshis). Whole utxo-balance balance will be spent.
@@ -83,7 +83,7 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 Move all postmix funds back to premix wallet and consolidate to a single UTXO.
 Only allowed on testnet for testing purpose.
 ```
---network={main,test} --server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
+--server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
 --aggregate-postmix[=address]
 ```
 
