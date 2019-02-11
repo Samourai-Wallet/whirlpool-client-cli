@@ -11,19 +11,15 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
 public class CliWebSecurityConfig extends WebSecurityConfigurerAdapter {
-  private static final String[] REST_ENDPOINTS =
-      new String[] {
-        CliApiEndpoint.REST_MIX,
-        CliApiEndpoint.REST_WALLET_UTXOS,
-        CliApiEndpoint.REST_WALLET_DEPOSIT
-      };
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
+    // disable CSRF
+    http.csrf().disable()
 
-    // disable csrf for mixing
-    http.authorizeRequests()
-        .antMatchers(REST_ENDPOINTS)
+        // authorize REST API
+        .authorizeRequests()
+        .antMatchers(CliApiEndpoint.REST_ENDPOINTS)
         .permitAll()
 
         // reject others

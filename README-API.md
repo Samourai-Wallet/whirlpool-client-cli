@@ -59,3 +59,7 @@ Parameters:
     }]
 }
 ```
+
+### Start mixing: ```POST /rest/mix/start```
+
+### Stop mixing: ```POST /rest/mix/stop```
