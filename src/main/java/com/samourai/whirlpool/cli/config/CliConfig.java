@@ -20,7 +20,6 @@ public class CliConfig {
   private String scode;
   @NotEmpty private String pushtx;
   @NotEmpty private boolean tor;
-  @NotEmpty private boolean debug;
   @NotEmpty private FeeConfig fee;
   @NotEmpty private MixConfig mix;
 
@@ -83,14 +82,6 @@ public class CliConfig {
 
   public void setTor(boolean tor) {
     this.tor = tor;
-  }
-
-  public boolean isDebug() {
-    return debug;
-  }
-
-  public void setDebug(boolean debug) {
-    this.debug = debug;
   }
 
   public FeeConfig getFee() {
@@ -220,7 +211,6 @@ public class CliConfig {
             + testnet);
     configInfo.put("pushtx", pushtx);
     configInfo.put("tor", Boolean.toString(tor));
-    configInfo.put("debug", Boolean.toString(debug));
     configInfo.put(
         "fee",
         "xpub="

@@ -9,7 +9,7 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 ## General usage
 ```
 java -jar target/whirlpool-client-version-run.jar [--listen[=8899]]
-[--ssl=true] [--tor=true] [--debug] [--scode=]
+[--ssl=true] [--tor=true] [--debug] [--debug-client] [--scode=]
 [--server=host:port] [--network=test{,main}] [--pushtx=auto|interactive|http://user:password@host:port] {args...}
 ```
 
@@ -17,7 +17,8 @@ java -jar target/whirlpool-client-version-run.jar [--listen[=8899]]
 - listen: enable API for remote commands & GUI
 - ssl: enable SSL
 - tor: enable TOR
-- debug: display more logs for debugging
+- debug: display debug logs from cli
+- debug-client: display debug logs from whirlpool-client
 - scode: optional scode to use for tx0
 - server: (host:port) server to connect to
 - network: (main,test) bitcoin network to use. Client will abort if server runs on a different network.

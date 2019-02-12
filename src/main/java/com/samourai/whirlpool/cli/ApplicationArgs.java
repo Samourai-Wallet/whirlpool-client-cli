@@ -22,6 +22,7 @@ public class ApplicationArgs {
   private static final int LISTEN_DEFAULT_PORT = 8899;
 
   private static final String ARG_DEBUG = "debug";
+  private static final String ARG_DEBUG_CLIENT = "debug-client";
   private static final String ARG_NETWORK_ID = "network";
   private static final String ARG_UTXO = "utxo";
   private static final String ARG_UTXO_KEY = "utxo-key";
@@ -108,11 +109,6 @@ public class ApplicationArgs {
       cliConfig.setTor(valueBool);
     }
 
-    valueBool = optionalBoolean(ARG_DEBUG);
-    if (valueBool != null) {
-      cliConfig.setDebug(valueBool);
-    }
-
     valueInt = optionalInt(ARG_CLIENTS);
     if (valueInt != null) {
       cliConfig.getMix().setClients(valueInt);
@@ -122,6 +118,22 @@ public class ApplicationArgs {
     if (valueInt != null) {
       cliConfig.getMix().setClientDelay(valueInt);
     }
+  }
+
+  public boolean isDebug() {
+    Boolean value = optionalBoolean(ARG_DEBUG);
+    if (value == null) {
+      value = false;
+    }
+    return value;
+  }
+
+  public boolean isDebugClient() {
+    Boolean value = optionalBoolean(ARG_DEBUG_CLIENT);
+    if (value == null) {
+      value = false;
+    }
+    return value;
   }
 
   private Collection<String> getPoolIdsByPriority() {

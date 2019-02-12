@@ -84,16 +84,7 @@ public class Application implements ApplicationRunner {
     }
 
     // enable debug logs with --debug
-    if (cliConfig.isDebug()) {
-      LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
-    } else {
-      LogbackUtils.setLogLevel("org.silvertunnel_ng.netlib", Level.ERROR.toString());
-    }
-    LogbackUtils.setLogLevel(
-        "org.silvertunnel_ng.netlib.layer.tor.directory.RouterParserCallable",
-        Level.ERROR.toString());
-    LogbackUtils.setLogLevel(
-        "org.silvertunnel_ng.netlib.layer.tor.directory.Directory", Level.ERROR.toString());
+    setDebug(appArgs.isDebug(), appArgs.isDebugClient());
 
     Optional<JavaTorClient> torClient = Optional.empty();
 
@@ -195,5 +186,36 @@ public class Application implements ApplicationRunner {
 
     // set new version
     cliVersionHandler.set(CLI_VERSION);
+  }
+
+  private void setDebug(boolean isDebug, boolean isDebugClient) {
+    if (isDebug) {
+      LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
+      // Utils.setLoggerDebug("org.springframework.security");
+    } else {
+      LogbackUtils.setLogLevel("org.silvertunnel_ng.netlib", Level.ERROR.toString());
+    }
+
+    if (isDebugClient) {
+      LogbackUtils.setLogLevel("com.samourai.whirlpool.client", Level.DEBUG.toString());
+      LogbackUtils.setLogLevel("com.samourai.stomp.client", Level.DEBUG.toString());
+    } else {
+      LogbackUtils.setLogLevel("com.samourai.whirlpool.client", Level.INFO.toString());
+      LogbackUtils.setLogLevel("com.samourai.stomp.client", Level.INFO.toString());
+    }
+
+    if (isDebug) {
+      LogbackUtils.setLogLevel("com.samourai.whirlpool.client.wallet", Level.DEBUG.toString());
+    }
+
+    // skip noisy logs
+    LogbackUtils.setLogLevel(
+        "org.silvertunnel_ng.netlib.layer.tor.directory.RouterParserCallable",
+        Level.ERROR.toString());
+    LogbackUtils.setLogLevel(
+        "org.silvertunnel_ng.netlib.layer.tor.directory.Directory", Level.ERROR.toString());
+    LogbackUtils.setLogLevel(
+        "org.springframework.boot.web.servlet.filter.OrderedRequestContextFilter",
+        Level.INFO.toString());
   }
 }
