@@ -30,6 +30,7 @@ Parameters:
 {
     depositAddress: "tb1qjxzp9z2ax8mg9820dvwasy2qtle4v2q6s0cant"
 }
+```
 
 ## Mix
 
