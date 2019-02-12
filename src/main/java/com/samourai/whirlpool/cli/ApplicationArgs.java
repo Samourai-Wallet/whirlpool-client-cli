@@ -37,6 +37,7 @@ public class ApplicationArgs {
   private static final String ARG_SCODE = "scode";
   private static final String ARG_CLIENTS = "clients";
   private static final String ARG_CLIENT_DELAY = "client-delay";
+  private static final String ARG_TX0_DELAY = "tx0-delay";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
   private static final String ARG_AUTO_TX0 = "auto-tx0";
@@ -117,6 +118,11 @@ public class ApplicationArgs {
     valueInt = optionalInt(ARG_CLIENT_DELAY);
     if (valueInt != null) {
       cliConfig.getMix().setClientDelay(valueInt);
+    }
+
+    valueInt = optionalInt(ARG_TX0_DELAY);
+    if (valueInt != null) {
+      cliConfig.getMix().setTx0Delay(valueInt);
     }
   }
 

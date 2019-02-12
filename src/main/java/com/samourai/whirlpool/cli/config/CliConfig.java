@@ -145,6 +145,7 @@ public class CliConfig {
   public static class MixConfig {
     @NotEmpty private int clients;
     @NotEmpty private int clientDelay;
+    @NotEmpty private int tx0Delay;
     @NotEmpty private boolean autoTx0;
     @NotEmpty private boolean autoMix;
     @NotEmpty private boolean autoAggregatePostmix;
@@ -164,6 +165,14 @@ public class CliConfig {
 
     public void setClientDelay(int clientDelay) {
       this.clientDelay = clientDelay;
+    }
+
+    public int getTx0Delay() {
+      return tx0Delay;
+    }
+
+    public void setTx0Delay(int tx0Delay) {
+      this.tx0Delay = tx0Delay;
     }
 
     public boolean isAutoTx0() {
@@ -227,6 +236,8 @@ public class CliConfig {
             + mix.getClients()
             + ", clientDelay="
             + mix.getClientDelay()
+            + ", tx0Delay="
+            + mix.getTx0Delay()
             + ", autoTx0="
             + mix.isAutoTx0()
             + ", autoMix="
