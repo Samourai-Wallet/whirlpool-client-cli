@@ -8,12 +8,11 @@ import com.samourai.whirlpool.client.wallet.beans.MixOrchestratorState;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolWalletState;
 import com.samourai.whirlpool.client.wallet.orchestrator.AbstractOrchestrator;
-import com.samourai.whirlpool.client.wallet.orchestrator.AutoTx0Orchestrator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CliStatusOrchestrator extends AbstractOrchestrator {
-  private static final Logger log = LoggerFactory.getLogger(AutoTx0Orchestrator.class);
+  private static final Logger log = LoggerFactory.getLogger(CliStatusOrchestrator.class);
 
   private CliWalletService cliWalletService;
   private CliConfig cliConfig;

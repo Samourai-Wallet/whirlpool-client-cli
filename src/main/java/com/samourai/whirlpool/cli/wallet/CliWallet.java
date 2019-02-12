@@ -25,8 +25,23 @@ public class CliWallet extends WhirlpoolWallet {
 
   @Override
   public void onEmptyWalletException(EmptyWalletException e) {
+    boolean wasStarted = isStarted();
+    if (wasStarted) {
+      if (log.isDebugEnabled()) {
+        log.debug("Stopping wallet for autoRefill.");
+      }
+      stop();
+    }
+
     try {
       autoRefill(e);
+
+      if (wasStarted) {
+        if (log.isDebugEnabled()) {
+          log.debug("Restarting wallet after autoRefill.");
+        }
+        start();
+      }
     } catch (Exception ee) {
       log.error("", ee);
 
