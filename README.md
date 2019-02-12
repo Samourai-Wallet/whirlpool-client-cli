@@ -40,7 +40,7 @@ java -jar target/whirlpool-client-version-run.jar --list-pools
 You need a wallet holding funds to mix.
 
 ```
-[--clients=1] [--client-delay=5]
+[--pool=] [--clients=1] [--client-delay=5]
 [--auto-tx0] [--auto-mix] [--auto-aggregate-postmix]
 ```
 
@@ -48,6 +48,7 @@ Example:
 ```
 java -jar target/whirlpool-client-version-run.jar
 ```
+- pool: poolId(s) to use, ordered by priority and separated by ','. ie: '0.1btc,0.01btc'. By default all pools will be used.
 - clients: number of simultaneous mixs
 - client-delay: delay (in seconds) between each connexion
 - auto-tx0: automatically run tx0 from deposit when premix wallet is empty

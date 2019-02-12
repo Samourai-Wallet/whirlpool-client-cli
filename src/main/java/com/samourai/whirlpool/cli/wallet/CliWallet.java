@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.wallet;
 
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.EmptyWalletException;
@@ -10,9 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CliWallet extends WhirlpoolWallet {
-  private final Logger log = LoggerFactory.getLogger(CliWallet.class);
+  private static final Logger log = LoggerFactory.getLogger(CliWallet.class);
+  private static final int CLI_STATUS_DELAY = 3000;
+
   private CliConfig cliConfig;
   private WalletAggregateService walletAggregateService;
+  private CliStatusOrchestrator cliStatusOrchestrator;
 
   public CliWallet(
       WhirlpoolWallet whirlpoolWallet,
@@ -21,6 +25,21 @@ public class CliWallet extends WhirlpoolWallet {
     super(whirlpoolWallet);
     this.cliConfig = cliConfig;
     this.walletAggregateService = walletAggregateService;
+
+    // log status
+    this.cliStatusOrchestrator = new CliStatusOrchestrator(CLI_STATUS_DELAY, this, cliConfig);
+  }
+
+  @Override
+  public void start() {
+    super.start();
+    this.cliStatusOrchestrator.start();
+  }
+
+  @Override
+  public void stop() {
+    super.stop();
+    this.cliStatusOrchestrator.stop();
   }
 
   @Override

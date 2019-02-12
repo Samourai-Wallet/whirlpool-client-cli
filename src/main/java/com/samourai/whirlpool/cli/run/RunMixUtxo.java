@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.run;
 
 import com.samourai.whirlpool.cli.CliListener;
 import com.samourai.whirlpool.cli.services.CliWalletService;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.mix.MixParams;
 import com.samourai.whirlpool.client.mix.handler.IPostmixHandler;
 import com.samourai.whirlpool.client.mix.handler.IPremixHandler;
@@ -10,6 +11,7 @@ import com.samourai.whirlpool.client.mix.handler.UtxoWithBalance;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.NetworkParameters;
@@ -32,9 +34,16 @@ public class RunMixUtxo {
     this.params = params;
   }
 
-  public void run(
-      Pool pool, String utxoHash, long utxoIdx, String utxoKey, long utxoBalance, int mixs)
+  public void run(String utxoHash, long utxoIdx, String utxoKey, long utxoBalance, int mixs)
       throws Exception {
+
+    // pools
+    Collection<Pool> poolsByPriority =
+        cliWalletService.getSessionWallet().findPoolsByPriorityForPremix(utxoBalance);
+    if (poolsByPriority.isEmpty()) {
+      throw new NotifiableException("No pool for this utxo balance: " + utxoBalance);
+    }
+    Pool pool = poolsByPriority.iterator().next();
 
     // utxo key
     DumpedPrivateKey dumpedPrivateKey = new DumpedPrivateKey(params, utxoKey);

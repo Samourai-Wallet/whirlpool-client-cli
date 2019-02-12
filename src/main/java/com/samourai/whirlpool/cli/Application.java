@@ -6,7 +6,6 @@ import com.samourai.tor.client.JavaTorClient;
 import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunUpgradeCli;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
@@ -41,7 +40,6 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 @ServletComponentScan(value = "com.samourai.whirlpool.cli.config.filters")
 public class Application implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static final int CLI_STATUS_DELAY = 3000;
   private static final String INDEX_CLI_VERSION = "cliVersion";
 
   private static final int CLI_VERSION = 3;
@@ -137,9 +135,6 @@ public class Application implements ApplicationRunner {
       } else {
         // start wallet
         whirlpoolWallet.start();
-
-        // log status
-        new CliStatusOrchestrator(CLI_STATUS_DELAY, cliWalletService, cliConfig).start();
 
         if (appArgs.isAutoTx0()) {
           // automatically tx0 when premix is empty

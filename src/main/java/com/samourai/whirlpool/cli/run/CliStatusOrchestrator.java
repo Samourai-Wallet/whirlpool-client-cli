@@ -2,25 +2,29 @@ package com.samourai.whirlpool.cli.run;
 
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
-import com.samourai.whirlpool.cli.services.CliWalletService;
+import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.MixOrchestratorState;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolWalletState;
 import com.samourai.whirlpool.client.wallet.orchestrator.AbstractOrchestrator;
+import com.samourai.whirlpool.client.whirlpool.beans.Pool;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CliStatusOrchestrator extends AbstractOrchestrator {
   private static final Logger log = LoggerFactory.getLogger(CliStatusOrchestrator.class);
 
-  private CliWalletService cliWalletService;
+  private CliWallet whirlpoolWallet;
   private CliConfig cliConfig;
 
-  public CliStatusOrchestrator(
-      int loopDelay, CliWalletService cliWalletService, CliConfig cliConfig) {
+  public CliStatusOrchestrator(int loopDelay, CliWallet cliWallet, CliConfig cliConfig) {
     super(loopDelay);
-    this.cliWalletService = cliWalletService;
+    this.whirlpoolWallet = whirlpoolWallet;
     this.cliConfig = cliConfig;
   }
 
@@ -28,7 +32,8 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
   protected void runOrchestrator() {
     // log CLI status
     try {
-      WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+      String poolsByPriorityStr = getPoolsByPriorityStr(whirlpoolWallet);
+
       log.info("---------------------------------------------------------------------");
       log.info(
           "[CLI] SESSION WALLET is OPENED and "
@@ -38,7 +43,9 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + ", autoMix="
               + cliConfig.getMix().isAutoMix()
               + ", autoAggregatePostmix="
-              + cliConfig.getMix().isAutoAggregatePostmix());
+              + cliConfig.getMix().isAutoAggregatePostmix()
+              + ", poolsByPriority="
+              + poolsByPriorityStr);
       WhirlpoolWalletState whirlpoolWalletState = whirlpoolWallet.getState();
       MixOrchestratorState mixState = whirlpoolWalletState.getMixState();
       log.info(
@@ -59,6 +66,20 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
       }
     } catch (NoSessionWalletException e) {
       log.info("[CLI STATE] NO SESSION WALLET OPENED.");
+    } catch (Exception e) {
+      log.error("", e);
     }
+  }
+
+  private String getPoolsByPriorityStr(WhirlpoolWallet whirlpoolWallet) throws Exception {
+    Collection<Pool> poolsByPriority = whirlpoolWallet.getPoolsByPriority();
+    List<String> poolIdsByPriority = new LinkedList<>();
+    for (Pool pool : poolsByPriority) {
+      poolIdsByPriority.add(pool.getPoolId());
+    }
+    if (poolIdsByPriority.isEmpty()) {
+      return "null";
+    }
+    return Strings.join(poolIdsByPriority, ',');
   }
 }

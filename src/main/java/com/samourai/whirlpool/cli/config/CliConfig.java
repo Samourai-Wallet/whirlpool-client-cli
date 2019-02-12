@@ -1,8 +1,10 @@
 package com.samourai.whirlpool.cli.config;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.validation.constraints.NotEmpty;
+import org.apache.logging.log4j.util.Strings;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.MainNetParams;
 import org.bitcoinj.params.TestNet3Params;
@@ -155,6 +157,7 @@ public class CliConfig {
     @NotEmpty private boolean autoTx0;
     @NotEmpty private boolean autoMix;
     @NotEmpty private boolean autoAggregatePostmix;
+    @NotEmpty private Collection<String> poolIdsByPriority;
 
     public int getClients() {
       return clients;
@@ -195,6 +198,14 @@ public class CliConfig {
     public void setAutoAggregatePostmix(boolean autoAggregatePostmix) {
       this.autoAggregatePostmix = autoAggregatePostmix;
     }
+
+    public Collection<String> getPoolIdsByPriority() {
+      return poolIdsByPriority;
+    }
+
+    public void setPoolIdsByPriority(Collection<String> poolIdsByPriority) {
+      this.poolIdsByPriority = poolIdsByPriority;
+    }
   }
 
   public Map<String, String> getConfigInfo() {
@@ -216,7 +227,24 @@ public class CliConfig {
             + fee.xpub.substring(0, 6)
             + "..."
             + fee.xpub.substring(fee.xpub.length() - 4, fee.xpub.length()));
-    configInfo.put("mix", "clients=" + mix.getClients() + ", clientDelay=" + mix.getClientDelay());
+    String poolIdsByPriorityStr = "null";
+    if (mix.getPoolIdsByPriority() != null && !mix.getPoolIdsByPriority().isEmpty()) {
+      poolIdsByPriorityStr = Strings.join(mix.getPoolIdsByPriority(), ',');
+    }
+    configInfo.put(
+        "mix",
+        "clients="
+            + mix.getClients()
+            + ", clientDelay="
+            + mix.getClientDelay()
+            + ", autoTx0="
+            + mix.isAutoTx0()
+            + ", autoMix="
+            + mix.isAutoMix()
+            + ", autoAggregatePostmix="
+            + mix.isAutoAggregatePostmix()
+            + ", poolIdsByPriority="
+            + poolIdsByPriorityStr);
     return configInfo;
   }
 }

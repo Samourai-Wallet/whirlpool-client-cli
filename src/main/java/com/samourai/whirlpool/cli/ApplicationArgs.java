@@ -4,7 +4,11 @@ import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -64,6 +68,11 @@ public class ApplicationArgs {
       cliConfig.getServer().setSsl(valueBool);
     }
 
+    Collection<String> poolIdsBypriority = getPoolIdsByPriority();
+    if (!poolIdsBypriority.isEmpty()) {
+      cliConfig.getMix().setPoolIdsByPriority(poolIdsBypriority);
+    }
+
     value = optionalOption(ARG_NETWORK_ID);
     if (value != null) {
       cliConfig.setNetwork(value);
@@ -115,8 +124,15 @@ public class ApplicationArgs {
     }
   }
 
-  public String getPoolId() {
-    return optionalOption(ARG_POOL_ID);
+  private Collection<String> getPoolIdsByPriority() {
+    List<String> poolIdsByPriority = new LinkedList<>();
+
+    String poolIdsStr = optionalOption(ARG_POOL_ID);
+    if (poolIdsStr != null && !poolIdsStr.isEmpty()) {
+      String[] poolIdsSplit = poolIdsStr.split(",");
+      poolIdsByPriority.addAll(Arrays.asList(poolIdsSplit));
+    }
+    return poolIdsByPriority;
   }
 
   private String getUtxo() {

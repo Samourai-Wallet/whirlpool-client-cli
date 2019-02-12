@@ -8,8 +8,6 @@ import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
-import com.samourai.whirlpool.client.whirlpool.beans.Pool;
-import com.samourai.whirlpool.client.whirlpool.beans.Pools;
 import java.lang.invoke.MethodHandles;
 import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
@@ -42,7 +40,6 @@ public class RunCliCommand {
 
   public void run() throws Exception {
     NetworkParameters params = whirlpoolClientConfig.getNetworkParameters();
-    Pools pools = whirlpoolClient.fetchPools();
 
     if (appArgs.isUtxo()) {
       // go whirlpool with UTXO
@@ -52,11 +49,8 @@ public class RunCliCommand {
       long utxoBalance = appArgs.getUtxoBalance();
       final int mixs = appArgs.getMixs();
 
-      String poolId = appArgs.getPoolId();
-      Pool pool = pools.findPoolById(poolId);
-
       new RunMixUtxo(whirlpoolClientConfig, cliWalletService, params)
-          .run(pool, utxoHash, utxoIdx, utxoKey, utxoBalance, mixs);
+          .run(utxoHash, utxoIdx, utxoKey, utxoBalance, mixs);
     } else if (appArgs.isAggregatePostmix()) {
       CliWallet cliWallet = cliWalletService.getSessionWallet();
 
