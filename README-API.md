@@ -5,7 +5,7 @@ Default port: 8899
 
 ## Wallet
 
-### Wallet utxos: ```GET /rest/wallet/utxos```
+### Utxos: ```GET /rest/wallet/utxos```
 ```
 {
     deposit: {

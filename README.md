@@ -8,21 +8,19 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 
 ## General usage
 ```
-java -jar target/whirlpool-client-version-run.jar --server=host:port [--network=test{,main}] [--listen[=8899]]
+java -jar target/whirlpool-client-version-run.jar [--listen[=8899]]
 [--ssl=true] [--tor=true] [--debug] [--scode=]
-[--pushtx=auto|interactive|http://user:password@host:port] {args...}
+[--server=host:port] [--network=test{,main}] [--pushtx=auto|interactive|http://user:password@host:port] {args...}
 ```
 
-### Required arguments:
-- server: (host:port) server to connect to
-
 ### Optional arguments:
-- network: (main,test) bitcoin network to use. Client will abort if server runs on a different network.
-- listen: enable API for remote commands
-- ssl: enable or disable SSL
-- tor: enable or disable TOR
+- listen: enable API for remote commands & GUI
+- ssl: enable SSL
+- tor: enable TOR
 - debug: display more logs for debugging
 - scode: optional scode to use for tx0
+- server: (host:port) server to connect to
+- network: (main,test) bitcoin network to use. Client will abort if server runs on a different network.
 - pushtx: specify how to broadcast transactions (tx0, aggregate).
     * auto: by default, tx are broadcasted through Samourai service.
     * interactive: print raw tx and pause to let you broadcast it manually.
@@ -30,12 +28,12 @@ java -jar target/whirlpool-client-version-run.jar --server=host:port [--network=
 
 ### List pools
 ```
---server=host:port --list-pools
+--list-pools
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --server=host:port --list-pools
+java -jar target/whirlpool-client-version-run.jar --list-pools
 ```
 
 ### Mix a wallet
@@ -45,13 +43,12 @@ You need a wallet holding funds to mix. The script will run the following automa
 3. Mix pre-mix utxos, and repeat
 
 ```
---server=host:port [--rpc-client-url=http://user:password@host:port]
 [--clients=1] [--client-delay=5] [--auto-tx0] [--auto-mix] [--auto-aggregate-postmix]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --rpc-client-url=http://user:password@host:port
+java -jar target/whirlpool-client-version-run.jar
 ```
 - clients: number of simultaneous mixs
 - client-delay: delay (in seconds) between each connexion
@@ -84,13 +81,12 @@ java -jar target/whirlpool-client-version-run.jar --network=test --server=host:p
 Move all postmix funds back to premix wallet and consolidate to a single UTXO.
 Only allowed on testnet for testing purpose.
 ```
---server=host:port [--rpc-client-url=http://user:password@host:port] --pool=
 --aggregate-postmix[=address]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --aggregate-postmix --rpc-client-url=http://user:password@host:port
+java -jar target/whirlpool-client-version-run.jar --aggregate-postmix
 ```
 - aggregate-postmix: move funds back to premix-wallet. Or --aggregate-postmix=address to move funds to a specific address.
 
