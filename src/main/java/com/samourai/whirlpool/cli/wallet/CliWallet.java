@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli.wallet;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
+import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.EmptyWalletException;
@@ -21,13 +22,15 @@ public class CliWallet extends WhirlpoolWallet {
   public CliWallet(
       WhirlpoolWallet whirlpoolWallet,
       CliConfig cliConfig,
-      WalletAggregateService walletAggregateService) {
+      WalletAggregateService walletAggregateService,
+      CliWalletService cliWalletService) {
     super(whirlpoolWallet);
     this.cliConfig = cliConfig;
     this.walletAggregateService = walletAggregateService;
 
     // log status
-    this.cliStatusOrchestrator = new CliStatusOrchestrator(CLI_STATUS_DELAY, this, cliConfig);
+    this.cliStatusOrchestrator =
+        new CliStatusOrchestrator(CLI_STATUS_DELAY, cliWalletService, cliConfig);
   }
 
   @Override

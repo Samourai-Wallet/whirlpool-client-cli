@@ -2,7 +2,7 @@ package com.samourai.whirlpool.cli.run;
 
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
-import com.samourai.whirlpool.cli.wallet.CliWallet;
+import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.MixOrchestratorState;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
@@ -19,12 +19,13 @@ import org.slf4j.LoggerFactory;
 public class CliStatusOrchestrator extends AbstractOrchestrator {
   private static final Logger log = LoggerFactory.getLogger(CliStatusOrchestrator.class);
 
-  private CliWallet whirlpoolWallet;
+  private CliWalletService cliWalletService;
   private CliConfig cliConfig;
 
-  public CliStatusOrchestrator(int loopDelay, CliWallet cliWallet, CliConfig cliConfig) {
+  public CliStatusOrchestrator(
+      int loopDelay, CliWalletService cliWalletService, CliConfig cliConfig) {
     super(loopDelay);
-    this.whirlpoolWallet = whirlpoolWallet;
+    this.cliWalletService = cliWalletService;
     this.cliConfig = cliConfig;
   }
 
@@ -32,6 +33,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
   protected void runOrchestrator() {
     // log CLI status
     try {
+      WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
       String poolsByPriorityStr = getPoolsByPriorityStr(whirlpoolWallet);
 
       log.info("---------------------------------------------------------------------");

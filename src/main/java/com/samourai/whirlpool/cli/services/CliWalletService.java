@@ -158,7 +158,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
     WhirlpoolWallet whirlpoolWallet =
         openWallet(feeIndexHandler, depositWallet, premixWallet, postmixWallet);
-    this.sessionWallet = new CliWallet(whirlpoolWallet, cliConfig, walletAggregateService);
+    this.sessionWallet = new CliWallet(whirlpoolWallet, cliConfig, walletAggregateService, this);
     return sessionWallet;
   }
 
