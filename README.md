@@ -37,13 +37,11 @@ java -jar target/whirlpool-client-version-run.jar --list-pools
 ```
 
 ### Mix a wallet
-You need a wallet holding funds to mix. The script will run the following automatic process:
-1. List wallet utxos
-2. When needed, split existing wallet utxo to pre-mix utxos with a valid tx0. Broadcast it (when rpc-client-url provided) or halt to let you broadcast it manually.
-3. Mix pre-mix utxos, and repeat
+You need a wallet holding funds to mix.
 
 ```
-[--clients=1] [--client-delay=5] [--auto-tx0] [--auto-mix] [--auto-aggregate-postmix]
+[--clients=1] [--client-delay=5]
+[--auto-tx0] [--auto-mix] [--auto-aggregate-postmix]
 ```
 
 Example:
