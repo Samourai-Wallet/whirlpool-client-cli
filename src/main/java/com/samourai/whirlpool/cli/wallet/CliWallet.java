@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 public class CliWallet extends WhirlpoolWallet {
   private static final Logger log = LoggerFactory.getLogger(CliWallet.class);
-  private static final int CLI_STATUS_DELAY = 3000;
+  private static final int CLI_STATUS_DELAY = 10000;
 
   private CliConfig cliConfig;
   private WalletAggregateService walletAggregateService;
@@ -47,23 +47,8 @@ public class CliWallet extends WhirlpoolWallet {
 
   @Override
   public void onEmptyWalletException(EmptyWalletException e) {
-    boolean wasStarted = isStarted();
-    if (wasStarted) {
-      if (log.isDebugEnabled()) {
-        log.debug("Stopping wallet for autoRefill.");
-      }
-      stop();
-    }
-
     try {
       autoRefill(e);
-
-      if (wasStarted) {
-        if (log.isDebugEnabled()) {
-          log.debug("Restarting wallet after autoRefill.");
-        }
-        start();
-      }
     } catch (Exception ee) {
       log.error("", ee);
 
@@ -105,10 +90,29 @@ public class CliWallet extends WhirlpoolWallet {
       return;
     }
 
+    // stop wallet for auto-aggregate
+    boolean wasStarted = isStarted();
+    if (wasStarted) {
+      if (log.isDebugEnabled()) {
+        log.debug("Stopping wallet for autoRefill.");
+      }
+      stop();
+    }
+
     // auto aggregate postmix
     log.info(" • depositWallet wallet is empty. Aggregating postmix to refill it...");
     boolean aggregateSuccess = walletAggregateService.consolidateTestnet(this);
-    if (!aggregateSuccess) {
+
+    if (wasStarted) {
+      if (log.isDebugEnabled()) {
+        log.debug("Restarting wallet after autoRefill.");
+      }
+      start();
+    }
+
+    if (aggregateSuccess) {
+      clearCache();
+    } else {
       CliUtils.waitUserAction(message);
     }
   }

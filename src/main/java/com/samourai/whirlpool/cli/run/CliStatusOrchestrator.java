@@ -5,7 +5,6 @@ import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.MixOrchestratorState;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolWalletState;
 import com.samourai.whirlpool.client.wallet.orchestrator.AbstractOrchestrator;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
@@ -24,7 +23,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
 
   public CliStatusOrchestrator(
       int loopDelay, CliWalletService cliWalletService, CliConfig cliConfig) {
-    super(loopDelay);
+    super(loopDelay, "CliStatusOrchestrator");
     this.cliWalletService = cliWalletService;
     this.cliConfig = cliConfig;
   }
@@ -55,17 +54,17 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + mixState.getNbMixing()
               + "/"
               + mixState.getMaxClients()
-              + " threads, "
+              + " mixing, "
               + mixState.getNbIdle()
               + " idle, "
               + mixState.getNbQueued()
-              + " to mix");
+              + " queued");
 
-      int iThread = 1;
+      /*int iThread = 1;
       for (WhirlpoolUtxo whirlpoolUtxo : mixState.getUtxosMixing()) {
         log.info("[CLI STATE][Thread " + iThread + "] " + whirlpoolUtxo.toString());
         iThread++;
-      }
+      }*/
     } catch (NoSessionWalletException e) {
       log.info("[CLI STATE] NO SESSION WALLET OPENED.");
     } catch (Exception e) {
