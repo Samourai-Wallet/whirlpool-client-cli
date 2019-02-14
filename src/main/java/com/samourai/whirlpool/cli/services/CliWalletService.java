@@ -139,21 +139,48 @@ public class CliWalletService extends WhirlpoolWalletService {
       String premixZpub = premixWallet.getZpub();
       String postmixZpub = postmixWallet.getZpub();
       log.debug(
-          "Using wallet deposit: accountIndex="
+          "Deposit wallet: accountIndex="
               + depositWallet.getAccountIndex()
               + ", zpub="
-              + depositZpub);
+              + depositZpub
+              + ", receiveIndex="
+              + depositWallet.getIndexHandler().get()
+              + ", changeIndex="
+              + depositWallet.getIndexChangeHandler().get());
       log.debug(
-          "Using wallet premix: accountIndex="
+          "Premix wallet: accountIndex="
               + premixWallet.getAccountIndex()
               + ", zpub="
-              + premixZpub);
+              + premixZpub
+              + ", receiveIndex="
+              + premixWallet.getIndexHandler().get()
+              + ", changeIndex="
+              + premixWallet.getIndexChangeHandler().get());
       log.debug(
-          "Using wallet postmix: accountIndex="
+          "Postmix wallet: accountIndex="
               + postmixWallet.getAccountIndex()
               + ", zpub="
-              + postmixZpub);
+              + postmixZpub
+              + ", receiveIndex="
+              + postmixWallet.getIndexHandler().get()
+              + ", changeIndex="
+              + postmixWallet.getIndexChangeHandler().get());
     }
+    log.info(
+        "Deposit wallet: receiveIndex="
+            + depositWallet.getIndexHandler().get()
+            + ", changeIndex="
+            + depositWallet.getIndexChangeHandler().get());
+    log.info(
+        "Premix wallet: receiveIndex="
+            + premixWallet.getIndexHandler().get()
+            + ", changeIndex="
+            + premixWallet.getIndexChangeHandler().get());
+    log.info(
+        "Postmix wallet: receiveIndex="
+            + postmixWallet.getIndexHandler().get()
+            + ", changeIndex="
+            + postmixWallet.getIndexChangeHandler().get());
 
     // services
     IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
