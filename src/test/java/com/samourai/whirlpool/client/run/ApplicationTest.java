@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.whirlpool.cli.Application;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,7 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 @Ignore
 public class ApplicationTest extends AbstractApplicationTest {
-  protected static final String SERVER = "127.0.0.1:8080";
+  protected static final String SERVER = WhirlpoolServer.LOCAL_TEST.name();
 
   @Before
   @Override
@@ -45,7 +46,6 @@ public class ApplicationTest extends AbstractApplicationTest {
   public void runWhirlpool() {
     String[] args =
         new String[] {
-          "--network=test",
           "--utxo=733a1bcb4145e3dd0ea3e6709bef9504fd252c9a26b254508539e3636db659c2-1",
           "--utxo-key=cUe6J7Fs5mxg6jLwXE27xcDpaTPXfQZ9oKDbxs5PP6EpYMFHab2T",
           "--utxo-balance=1000102",

@@ -9,19 +9,17 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 ## General usage
 ```
 java -jar target/whirlpool-client-version-run.jar [--listen[=8899]]
-[--ssl=true] [--tor=true] [--debug] [--debug-client] [--scode=]
-[--server=host:port] [--network=test{,main}] [--pushtx=auto|interactive|http://user:password@host:port] {args...}
+[--tor=true] [--debug] [--debug-client] [--scode=]
+[--server={main,test}] [--pushtx=auto|interactive|http://user:password@host:port] {args...}
 ```
 
 ### Optional arguments:
 - listen: enable API for remote commands & GUI
-- ssl: enable SSL
 - tor: enable TOR
 - debug: display debug logs from cli
 - debug-client: display debug logs from whirlpool-client
 - scode: optional scode to use for tx0
-- server: (host:port) server to connect to
-- network: (main,test) bitcoin network to use. Client will abort if server runs on a different network.
+- server: whirlpool server to connect to
 - pushtx: specify how to broadcast transactions (tx0, aggregate).
     * auto: by default, tx are broadcasted through Samourai service.
     * interactive: print raw tx and pause to let you broadcast it manually.
@@ -62,14 +60,14 @@ java -jar target/whirlpool-client-version-run.jar
 ### Mix specific utxo
 You need a valid pre-mix utxo (output of a valid tx0) to mix.
 ```
---server=host:port --pool=
+--server={main,test} --pool=
 --utxo= --utxo-key= --utxo-balance=
 [--mixs=1]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --network=test --server=host:port --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000
+java -jar target/whirlpool-client-version-run.jar --server=test --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000
 ```
 - pool: id of the pool to join
 - utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)

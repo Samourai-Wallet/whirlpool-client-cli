@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.whirlpool.cli.Application;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,8 +19,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class ApplicationWalletTest extends AbstractApplicationTest {
   private static final String SEED_WORDS = "all all all all all all all all all all all all";
   private static final String SEED_PASSPHRASE = "whirlpool";
-  protected static final String SERVER = "127.0.0.1:8080";
-  protected static final String RPC_CLIENT_URL = "http://user:password@host:port";
+  protected static final String SERVER = WhirlpoolServer.LOCAL_TEST.name();
 
   @Before
   @Override
@@ -37,9 +37,7 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
   public void runLoopWallet() {
     String[] args =
         new String[] {
-          "--network=test",
           "--seed-passphrase=" + SEED_PASSPHRASE,
-          "--rpc-client-url=" + RPC_CLIENT_URL,
           "--seed-words=" + SEED_WORDS,
           "--debug",
           "--pool=0.01btc",
@@ -59,9 +57,7 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
   public void runTx0WithRpcClient() {
     String[] args =
         new String[] {
-          "--network=test",
           "--seed-passphrase=" + SEED_PASSPHRASE,
-          "--rpc-client-url=" + RPC_CLIENT_URL,
           "--seed-words=" + SEED_WORDS,
           "--tx0=1",
           "--debug",
@@ -79,7 +75,6 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
   public void runTx0WithoutRpcClient() {
     String[] args =
         new String[] {
-          "--network=test",
           "--seed-passphrase=" + SEED_PASSPHRASE,
           "--seed-words=" + SEED_WORDS,
           "--tx0=1",
@@ -97,9 +92,7 @@ public class ApplicationWalletTest extends AbstractApplicationTest {
   public void runAggregatePostmix() {
     String[] args =
         new String[] {
-          "--network=test",
           "--seed-passphrase=" + SEED_PASSPHRASE,
-          "--rpc-client-url=" + RPC_CLIENT_URL,
           "--seed-words=" + SEED_WORDS,
           "--aggregate-postmix=tb1qkxzjh0u8a84c3cqpcu83c4mrhh3vxkgnyp4wa8",
           "--debug",

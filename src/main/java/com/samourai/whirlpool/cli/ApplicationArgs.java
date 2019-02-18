@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,14 +24,12 @@ public class ApplicationArgs {
 
   private static final String ARG_DEBUG = "debug";
   private static final String ARG_DEBUG_CLIENT = "debug-client";
-  private static final String ARG_NETWORK_ID = "network";
   private static final String ARG_UTXO = "utxo";
   private static final String ARG_UTXO_KEY = "utxo-key";
   private static final String ARG_UTXO_BALANCE = "utxo-balance";
   private static final String ARG_SEED_PASSPHRASE = "seed-passphrase";
   private static final String ARG_SEED_WORDS = "seed-words";
   private static final String ARG_SERVER = "server";
-  private static final String ARG_SSL = "ssl";
   private static final String ARG_MIXS = "mixs";
   private static final String ARG_LIST_POOLS = "list-pools";
   private static final String ARG_POOL_ID = "pool";
@@ -62,22 +61,12 @@ public class ApplicationArgs {
 
     value = optionalOption(ARG_SERVER);
     if (value != null) {
-      cliConfig.getServer().setUrl(value);
-    }
-
-    valueBool = optionalBoolean(ARG_SSL);
-    if (valueBool != null) {
-      cliConfig.getServer().setSsl(valueBool);
+      cliConfig.setServer(Enum.valueOf(WhirlpoolServer.class, value));
     }
 
     Collection<String> poolIdsBypriority = getPoolIdsByPriority();
     if (!poolIdsBypriority.isEmpty()) {
       cliConfig.getMix().setPoolIdsByPriority(poolIdsBypriority);
-    }
-
-    value = optionalOption(ARG_NETWORK_ID);
-    if (value != null) {
-      cliConfig.setNetwork(value);
     }
 
     value = optionalOption(ARG_SCODE);
