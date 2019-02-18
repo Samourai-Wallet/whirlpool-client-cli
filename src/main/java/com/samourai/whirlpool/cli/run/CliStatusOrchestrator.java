@@ -23,7 +23,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
 
   public CliStatusOrchestrator(
       int loopDelay, CliWalletService cliWalletService, CliConfig cliConfig) {
-    super(loopDelay, "CliStatusOrchestrator");
+    super(loopDelay);
     this.cliWalletService = cliWalletService;
     this.cliConfig = cliConfig;
   }
@@ -52,8 +52,6 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
       log.info(
           "[CLI] "
               + mixState.getNbMixing()
-              + "/"
-              + mixState.getMaxClients()
               + " mixing, "
               + mixState.getNbIdle()
               + " idle, "

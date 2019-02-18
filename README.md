@@ -9,21 +9,24 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 ## General usage
 ```
 java -jar target/whirlpool-client-version-run.jar [--listen[=8899]]
-[--tor=true] [--debug] [--debug-client] [--scode=]
-[--server={MAIN,TEST}] [--pushtx=auto|interactive|http://user:password@host:port] {args...}
+[--server={MAIN,TEST}] [--tor=true] [--debug] [--debug-client]
+[--pushtx=auto|interactive|http://user:password@host:port] [--scode=] [--tx0-max-outputs] {args...}
 ```
 
-### Optional arguments:
+#### Optional arguments:
 - listen: enable API for remote commands & GUI
+- server: whirlpool server to connect to
 - tor: enable TOR
+
+#### Tech arguments: you probably shouldn't use it
 - debug: display debug logs from cli
 - debug-client: display debug logs from whirlpool-client
-- scode: optional scode to use for tx0
-- server: whirlpool server to connect to
 - pushtx: specify how to broadcast transactions (tx0, aggregate).
     * auto: by default, tx are broadcasted through Samourai service.
     * interactive: print raw tx and pause to let you broadcast it manually.
     * http://user:password@host:port: rpc connection to your own bitcoin node (connection is not encrypted, use on trusted network only).
+- scode: optional scode to use for tx0
+- tx0-max-outputs: tx0 outputs limit
 
 ### List pools
 ```

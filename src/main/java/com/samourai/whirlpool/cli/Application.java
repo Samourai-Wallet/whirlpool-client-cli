@@ -66,13 +66,13 @@ public class Application implements ApplicationRunner {
     // run
     applicationContext = new SpringApplicationBuilder(Application.class).web(wat).run(args);
 
-    // quit
+    // quit?
     applicationContext.close();
   }
 
   @Override
   public void run(ApplicationArguments args) {
-    log.info("------------ whirlpool-client ------------");
+    log.info("------------ whirlpool-client-cli starting ------------");
     log.info(
         "Running whirlpool-client {} on java {}",
         Arrays.toString(args.getSourceArgs()),
@@ -136,9 +136,7 @@ public class Application implements ApplicationRunner {
         }
 
         // keep cli running
-        if (listenPort == null) {
-          keepRunning();
-        }
+        keepRunning();
       }
     } catch (NotifiableException e) {
       log.error(e.getMessage());
@@ -147,6 +145,8 @@ public class Application implements ApplicationRunner {
     } catch (Exception e) {
       log.error("", e);
     }
+
+    log.info("------------ whirlpool-client-cli ending ------------");
 
     // stop cliWallet
     if (whirlpoolWallet != null && whirlpoolWallet.isStarted()) {
