@@ -59,21 +59,19 @@ public class RunCliCommand {
 
       // should we move to a specific address?
       String toAddress = appArgs.getAggregatePostmix();
-      if (toAddress != null) {
+      if (toAddress != null && !"true".equals(toAddress)) {
         Bip84ApiWallet depositWallet = cliWallet.getWalletDeposit();
-        if ("true".equals(toAddress)) {
-          // aggregate to deposit
-          toAddress = bech32Util.toBech32(depositWallet.getNextAddress(), params);
-          log.info(" • Moving funds to deposit: " + toAddress);
-        } else {
-          log.info(" • Moving funds to: " + toAddress);
-        }
+        log.info(" • Moving funds to: " + toAddress);
         walletAggregateService.toAddress(depositWallet, toAddress);
       }
     } else if (appArgs.isListPools()) {
       new RunListPools(whirlpoolClient).run();
     } else {
       throw new Exception("Unknown command.");
+    }
+
+    if (log.isDebugEnabled()) {
+      log.debug("RunCliCommand success.");
     }
   }
 

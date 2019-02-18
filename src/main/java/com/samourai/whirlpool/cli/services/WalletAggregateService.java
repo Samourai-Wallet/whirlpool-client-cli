@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class WalletAggregateService {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static final int AGGREGATED_UTXOS_PER_TX = 500;
+  private static final int AGGREGATED_UTXOS_PER_TX = 600;
   private static final FormatsUtilGeneric formatUtils = FormatsUtilGeneric.getInstance();
 
   private SamouraiApi samouraiApi;
