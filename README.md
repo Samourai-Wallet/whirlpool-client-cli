@@ -10,7 +10,7 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 ```
 java -jar target/whirlpool-client-version-run.jar [--listen[=8899]]
 [--server={MAIN,TEST}] [--tor=true] [--debug] [--debug-client]
-[--pushtx=auto|interactive|http://user:password@host:port] [--scode=] [--tx0-max-outputs] {args...}
+[--pushtx=auto|interactive|http://user:password@host:port] [--scode=] [--tx0-max-outputs=] {args...}
 ```
 
 #### Optional arguments:

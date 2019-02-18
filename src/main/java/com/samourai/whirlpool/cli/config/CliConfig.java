@@ -84,6 +84,7 @@ public class CliConfig {
     @NotEmpty private int clients;
     @NotEmpty private int clientDelay;
     @NotEmpty private int tx0Delay;
+    private Integer tx0MaxOutputs;
     @NotEmpty private boolean autoTx0;
     @NotEmpty private boolean autoMix;
     @NotEmpty private boolean autoAggregatePostmix;
@@ -111,6 +112,14 @@ public class CliConfig {
 
     public void setTx0Delay(int tx0Delay) {
       this.tx0Delay = tx0Delay;
+    }
+
+    public Integer getTx0MaxOutputs() {
+      return tx0MaxOutputs;
+    }
+
+    public void setTx0MaxOutputs(Integer tx0MaxOutputs) {
+      this.tx0MaxOutputs = tx0MaxOutputs;
     }
 
     public boolean isAutoTx0() {
@@ -177,6 +186,8 @@ public class CliConfig {
             + mix.getClientDelay()
             + ", tx0Delay="
             + mix.getTx0Delay()
+            + ", tx0MaxOutputs="
+            + mix.getTx0MaxOutputs()
             + ", autoTx0="
             + mix.isAutoTx0()
             + ", autoMix="
@@ -197,6 +208,9 @@ public class CliConfig {
     config.setMaxClients(mix.getClients());
     config.setClientDelay(mix.getClientDelay());
     config.setTx0Delay(mix.getTx0Delay());
+    if (mix.getTx0MaxOutputs() != null) {
+      config.setTx0MaxOutputs(mix.getTx0MaxOutputs());
+    }
     config.setAutoTx0(mix.isAutoTx0());
     config.setAutoMix(mix.isAutoMix());
 
