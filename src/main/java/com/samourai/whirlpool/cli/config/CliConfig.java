@@ -1,50 +1,38 @@
 package com.samourai.whirlpool.cli.config;
 
+import com.samourai.whirlpool.cli.services.JavaHttpClientService;
+import com.samourai.whirlpool.cli.services.JavaStompClientService;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.validation.constraints.NotEmpty;
 import org.apache.logging.log4j.util.Strings;
-import org.bitcoinj.core.NetworkParameters;
-import org.bitcoinj.params.MainNetParams;
-import org.bitcoinj.params.TestNet3Params;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @ConfigurationProperties(prefix = "cli")
 @Configuration
 public class CliConfig {
-  @NotEmpty private boolean testnet;
-  @NotEmpty private NetworkParameters networkParameters;
-  @NotEmpty private ServerConfig server;
+  @Autowired JavaHttpClientService httpClient;
+  @Autowired JavaStompClientService stompClient;
+  private WhirlpoolServer server;
+
   private String scode;
   @NotEmpty private String pushtx;
   @NotEmpty private boolean tor;
-  @NotEmpty private FeeConfig fee;
   @NotEmpty private MixConfig mix;
 
   private static final String PUSHTX_AUTO = "auto";
   private static final String PUSHTX_INTERACTIVE = "interactive";
 
-  public boolean isTestnet() {
-    return testnet;
-  }
-
-  public void setNetwork(String network) {
-    this.testnet = TestNet3Params.get().getPaymentProtocolId().equals(network);
-    NetworkParameters networkParameters = testnet ? TestNet3Params.get() : MainNetParams.get();
-    this.networkParameters = networkParameters;
-  }
-
-  public NetworkParameters getNetworkParameters() {
-    return networkParameters;
-  }
-
-  public ServerConfig getServer() {
+  public WhirlpoolServer getServer() {
     return server;
   }
 
-  public void setServer(ServerConfig server) {
+  public void setServer(WhirlpoolServer server) {
     this.server = server;
   }
 
@@ -84,62 +72,12 @@ public class CliConfig {
     this.tor = tor;
   }
 
-  public FeeConfig getFee() {
-    return fee;
-  }
-
-  public void setFee(FeeConfig fee) {
-    this.fee = fee;
-  }
-
   public MixConfig getMix() {
     return mix;
   }
 
   public void setMix(MixConfig mix) {
     this.mix = mix;
-  }
-
-  public static class ServerConfig {
-    @NotEmpty private String url;
-    @NotEmpty private boolean ssl;
-
-    public String getUrl() {
-      return url;
-    }
-
-    public void setUrl(String url) {
-      this.url = url;
-    }
-
-    public boolean isSsl() {
-      return ssl;
-    }
-
-    public void setSsl(boolean ssl) {
-      this.ssl = ssl;
-    }
-  }
-
-  public static class FeeConfig {
-    @NotEmpty private String xpub;
-    @NotEmpty private long value;
-
-    public String getXpub() {
-      return xpub;
-    }
-
-    public void setXpub(String xpub) {
-      this.xpub = xpub;
-    }
-
-    public long getValue() {
-      return value;
-    }
-
-    public void setValue(long value) {
-      this.value = value;
-    }
   }
 
   public static class MixConfig {
@@ -210,22 +148,23 @@ public class CliConfig {
 
   public Map<String, String> getConfigInfo() {
     Map<String, String> configInfo = new LinkedHashMap<>();
+    String xpub = server.getFeeXpub();
+    String xpubMasked =
+        xpub.substring(0, 6) + "..." + xpub.substring(xpub.length() - 4, xpub.length());
     configInfo.put(
         "server",
         "url="
-            + server.getUrl()
+            + server.getServerUrl()
             + ", network="
-            + networkParameters.getId()
-            + ", testnet="
-            + testnet);
+            + server.getParams()
+            + ", ssl="
+            + Boolean.toString(server.isSsl())
+            + ", feeXpub="
+            + xpubMasked
+            + ", feeValue="
+            + server.getFeeValue());
     configInfo.put("pushtx", pushtx);
     configInfo.put("tor", Boolean.toString(tor));
-    configInfo.put(
-        "fee",
-        "xpub="
-            + fee.xpub.substring(0, 6)
-            + "..."
-            + fee.xpub.substring(fee.xpub.length() - 4, fee.xpub.length()));
     String poolIdsByPriorityStr = "null";
     if (mix.getPoolIdsByPriority() != null && !mix.getPoolIdsByPriority().isEmpty()) {
       poolIdsByPriorityStr = Strings.join(mix.getPoolIdsByPriority(), ',');
@@ -247,5 +186,23 @@ public class CliConfig {
             + ", poolIdsByPriority="
             + poolIdsByPriorityStr);
     return configInfo;
+  }
+
+  public WhirlpoolWalletConfig computeWhirlpoolWalletConfig() {
+    WhirlpoolWalletConfig config = new WhirlpoolWalletConfig(httpClient, stompClient, server);
+    if (!Strings.isEmpty(scode)) {
+      config.setScode(scode);
+    }
+
+    config.setMaxClients(mix.getClients());
+    config.setClientDelay(mix.getClientDelay());
+    config.setTx0Delay(mix.getTx0Delay());
+    config.setAutoTx0(mix.isAutoTx0());
+    config.setAutoMix(mix.isAutoMix());
+
+    if (mix.getPoolIdsByPriority() != null && !mix.getPoolIdsByPriority().isEmpty()) {
+      config.setPoolIdsByPriority(mix.getPoolIdsByPriority());
+    }
+    return config;
   }
 }

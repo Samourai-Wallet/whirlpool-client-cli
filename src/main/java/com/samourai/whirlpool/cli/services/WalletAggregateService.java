@@ -6,6 +6,7 @@ import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.wallet.hd.HD_Address;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
+import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 public class WalletAggregateService {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final int AGGREGATED_UTXOS_PER_TX = 500;
+  private static final FormatsUtilGeneric formatUtils = FormatsUtilGeneric.getInstance();
 
   private SamouraiApi samouraiApi;
   private PushTxService pushTxService;
@@ -130,7 +132,7 @@ public class WalletAggregateService {
   }
 
   public boolean consolidateTestnet(CliWallet cliWallet) throws Exception {
-    if (!cliConfig.isTestnet()) {
+    if (!formatUtils.isTestNet(cliConfig.getServer().getParams())) {
       throw new NotifiableException(
           "consolidateTestnet cannot be run on mainnet for privacy reasons.");
     }

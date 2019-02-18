@@ -1,7 +1,7 @@
 package com.samourai.whirlpool.cli.api.protocol;
 
 import com.samourai.api.client.beans.UnspentResponse.UnspentOutput;
-import com.samourai.whirlpool.client.wallet.WhirlpoolAccount;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoStatus;
 

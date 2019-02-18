@@ -1,23 +1,16 @@
 package com.samourai.whirlpool.cli.services;
 
-import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.client.indexHandler.FileIndexHandler;
 import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
-import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
-import com.samourai.whirlpool.cli.wallet.CliWalletAccount;
-import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
-import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
-import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import org.bitcoinj.core.NetworkParameters;
@@ -29,7 +22,6 @@ import org.springframework.stereotype.Service;
 public class CliWalletService extends WhirlpoolWalletService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int AUTOMIX_DELAY = 3 * 60 * 1000; // automix rescan delay for premix
   public static final String INDEX_BIP84_INITIALIZED = "bip84init";
   private static final String INDEX_DEPOSIT = "deposit";
   private static final String INDEX_DEPOSIT_CHANGE = "deposit_change";
@@ -40,61 +32,38 @@ public class CliWalletService extends WhirlpoolWalletService {
   private static final String INDEX_FEE = "fee";
 
   private CliConfig cliConfig;
-  private SamouraiApiService samouraiApiService;
   private FileIndexHandler fileIndexHandler;
   private HD_WalletFactoryJava hdWalletFactory;
   private WalletAggregateService walletAggregateService;
 
   // available when wallet is opened
   private CliWallet sessionWallet = null;
-  private HD_Wallet bip84w = null;
 
   public CliWalletService(
       CliConfig cliConfig,
-      SamouraiApiService samouraiApiService,
-      PushTxService pushTxService,
-      Tx0Service tx0Service,
-      Bech32UtilGeneric bech32Util,
-      WhirlpoolClient whirlpoolClient,
-      WhirlpoolClientConfig whirlpoolClientConfig,
       HD_WalletFactoryJava hdWalletFactory,
       WalletAggregateService walletAggregateService) {
-    super(
-        cliConfig.getNetworkParameters(),
-        samouraiApiService,
-        pushTxService,
-        tx0Service,
-        bech32Util,
-        whirlpoolClient,
-        whirlpoolClientConfig,
-        cliConfig.getMix().getClients(),
-        cliConfig.getMix().getClientDelay(),
-        cliConfig.getMix().isAutoTx0() ? cliConfig.getMix().getClientDelay() + 5 : 0,
-        cliConfig.getMix().isAutoMix() ? AUTOMIX_DELAY : 0,
-        cliConfig.getMix().getTx0Delay(),
-        cliConfig.getMix().getPoolIdsByPriority());
+    super(cliConfig.computeWhirlpoolWalletConfig());
     this.cliConfig = cliConfig;
-    this.samouraiApiService = samouraiApiService;
     this.hdWalletFactory = hdWalletFactory;
     this.walletAggregateService = walletAggregateService;
   }
 
   public WhirlpoolWallet openWallet(String seedWords, String seedPassphrase) throws Exception {
-    NetworkParameters params = cliConfig.getNetworkParameters();
+    NetworkParameters params = cliConfig.getServer().getParams();
 
     // init fileIndexHandler
-    String walletIdentifier =
-        CliUtils.sha256Hash(seedPassphrase + seedWords + cliConfig.getNetworkParameters().getId());
+    String walletIdentifier = CliUtils.sha256Hash(seedPassphrase + seedWords + params.getId());
     this.fileIndexHandler = new FileIndexHandler(computeIndexFile(walletIdentifier));
 
     // init wallet from seed
     byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
-    this.bip84w = hdWalletFactory.getBIP84(seed, seedPassphrase, params);
+    HD_Wallet bip84w = hdWalletFactory.getBIP84(seed, seedPassphrase, params);
 
     // init bip84 at first run
     boolean initBip84 = (fileIndexHandler.get(INDEX_BIP84_INITIALIZED) != 1);
 
-    // deposit, premix & postmix wallets
+    // deposit, premix & postmix wallet indexs
     IIndexHandler depositIndexHandler = fileIndexHandler.getIndexHandler(INDEX_DEPOSIT);
     IIndexHandler depositChangeIndexHandler =
         fileIndexHandler.getIndexHandler(INDEX_DEPOSIT_CHANGE);
@@ -103,90 +72,28 @@ public class CliWalletService extends WhirlpoolWalletService {
     IIndexHandler postmixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_POSTMIX);
     IIndexHandler postmixChangeIndexHandler =
         fileIndexHandler.getIndexHandler(INDEX_POSTMIX_CHANGE);
-    Bip84ApiWallet depositWallet =
-        new Bip84ApiWallet(
+    IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
+
+    // services
+    WhirlpoolWallet whirlpoolWallet =
+        openWallet(
             bip84w,
-            CliWalletAccount.DEPOSIT.getAccountIndex(),
             depositIndexHandler,
             depositChangeIndexHandler,
-            samouraiApiService,
-            initBip84);
-    Bip84ApiWallet premixWallet =
-        new Bip84ApiWallet(
-            bip84w,
-            CliWalletAccount.PREMIX.getAccountIndex(),
             premixIndexHandler,
             premixChangeIndexHandler,
-            samouraiApiService,
-            initBip84);
-    Bip84ApiWallet postmixWallet =
-        new Bip84ApiWallet(
-            bip84w,
-            CliWalletAccount.POSTMIX.getAccountIndex(),
             postmixIndexHandler,
             postmixChangeIndexHandler,
-            samouraiApiService,
+            feeIndexHandler,
             initBip84);
 
-    // save initialized state
     if (initBip84) {
+      // save initialized state
       fileIndexHandler.set(INDEX_BIP84_INITIALIZED, 1);
     }
 
-    // log zpubs
-    if (log.isDebugEnabled()) {
-      String depositZpub = depositWallet.getZpub();
-      String premixZpub = premixWallet.getZpub();
-      String postmixZpub = postmixWallet.getZpub();
-      log.debug(
-          "Deposit wallet: accountIndex="
-              + depositWallet.getAccountIndex()
-              + ", zpub="
-              + depositZpub
-              + ", receiveIndex="
-              + depositWallet.getIndexHandler().get()
-              + ", changeIndex="
-              + depositWallet.getIndexChangeHandler().get());
-      log.debug(
-          "Premix wallet: accountIndex="
-              + premixWallet.getAccountIndex()
-              + ", zpub="
-              + premixZpub
-              + ", receiveIndex="
-              + premixWallet.getIndexHandler().get()
-              + ", changeIndex="
-              + premixWallet.getIndexChangeHandler().get());
-      log.debug(
-          "Postmix wallet: accountIndex="
-              + postmixWallet.getAccountIndex()
-              + ", zpub="
-              + postmixZpub
-              + ", receiveIndex="
-              + postmixWallet.getIndexHandler().get()
-              + ", changeIndex="
-              + postmixWallet.getIndexChangeHandler().get());
-    }
-    log.info(
-        "Deposit wallet: receiveIndex="
-            + depositWallet.getIndexHandler().get()
-            + ", changeIndex="
-            + depositWallet.getIndexChangeHandler().get());
-    log.info(
-        "Premix wallet: receiveIndex="
-            + premixWallet.getIndexHandler().get()
-            + ", changeIndex="
-            + premixWallet.getIndexChangeHandler().get());
-    log.info(
-        "Postmix wallet: receiveIndex="
-            + postmixWallet.getIndexHandler().get()
-            + ", changeIndex="
-            + postmixWallet.getIndexChangeHandler().get());
-
-    // services
-    IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
-    WhirlpoolWallet whirlpoolWallet =
-        openWallet(feeIndexHandler, depositWallet, premixWallet, postmixWallet);
     this.sessionWallet = new CliWallet(whirlpoolWallet, cliConfig, walletAggregateService, this);
+
     return sessionWallet;
   }
 
@@ -194,7 +101,6 @@ public class CliWalletService extends WhirlpoolWalletService {
     if (this.sessionWallet != null) {
       this.sessionWallet.stop();
       this.sessionWallet = null;
-      this.bip84w = null;
     }
   }
 
@@ -203,13 +109,6 @@ public class CliWalletService extends WhirlpoolWalletService {
       throw new NoSessionWalletException();
     }
     return sessionWallet;
-  }
-
-  public HD_Wallet getBip84w() throws NoSessionWalletException {
-    if (bip84w == null) {
-      throw new NoSessionWalletException();
-    }
-    return bip84w;
   }
 
   public FileIndexHandler getFileIndexHandler() {

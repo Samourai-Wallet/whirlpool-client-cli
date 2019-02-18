@@ -44,8 +44,6 @@ public class ApplicationArgs {
   private static final String ARG_PUSHTX = "pushtx";
   private static final String ARG_TOR = "tor";
   private static final String ARG_LISTEN = "listen";
-  public static final String USAGE =
-      "--network={main,test} [--utxo= --utxo-key= --utxo-balance=] or [--vpub=] --seed-passphrase= --seed-words= [--paynym-index=0] [--mixs=1] [--pool=] [--test-mode] [--server=host:port] [--debug] [--tx0] [--pushtx=auto|interactive|http://user:password@host:port]";
   private static final String UTXO_SEPARATOR = "-";
 
   private ApplicationArguments args;

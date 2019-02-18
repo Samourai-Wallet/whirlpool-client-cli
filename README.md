@@ -10,7 +10,7 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 ```
 java -jar target/whirlpool-client-version-run.jar [--listen[=8899]]
 [--tor=true] [--debug] [--debug-client] [--scode=]
-[--server={main,test}] [--pushtx=auto|interactive|http://user:password@host:port] {args...}
+[--server={MAIN,TEST}] [--pushtx=auto|interactive|http://user:password@host:port] {args...}
 ```
 
 ### Optional arguments:
@@ -60,14 +60,14 @@ java -jar target/whirlpool-client-version-run.jar
 ### Mix specific utxo
 You need a valid pre-mix utxo (output of a valid tx0) to mix.
 ```
---server={main,test} --pool=
+--server={MAIN,TEST} --pool=
 --utxo= --utxo-key= --utxo-balance=
 [--mixs=1]
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --server=test --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000
+java -jar target/whirlpool-client-version-run.jar --server=TEST --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000
 ```
 - pool: id of the pool to join
 - utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)

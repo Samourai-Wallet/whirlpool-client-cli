@@ -33,7 +33,7 @@ public class ApplicationTest extends AbstractApplicationTest {
 
   @Test
   public void runListPools() {
-    String[] args = new String[] {"--network=test", "--debug", "--server=" + SERVER};
+    String[] args = new String[] {"--debug", "--server=" + SERVER};
     ApplicationArguments appArgs = new DefaultApplicationArguments(args);
 
     new Application().run(appArgs);

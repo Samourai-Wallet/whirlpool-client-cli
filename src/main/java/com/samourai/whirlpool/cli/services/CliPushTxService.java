@@ -35,9 +35,8 @@ public class CliPushTxService extends AbstractPushTxService {
       if (log.isDebugEnabled()) {
         log.debug("pushtx config changed: rpc");
       }
-      boolean isTestnet = cliConfig.isTestnet();
       String rpcClientUrl = cliConfig.getPushtx();
-      pushTxService = new JSONRpcClientServiceImpl(rpcClientUrl, isTestnet);
+      pushTxService = new JSONRpcClientServiceImpl(rpcClientUrl, cliConfig.getServer().getParams());
     }
     if (cliConfig.isPushtxAuto() && !(pushTxService instanceof SamouraiApiService)) {
       if (log.isDebugEnabled()) {

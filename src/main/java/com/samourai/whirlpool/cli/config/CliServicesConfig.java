@@ -1,19 +1,13 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.http.client.IHttpClient;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.services.CliPushTxService;
-import com.samourai.whirlpool.cli.services.JavaStompClientService;
 import com.samourai.whirlpool.cli.services.SamouraiApiService;
-import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
-import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
-import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
 import java.lang.invoke.MethodHandles;
-import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,30 +59,7 @@ public class CliServicesConfig {
 
   @Bean
   NetworkParameters networkParameters(CliConfig cliConfig) {
-    return cliConfig.getNetworkParameters();
-  }
-
-  @Bean
-  WhirlpoolClient whirlpoolClient(WhirlpoolClientConfig whirlpoolClientConfig) {
-    return WhirlpoolClientImpl.newClient(whirlpoolClientConfig);
-  }
-
-  @Bean
-  WhirlpoolClientConfig whirlpoolClientConfig(
-      CliConfig cliConfig, IHttpClient httpClient, JavaStompClientService javaStompClientService) {
-    WhirlpoolClientConfig config =
-        new WhirlpoolClientConfig(
-            httpClient,
-            javaStompClientService,
-            cliConfig.getServer().getUrl(),
-            cliConfig.getNetworkParameters());
-    config.setSsl(cliConfig.getServer().isSsl());
-
-    String scode = cliConfig.getScode();
-    if (!StringUtils.isEmpty(scode)) {
-      config.setScode(scode);
-    }
-    return config;
+    return cliConfig.getServer().getParams();
   }
 
   @Bean
@@ -99,9 +70,9 @@ public class CliServicesConfig {
   @Bean
   Tx0Service tx0Service(CliConfig cliConfig) {
     return new Tx0Service(
-        cliConfig.getNetworkParameters(),
-        cliConfig.getFee().getXpub(),
-        cliConfig.getFee().getValue());
+        cliConfig.getServer().getParams(),
+        cliConfig.getServer().getFeeXpub(),
+        cliConfig.getServer().getFeeValue());
   }
 
   @Bean

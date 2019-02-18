@@ -4,6 +4,7 @@ import com.samourai.whirlpool.client.wallet.pushTx.AbstractPushTxService;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.Optional;
+import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
@@ -12,14 +13,11 @@ import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
 public class JSONRpcClientServiceImpl extends AbstractPushTxService implements RpcClientService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private BitcoinJSONRPCClient rpcClient;
-  private String expectedChain;
+  private NetworkParameters params;
 
-  private static final String CHAIN_TESTNET = "test";
-  private static final String CHAIN_MAINNET = "main";
-
-  public JSONRpcClientServiceImpl(String rpcClientUrl, boolean isTestnet) throws Exception {
+  public JSONRpcClientServiceImpl(String rpcClientUrl, NetworkParameters params) throws Exception {
     log.info("Instanciating JSONRpcClientServiceImpl");
-    this.expectedChain = isTestnet ? CHAIN_TESTNET : CHAIN_MAINNET;
+    this.params = params;
 
     try {
       URL url = new URL(rpcClientUrl);
@@ -39,6 +37,7 @@ public class JSONRpcClientServiceImpl extends AbstractPushTxService implements R
       long blockHeight = rpcClient.getBlockCount();
 
       // verify node network
+      String expectedChain = params.getPaymentProtocolId();
       if (!rpcClient.getBlockChainInfo().chain().equals(expectedChain)) {
         log.error(
             "Invalid chain for bitcoin node: url="

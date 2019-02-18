@@ -18,6 +18,7 @@ import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
+import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Map;
@@ -49,11 +50,9 @@ public class Application implements ApplicationRunner {
   @Autowired private ApplicationArgs appArgs;
   @Autowired private CliConfig cliConfig;
   @Autowired private CliWalletService cliWalletService;
-  @Autowired private WhirlpoolClient whirlpoolClient;
   @Autowired private PushTxService pushTxService;
   @Autowired private JavaStompClient stompClient;
   @Autowired private SamouraiApi samouraiApi;
-  @Autowired private WhirlpoolClientConfig whirlpoolClientConfig;
   @Autowired private Bech32UtilGeneric bech32Util;
   @Autowired private WalletAggregateService walletAggregateService;
   @Autowired private CliTorClientService torClientService;
@@ -98,7 +97,7 @@ public class Application implements ApplicationRunner {
     WhirlpoolWallet whirlpoolWallet = null;
     try {
       // initialize bitcoinj context
-      NetworkParameters params = cliConfig.getNetworkParameters();
+      NetworkParameters params = cliConfig.getServer().getParams();
       new Context(params);
 
       // check pushTxService
@@ -114,6 +113,10 @@ public class Application implements ApplicationRunner {
       checkUpgradeWallet();
 
       if (RunCliCommand.hasCommandToRun(appArgs)) {
+        // WhirlpoolClient instanciation
+        WhirlpoolClientConfig whirlpoolClientConfig = cliConfig.computeWhirlpoolWalletConfig();
+        WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(whirlpoolClientConfig);
+
         // execute specific command
         new RunCliCommand(
                 appArgs,
@@ -138,7 +141,6 @@ public class Application implements ApplicationRunner {
       log.error(e.getMessage());
     } catch (IllegalArgumentException e) {
       log.info("Invalid arguments: " + e.getMessage());
-      log.info("Usage: whirlpool-client " + ApplicationArgs.USAGE);
     } catch (Exception e) {
       log.error("", e);
     }
