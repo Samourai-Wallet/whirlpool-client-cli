@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.cli.api.protocol;
+package com.samourai.whirlpool.cli.api.protocol.beans;
 
 import com.samourai.api.client.beans.UnspentResponse.UnspentOutput;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;

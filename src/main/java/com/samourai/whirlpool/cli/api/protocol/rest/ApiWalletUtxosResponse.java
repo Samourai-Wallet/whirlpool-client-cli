@@ -1,5 +1,6 @@
-package com.samourai.whirlpool.cli.api.protocol;
+package com.samourai.whirlpool.cli.api.protocol.rest;
 
+import com.samourai.whirlpool.cli.api.protocol.beans.ApiWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 
 public class ApiWalletUtxosResponse {

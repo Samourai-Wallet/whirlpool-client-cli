@@ -1,5 +1,6 @@
-package com.samourai.whirlpool.cli.api.protocol;
+package com.samourai.whirlpool.cli.api.protocol.rest;
 
+import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxo;
 import com.samourai.whirlpool.client.wallet.beans.MixOrchestratorState;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoPriorityComparator;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolWalletState;

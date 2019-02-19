@@ -1,8 +1,8 @@
-package com.samourai.whirlpool.cli.api.rest.wallet;
+package com.samourai.whirlpool.cli.api.controllers.wallet;
 
-import com.samourai.whirlpool.cli.api.protocol.ApiWalletUtxosResponse;
+import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
-import com.samourai.whirlpool.cli.api.rest.AbstractRestController;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiWalletUtxosResponse;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.cli.api.protocol;
+package com.samourai.whirlpool.cli.api.protocol.rest;
 
 public class ApiDepositResponse {
   private String depositAddress;

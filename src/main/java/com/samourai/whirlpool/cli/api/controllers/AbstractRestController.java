@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.cli.api.rest;
+package com.samourai.whirlpool.cli.api.controllers;
 
 import com.samourai.whirlpool.cli.api.protocol.CliApi;
 import com.samourai.whirlpool.client.exception.NotifiableException;

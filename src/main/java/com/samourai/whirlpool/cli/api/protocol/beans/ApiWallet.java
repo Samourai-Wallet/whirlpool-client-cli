@@ -1,4 +1,4 @@
-package com.samourai.whirlpool.cli.api.protocol;
+package com.samourai.whirlpool.cli.api.protocol.beans;
 
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoPriorityComparator;

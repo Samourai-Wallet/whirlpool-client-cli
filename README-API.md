@@ -32,6 +32,50 @@ Parameters:
 }
 ```
 
+## Tx0
+
+### Pools: ```GET /rest/tx0/pools?value=[utxoValueSats]```
+Parameters:
+* value: value (in satoshis) of utxo to spend for tx0.
+```
+{
+    "pools":[
+        {
+            "poolId":"0.1btc",
+            "denomination":10000000,
+            "minerFeeMin":102,
+            "minerFeeMax":10000,
+            "minAnonymitySet":5,
+            "nbRegistered":0,
+            "mixAnonymitySet":5,
+            "mixStatus":"CONFIRM_INPUT",
+            "elapsedTime":22850502,
+            "mixNbConfirmed":0
+        }
+    ]
+}
+```
+
+### Tx0 ```POST /rest/tx0/create```
+Parameters:
+```
+{
+    hash: "1758d42d5e0623dde9d4cbfacb89e4f914b97490889ec8b69a551caf5347face",
+    index: 2,
+    poolId: "0.01btc",
+    mixsTarget: 0
+}
+```
+* hash, index: utxo to spend for tx0
+* poolId: id of pool to join
+* mixsTarget: mixs limit (0 for unlimited)
+
+```
+{
+    "txid":"aa079c0323349f4abf3fb793bf2ed1ce1e11c53cd22aeced3554872033bfa722"
+}
+```
+
 ## Mix
 
 ### Mix state: ```GET /rest/mix```
