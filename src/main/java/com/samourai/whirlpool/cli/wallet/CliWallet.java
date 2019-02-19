@@ -100,8 +100,7 @@ public class CliWallet extends WhirlpoolWallet {
     }
 
     // auto aggregate postmix
-    log.info(
-        " o AutoAggregatePostmix: depositWallet wallet is empty => aggregating");
+    log.info(" o AutoAggregatePostmix: depositWallet wallet is empty => aggregating");
     boolean aggregateSuccess = walletAggregateService.consolidateTestnet(this);
     if (aggregateSuccess) {
       clearCache();
