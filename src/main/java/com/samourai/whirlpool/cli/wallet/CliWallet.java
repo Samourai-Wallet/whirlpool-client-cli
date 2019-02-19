@@ -94,24 +94,25 @@ public class CliWallet extends WhirlpoolWallet {
     boolean wasStarted = isStarted();
     if (wasStarted) {
       if (log.isDebugEnabled()) {
-        log.debug("Stopping wallet for autoRefill.");
+        log.debug("Stopping wallet for auto-aggregate-postmix.");
       }
       stop();
     }
 
     // auto aggregate postmix
-    log.info(" • depositWallet wallet is empty. Aggregating postmix to refill it...");
+    log.info(
+        " o AutoAggregatePostmix: depositWallet wallet is empty => aggregating");
     boolean aggregateSuccess = walletAggregateService.consolidateTestnet(this);
-
-    if (wasStarted) {
-      if (log.isDebugEnabled()) {
-        log.debug("Restarting wallet after autoRefill.");
-      }
-      start();
-    }
-
     if (aggregateSuccess) {
       clearCache();
+
+      // resume wallet
+      if (wasStarted) {
+        if (log.isDebugEnabled()) {
+          log.debug("Restarting wallet after auto-aggregate-postmix.");
+        }
+        start();
+      }
     } else {
       CliUtils.waitUserAction(message);
     }
