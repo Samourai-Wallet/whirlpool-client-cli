@@ -5,24 +5,6 @@ Default port: 8899
 
 ## Wallet
 
-### Utxos: ```GET /rest/wallet/utxos```
-```
-{
-    deposit: {
-        utxos: [],
-        balance: 0
-    },
-    premix: {
-        utxos: [],
-        balance: 0
-    },
-    postmix: {
-        utxos: [],
-        balance: 0
-    }
-}
-```
-
 ### Deposit: ```GET /rest/wallet/deposit[?increment=false]```
 Parameters:
 * Use increment=true make sure this address won't be reused.
@@ -32,51 +14,7 @@ Parameters:
 }
 ```
 
-## Tx0
-
-### Pools: ```GET /rest/tx0/pools?value=[utxoValueSats]```
-Parameters:
-* value: value (in satoshis) of utxo to spend for tx0.
-```
-{
-    "pools":[
-        {
-            "poolId":"0.1btc",
-            "denomination":10000000,
-            "minerFeeMin":102,
-            "minerFeeMax":10000,
-            "minAnonymitySet":5,
-            "nbRegistered":0,
-            "mixAnonymitySet":5,
-            "mixStatus":"CONFIRM_INPUT",
-            "elapsedTime":22850502,
-            "mixNbConfirmed":0
-        }
-    ]
-}
-```
-
-### Tx0 ```POST /rest/tx0/create```
-Parameters:
-```
-{
-    hash: "1758d42d5e0623dde9d4cbfacb89e4f914b97490889ec8b69a551caf5347face",
-    index: 2,
-    poolId: "0.01btc",
-    mixsTarget: 0
-}
-```
-* hash, index: utxo to spend for tx0
-* poolId: id of pool to join
-* mixsTarget: mixs limit (0 for unlimited)
-
-```
-{
-    "txid":"aa079c0323349f4abf3fb793bf2ed1ce1e11c53cd22aeced3554872033bfa722"
-}
-```
-
-## Mix
+## Global controls
 
 ### Mix state: ```GET /rest/mix```
 ```
@@ -111,3 +49,73 @@ Parameters:
 ### Start mixing: ```POST /rest/mix/start```
 
 ### Stop mixing: ```POST /rest/mix/stop```
+
+## UTXO controls
+
+### List utxos: ```GET /rest/utxos```
+```
+{
+    deposit: {
+        utxos: [],
+        balance: 0
+    },
+    premix: {
+        utxos: [],
+        balance: 0
+    },
+    postmix: {
+        utxos: [],
+        balance: 0
+    }
+}
+```
+
+### Eligible pools for tx0: ```GET /rest/utxos/{hash}:{index}/pools```
+Parameters:
+* hash,index: utxo to spend for tx0.
+```
+{
+    "pools":[
+        {
+            "poolId":"0.1btc",
+            "denomination":10000000,
+            "minerFeeMin":102,
+            "minerFeeMax":10000,
+            "minAnonymitySet":5,
+            "nbRegistered":0,
+            "mixAnonymitySet":5,
+            "mixStatus":"CONFIRM_INPUT",
+            "elapsedTime":22850502,
+            "mixNbConfirmed":0
+        }
+    ]
+}
+```
+
+### Tx0 ```POST /rest/utxos/{hash}:{index}/tx0```
+Parameters:
+```
+{
+    hash: "1758d42d5e0623dde9d4cbfacb89e4f914b97490889ec8b69a551caf5347face",
+    index: 2,
+    poolId: "0.01btc",
+    mixsTarget: 0
+}
+```
+* hash, index: utxo to spend for tx0
+* poolId: id of pool to join
+* mixsTarget: mixs limit (0 for unlimited)
+
+```
+{
+    "txid":"aa079c0323349f4abf3fb793bf2ed1ce1e11c53cd22aeced3554872033bfa722"
+}
+```
+
+### Start mixing UTXO: ```POST /rest/utxos/{hash}:{index}/startMix```
+Parameters:
+* hash,index: utxo to mix.
+
+### Stop mixing UTXO: ```POST /rest/utxos/{hash}:{index}/stopMix```
+Parameters:
+* hash,index: utxo to stop mixing.
