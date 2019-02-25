@@ -110,6 +110,11 @@ public class Application implements ApplicationRunner {
       cliWalletService.openWallet(appArgs.getSeedWords(), appArgs.getSeedPassphrase());
       whirlpoolWallet = cliWalletService.getSessionWallet();
 
+      // check whirlpool connectivity
+      if (!cliWalletService.testConnectivity()) {
+        throw new NotifiableException("Unable to connect to Whirlpool server");
+      }
+
       // check upgrade wallet
       checkUpgradeWallet();
 
@@ -139,7 +144,7 @@ public class Application implements ApplicationRunner {
         keepRunning();
       }
     } catch (NotifiableException e) {
-      log.error(e.getMessage());
+      log.error("*** ERROR *** " + e.getMessage());
     } catch (IllegalArgumentException e) {
       log.info("Invalid arguments: " + e.getMessage());
     } catch (Exception e) {
