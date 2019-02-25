@@ -38,12 +38,12 @@ public class RunMixUtxo {
       throws Exception {
 
     // pools
-    Collection<Pool> poolsByPriority =
-        cliWalletService.getSessionWallet().findPoolsByPriorityForPremix(utxoBalance);
-    if (poolsByPriority.isEmpty()) {
+    Collection<Pool> poolsByPreference =
+        cliWalletService.getSessionWallet().findPoolsByPreferenceForPremix(utxoBalance);
+    if (poolsByPreference.isEmpty()) {
       throw new NotifiableException("No pool for this utxo balance: " + utxoBalance);
     }
-    Pool pool = poolsByPriority.iterator().next();
+    Pool pool = poolsByPreference.iterator().next();
 
     // utxo key
     DumpedPrivateKey dumpedPrivateKey = new DumpedPrivateKey(params, utxoKey);

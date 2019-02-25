@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DepositController extends AbstractRestController {
   @Autowired private CliWalletService cliWalletService;
 
-  @RequestMapping(value = CliApiEndpoint.REST_WALLET_DEPOSIT)
+  @RequestMapping(value = CliApiEndpoint.REST_WALLET_DEPOSIT, method = RequestMethod.GET)
   public ApiDepositResponse wallet(
       @RequestParam(value = "increment", defaultValue = "false") boolean increment,
       @RequestHeader HttpHeaders headers)

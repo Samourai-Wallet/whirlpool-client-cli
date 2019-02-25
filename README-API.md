@@ -1,20 +1,41 @@
 # whirlpool-client-cli API
 
-whirlpool-client-cli exposes a REST API when started with --listen[=port].
-Default port: 8899
+whirlpool-client-cli exposes a REST API when started with --listen[=8899].
+
+
+### List pools: ```GET /rest/pools```
+```
+{
+    "pools":[
+        {
+            "poolId":"0.1btc",
+            "denomination":10000000,
+            "mustMixBalanceMin":10000102,
+            "mustMixBalanceMax":10010000,
+            "minAnonymitySet":5,
+            "nbRegistered":0,
+            "mixAnonymitySet":5,
+            "mixStatus":"CONFIRM_INPUT",
+            "elapsedTime":22850502,
+            "nbConfirmed":0,
+            "tx0BalanceMin":10020005
+        }
+    ]
+}
+```
 
 ## Wallet
 
 ### Deposit: ```GET /rest/wallet/deposit[?increment=false]```
 Parameters:
-* Use increment=true make sure this address won't be reused.
+* (optional) Use increment=true make sure this address won't be reused.
 ```
 {
     depositAddress: "tb1qjxzp9z2ax8mg9820dvwasy2qtle4v2q6s0cant"
 }
 ```
 
-## Global controls
+## Global mix control
 
 ### Mix state: ```GET /rest/mix```
 ```
@@ -67,28 +88,6 @@ Parameters:
         utxos: [],
         balance: 0
     }
-}
-```
-
-### Eligible pools for tx0: ```GET /rest/utxos/{hash}:{index}/pools```
-Parameters:
-* hash,index: utxo to spend for tx0.
-```
-{
-    "pools":[
-        {
-            "poolId":"0.1btc",
-            "denomination":10000000,
-            "minerFeeMin":102,
-            "minerFeeMax":10000,
-            "minAnonymitySet":5,
-            "nbRegistered":0,
-            "mixAnonymitySet":5,
-            "mixStatus":"CONFIRM_INPUT",
-            "elapsedTime":22850502,
-            "mixNbConfirmed":0
-        }
-    ]
 }
 ```
 

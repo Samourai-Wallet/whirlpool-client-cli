@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MixController extends AbstractRestController {
   @Autowired private CliWalletService cliWalletService;
 
-  @RequestMapping(value = CliApiEndpoint.REST_MIX)
+  @RequestMapping(value = CliApiEndpoint.REST_MIX, method = RequestMethod.GET)
   public ApiWalletStateResponse wallet(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
     WhirlpoolWalletState whirlpoolWalletState = cliWalletService.getSessionWallet().getState();

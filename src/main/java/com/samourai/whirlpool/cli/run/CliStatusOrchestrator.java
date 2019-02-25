@@ -33,7 +33,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
     // log CLI status
     try {
       WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-      String poolsByPriorityStr = getPoolsByPriorityStr(whirlpoolWallet);
+      String poolsByPreferenceStr = getPoolsByPreferenceStr(whirlpoolWallet);
 
       log.info("---------------------------------------------------------------------");
       log.info(
@@ -45,8 +45,8 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + cliConfig.getMix().isAutoMix()
               + ", autoAggregatePostmix="
               + cliConfig.getMix().isAutoAggregatePostmix()
-              + ", poolsByPriority="
-              + poolsByPriorityStr);
+              + ", poolsByPreference="
+              + poolsByPreferenceStr);
       WhirlpoolWalletState whirlpoolWalletState = whirlpoolWallet.getState();
       MixOrchestratorState mixState = whirlpoolWalletState.getMixState();
       log.info(
@@ -70,10 +70,10 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
     }
   }
 
-  private String getPoolsByPriorityStr(WhirlpoolWallet whirlpoolWallet) throws Exception {
-    Collection<Pool> poolsByPriority = whirlpoolWallet.getPoolsByPriority();
+  private String getPoolsByPreferenceStr(WhirlpoolWallet whirlpoolWallet) throws Exception {
+    Collection<Pool> poolsByPreference = whirlpoolWallet.getPoolsByPreference();
     List<String> poolIdsByPriority = new LinkedList<>();
-    for (Pool pool : poolsByPriority) {
+    for (Pool pool : poolsByPreference) {
       poolIdsByPriority.add(pool.getPoolId());
     }
     if (poolIdsByPriority.isEmpty()) {

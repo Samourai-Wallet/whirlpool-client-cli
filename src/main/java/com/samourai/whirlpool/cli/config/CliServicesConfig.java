@@ -69,10 +69,7 @@ public class CliServicesConfig {
 
   @Bean
   Tx0Service tx0Service(CliConfig cliConfig) {
-    return new Tx0Service(
-        cliConfig.getServer().getParams(),
-        cliConfig.getServer().getFeeXpub(),
-        cliConfig.getServer().getFeeValue());
+    return new Tx0Service(cliConfig.getServer().getParams(), cliConfig.getServer().getFeeXpub());
   }
 
   @Bean

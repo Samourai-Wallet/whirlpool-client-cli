@@ -169,9 +169,7 @@ public class CliConfig {
             + ", ssl="
             + Boolean.toString(server.isSsl())
             + ", feeXpub="
-            + xpubMasked
-            + ", feeValue="
-            + server.getFeeValue());
+            + xpubMasked);
     configInfo.put("pushtx", pushtx);
     configInfo.put("tor", Boolean.toString(tor));
     String poolIdsByPriorityStr = "null";

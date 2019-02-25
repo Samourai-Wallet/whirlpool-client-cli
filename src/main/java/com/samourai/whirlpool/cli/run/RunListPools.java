@@ -32,7 +32,7 @@ public class RunListPools {
             "USERS",
             "ELAPSED TIME",
             "ANONYMITY SET",
-            "MINER FEE"));
+            "MUSTMIX BALANCE"));
     sb.append(
         String.format(
             lineFormat,
@@ -50,10 +50,10 @@ public class RunListPools {
               pool.getPoolId(),
               ClientUtils.satToBtc(pool.getDenomination()),
               pool.getMixStatus(),
-              pool.getMixNbConfirmed() + " / " + pool.getNbRegistered(),
+              pool.getNbConfirmed() + " / " + pool.getNbRegistered(),
               pool.getElapsedTime() / 1000 + "s",
               pool.getMixAnonymitySet() + " / " + pool.getMinAnonymitySet(),
-              pool.getMinerFeeMin() + " - " + pool.getMinerFeeMax()));
+              pool.getMustMixBalanceMin() + " - " + pool.getMustMixBalanceMax()));
     }
     log.info("\n" + sb.toString());
   }
