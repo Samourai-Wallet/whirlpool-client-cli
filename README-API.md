@@ -10,6 +10,7 @@ whirlpool-client-cli exposes a REST API when started with --listen[=8899].
         {
             "poolId":"0.1btc",
             "denomination":10000000,
+            "feeValue":5000000,
             "mustMixBalanceMin":10000102,
             "mustMixBalanceMax":10010000,
             "minAnonymitySet":5,

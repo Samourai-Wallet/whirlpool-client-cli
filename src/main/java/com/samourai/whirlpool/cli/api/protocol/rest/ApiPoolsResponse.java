@@ -9,13 +9,13 @@ import java.util.stream.Collectors;
 public class ApiPoolsResponse {
   private Collection<ApiPool> pools;
 
-  public ApiPoolsResponse(
-      Collection<Pool> pools, long feeValue, int feeSatPerByte, Tx0Service tx0Service) {
+  public ApiPoolsResponse(Collection<Pool> pools, int feeSatPerByte, Tx0Service tx0Service) {
     this.pools =
         pools
             .stream()
             .map(
                 pool -> {
+                  long feeValue = pool.getFeeValue();
                   long tx0BalanceMin =
                       tx0Service.computeSpendFromBalanceMin(pool, feeValue, feeSatPerByte, 1);
                   return new ApiPool(pool, tx0BalanceMin);

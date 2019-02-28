@@ -6,6 +6,7 @@ import com.samourai.whirlpool.protocol.websocket.notifications.MixStatus;
 public class ApiPool {
   private String poolId;
   private long denomination;
+  private long feeValue;
   private long mustMixBalanceMin;
   private long mustMixBalanceMax;
   private int minAnonymitySet;
@@ -21,6 +22,7 @@ public class ApiPool {
   public ApiPool(Pool pool, long tx0BalanceMin) {
     this.poolId = pool.getPoolId();
     this.denomination = pool.getDenomination();
+    this.feeValue = pool.getFeeValue();
     this.mustMixBalanceMin = pool.getMustMixBalanceMin();
     this.mustMixBalanceMax = pool.getMustMixBalanceMax();
     this.minAnonymitySet = pool.getMinAnonymitySet();
@@ -38,6 +40,10 @@ public class ApiPool {
 
   public long getDenomination() {
     return denomination;
+  }
+
+  public long getFeeValue() {
+    return feeValue;
   }
 
   public long getMustMixBalanceMin() {
