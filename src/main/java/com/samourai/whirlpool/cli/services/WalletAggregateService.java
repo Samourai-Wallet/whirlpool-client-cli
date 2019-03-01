@@ -95,7 +95,7 @@ public class WalletAggregateService {
         txAggregate(sourceWallet, subsetUtxos, toAddress);
         success = true;
 
-        samouraiApi.refreshUtxos();
+        ClientUtils.sleepRefreshUtxos(cliConfig.getServer().getParams());
       }
       round++;
     }
