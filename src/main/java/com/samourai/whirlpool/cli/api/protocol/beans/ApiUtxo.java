@@ -42,7 +42,7 @@ public class ApiUtxo {
             : null;
     this.priority = whirlpoolUtxo.getUtxoConfig().getPriority();
     this.mixsTarget = whirlpoolUtxo.getUtxoConfig().getMixsTarget();
-    this.mixsDone = whirlpoolUtxo.getMixsDone();
+    this.mixsDone = whirlpoolUtxo.getUtxoConfig().getMixsDone();
     this.message = whirlpoolUtxo.getMessage();
     this.error = whirlpoolUtxo.getError();
     this.lastActivityElapsed =

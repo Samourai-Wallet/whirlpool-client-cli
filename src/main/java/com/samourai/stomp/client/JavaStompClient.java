@@ -1,6 +1,5 @@
 package com.samourai.stomp.client;
 
-import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import java.util.Map;
 import javax.websocket.MessageHandler;
@@ -17,7 +16,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 public class JavaStompClient implements IStompClient {
-  private static final Logger log = LoggerFactory.getLogger(Application.class);
+  private static final Logger log = LoggerFactory.getLogger(JavaStompClient.class);
 
   private WebSocketStompClient stompClient;
   private StompSession stompSession;
@@ -55,6 +54,7 @@ public class JavaStompClient implements IStompClient {
 
       this.stompSessionId = stompSession.getSessionId();
     } catch (Exception e) {
+      // connexion failed
       disconnect();
       onDisconnect.onMessage(e);
     }
@@ -128,11 +128,13 @@ public class JavaStompClient implements IStompClient {
       @Override
       public void handleTransportError(StompSession session, Throwable exception) {
         super.handleTransportError(session, exception);
+        log.error(
+            " ! transportError: " + exception.getClass().getName() + ": " + exception.getMessage());
+
         if (exception instanceof ConnectionLostException) {
           disconnect();
           onDisconnect.onMessage(exception);
         } else {
-          log.error(" ! transportError : " + exception.getMessage());
           if (log.isDebugEnabled()) {
             log.error("", exception);
           }
