@@ -2,15 +2,14 @@ package com.samourai.whirlpool.cli.api.controllers.utxo;
 
 import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
-import com.samourai.whirlpool.cli.api.protocol.rest.ApiTx0CreateRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiTx0CreateResponse;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiUtxoConfigureRequest;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
-import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,12 +33,12 @@ public class UtxoController extends AbstractRestController {
     return whirlpoolUtxo;
   }
 
-  @RequestMapping(value = CliApiEndpoint.REST_UTXO_TX0, method = RequestMethod.POST)
-  public ApiTx0CreateResponse tx0(
+  @RequestMapping(value = CliApiEndpoint.REST_UTXO_CONFIGURE, method = RequestMethod.POST)
+  public WhirlpoolUtxo configureUtxo(
       @RequestHeader HttpHeaders headers,
       @PathVariable("hash") String utxoHash,
       @PathVariable("index") int utxoIndex,
-      @RequestBody ApiTx0CreateRequest payload)
+      @RequestBody ApiUtxoConfigureRequest payload)
       throws Exception {
     checkHeaders(headers);
 
@@ -47,14 +46,28 @@ public class UtxoController extends AbstractRestController {
     WhirlpoolUtxo whirlpoolUtxo = findUtxo(utxoHash, utxoIndex);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
 
-    // find pool
-    Pool pool = whirlpoolWallet.findPoolById(payload.poolId);
-    if (pool == null) {
-      throw new NotifiableException("Pool not found: " + payload.poolId);
-    }
+    // configure pool
+    whirlpoolWallet.setPool(whirlpoolUtxo, payload.poolId);
+
+    // configure mixsTarget
+    whirlpoolWallet.setMixsTarget(whirlpoolUtxo, payload.mixsTarget);
+    return whirlpoolUtxo;
+  }
+
+  @RequestMapping(value = CliApiEndpoint.REST_UTXO_TX0, method = RequestMethod.POST)
+  public ApiTx0CreateResponse tx0(
+      @RequestHeader HttpHeaders headers,
+      @PathVariable("hash") String utxoHash,
+      @PathVariable("index") int utxoIndex)
+      throws Exception {
+    checkHeaders(headers);
+
+    // find utxo
+    WhirlpoolUtxo whirlpoolUtxo = findUtxo(utxoHash, utxoIndex);
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
 
     // tx0
-    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxo, pool);
+    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxo);
     return new ApiTx0CreateResponse(tx0.getTx().getHashAsString() /*payload.mixsTarget*/);
   }
 

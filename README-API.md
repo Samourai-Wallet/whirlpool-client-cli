@@ -78,33 +78,40 @@ Parameters:
 ```
 {
     deposit: {
-        utxos: [],
+        utxos: [(utxos detail)],
         balance: 0
     },
     premix: {
-        utxos: [],
+        utxos: [(utxos detail)],
         balance: 0
     },
     postmix: {
-        utxos: [],
+        utxos: [(utxos detail)],
         balance: 0
     }
 }
 ```
 
-### Tx0 ```POST /rest/utxos/{hash}:{index}/tx0```
+### Configure utxo: ```POST /rest/utxos/{hash}:{index}```
 Parameters:
 ```
 {
-    hash: "1758d42d5e0623dde9d4cbfacb89e4f914b97490889ec8b69a551caf5347face",
-    index: 2,
     poolId: "0.01btc",
     mixsTarget: 0
 }
 ```
-* hash, index: utxo to spend for tx0
 * poolId: id of pool to join
 * mixsTarget: mixs limit (0 for unlimited)
+
+```
+{
+    (utxo detail)
+}
+```
+
+### Tx0 ```POST /rest/utxos/{hash}:{index}/tx0```
+Parameters:
+* hash, index: utxo to spend for tx0
 
 ```
 {
