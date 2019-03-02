@@ -1,6 +1,9 @@
 # whirlpool-client-cli API
 
 whirlpool-client-cli exposes a REST API when started with --listen[=8899].
+Required headers:
+* API_VERSION
+* API_KEY
 
 
 ### List pools: ```GET /rest/pools```

@@ -23,6 +23,7 @@ public class CliConfig {
   private String scode;
   @NotEmpty private String pushtx;
   @NotEmpty private boolean tor;
+  @NotEmpty private String apiKey;
   @NotEmpty private MixConfig mix;
 
   private static final String PUSHTX_AUTO = "auto";
@@ -70,6 +71,14 @@ public class CliConfig {
 
   public void setTor(boolean tor) {
     this.tor = tor;
+  }
+
+  public String getApiKey() {
+    return apiKey;
+  }
+
+  public void setApiKey(String apiKey) {
+    this.apiKey = apiKey;
   }
 
   public MixConfig getMix() {
@@ -172,6 +181,7 @@ public class CliConfig {
             + xpubMasked);
     configInfo.put("pushtx", pushtx);
     configInfo.put("tor", Boolean.toString(tor));
+    configInfo.put("apiKey", apiKey != null ? apiKey : "null");
     String poolIdsByPriorityStr = "null";
     if (mix.getPoolIdsByPriority() != null && !mix.getPoolIdsByPriority().isEmpty()) {
       poolIdsByPriorityStr = Strings.join(mix.getPoolIdsByPriority(), ',');

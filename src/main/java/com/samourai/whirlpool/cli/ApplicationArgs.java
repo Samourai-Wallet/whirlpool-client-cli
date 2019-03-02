@@ -45,6 +45,7 @@ public class ApplicationArgs {
   private static final String ARG_PUSHTX = "pushtx";
   private static final String ARG_TOR = "tor";
   private static final String ARG_LISTEN = "listen";
+  private static final String ARG_API_KEY = "api-key";
   private static final String UTXO_SEPARATOR = "-";
 
   private ApplicationArguments args;
@@ -116,6 +117,11 @@ public class ApplicationArgs {
     valueInt = optionalInt(ARG_TX0_MAX_OUTPUTS);
     if (valueInt != null) {
       cliConfig.getMix().setTx0MaxOutputs(valueInt);
+    }
+
+    value = optionalOption(ARG_API_KEY);
+    if (value != null) {
+      cliConfig.setApiKey(value);
     }
   }
 
