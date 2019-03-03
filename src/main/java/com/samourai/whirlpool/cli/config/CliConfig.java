@@ -24,6 +24,7 @@ public class CliConfig {
   @NotEmpty private String pushtx;
   @NotEmpty private boolean tor;
   @NotEmpty private String apiKey;
+  @NotEmpty private String seed;
   @NotEmpty private MixConfig mix;
 
   private static final String PUSHTX_AUTO = "auto";
@@ -79,6 +80,14 @@ public class CliConfig {
 
   public void setApiKey(String apiKey) {
     this.apiKey = apiKey;
+  }
+
+  public String getSeed() {
+    return seed;
+  }
+
+  public void setSeed(String seed) {
+    this.seed = seed;
   }
 
   public MixConfig getMix() {
@@ -164,11 +173,16 @@ public class CliConfig {
     }
   }
 
+  private String mask(String value, int start, int end) {
+    return value.substring(0, start)
+        + "..."
+        + value.substring(value.length() - end, value.length());
+  }
+
   public Map<String, String> getConfigInfo() {
     Map<String, String> configInfo = new LinkedHashMap<>();
     String xpub = server.getFeeXpub();
-    String xpubMasked =
-        xpub.substring(0, 6) + "..." + xpub.substring(xpub.length() - 4, xpub.length());
+    String xpubMasked = mask(xpub, 6, 4);
     configInfo.put(
         "server",
         "url="
@@ -181,7 +195,8 @@ public class CliConfig {
             + xpubMasked);
     configInfo.put("pushtx", pushtx);
     configInfo.put("tor", Boolean.toString(tor));
-    configInfo.put("apiKey", apiKey != null ? apiKey : "null");
+    configInfo.put("apiKey", !Strings.isEmpty(apiKey) ? mask(apiKey, 3, 3) : "null");
+    configInfo.put("seed", !Strings.isEmpty(seed) ? mask(seed, 3, 3) : "null");
     String poolIdsByPriorityStr = "null";
     if (mix.getPoolIdsByPriority() != null && !mix.getPoolIdsByPriority().isEmpty()) {
       poolIdsByPriorityStr = Strings.join(mix.getPoolIdsByPriority(), ',');

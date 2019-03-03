@@ -7,6 +7,7 @@ import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunUpgradeCli;
+import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.client.WhirlpoolClient;
@@ -48,6 +49,7 @@ public class Application implements ApplicationRunner {
 
   @Autowired private ApplicationArgs appArgs;
   @Autowired private CliConfig cliConfig;
+  @Autowired private CliConfigService cliConfigService;
   @Autowired private CliWalletService cliWalletService;
   @Autowired private PushTxService pushTxService;
   @Autowired private JavaStompClient stompClient;
@@ -106,42 +108,55 @@ public class Application implements ApplicationRunner {
         throw new NotifiableException("Unable to connect to pushTxService");
       }
 
-      // init wallet
-      cliWalletService.openWallet(appArgs.getSeedWords(), appArgs.getSeedPassphrase());
-      whirlpoolWallet = cliWalletService.getSessionWallet();
+      // check cli initialized
+      if (cliConfigService.isCliStatusReady()) {
 
-      // check whirlpool connectivity
-      if (!cliWalletService.testConnectivity()) {
-        throw new NotifiableException("Unable to connect to Whirlpool server");
-      }
+        // init wallet
+        whirlpoolWallet =
+            cliWalletService.openWallet(appArgs.getSeedWords(), appArgs.getSeedPassphrase());
 
-      // check upgrade wallet
-      checkUpgradeWallet();
-
-      if (RunCliCommand.hasCommandToRun(appArgs)) {
-        // WhirlpoolClient instanciation
-        WhirlpoolClientConfig whirlpoolClientConfig = cliConfig.computeWhirlpoolWalletConfig();
-        WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(whirlpoolClientConfig);
-
-        // execute specific command
-        new RunCliCommand(
-                appArgs,
-                whirlpoolClient,
-                whirlpoolClientConfig,
-                cliWalletService,
-                bech32Util,
-                walletAggregateService)
-            .run();
-      } else {
-        // start wallet
-        whirlpoolWallet.start();
-
-        if (appArgs.isAutoTx0()) {
-          // automatically tx0 when premix is empty
+        // check whirlpool connectivity
+        if (!cliWalletService.testConnectivity()) {
+          throw new NotifiableException("Unable to connect to Whirlpool server");
         }
 
-        // keep cli running
-        keepRunning();
+        // check upgrade wallet
+        checkUpgradeWallet();
+
+        if (RunCliCommand.hasCommandToRun(appArgs)) {
+          // WhirlpoolClient instanciation
+          WhirlpoolClientConfig whirlpoolClientConfig = cliConfig.computeWhirlpoolWalletConfig();
+          WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(whirlpoolClientConfig);
+
+          // execute specific command
+          new RunCliCommand(
+                  appArgs,
+                  whirlpoolClient,
+                  whirlpoolClientConfig,
+                  cliWalletService,
+                  bech32Util,
+                  walletAggregateService)
+              .run();
+        } else {
+          // start wallet
+          whirlpoolWallet.start();
+
+          // keep cli running
+          keepRunning();
+        }
+      } else {
+        // cli not initialized
+        log.warn("*** CLI config not initialized yet ***");
+        if (log.isDebugEnabled()) {
+          log.debug("CliStatus=" + cliConfigService.getCliStatus());
+        }
+
+        if (listenPort != null) {
+          log.info("Listening for remote initialization...");
+
+          // keep cli running for remote initialization
+          keepRunning();
+        }
       }
     } catch (NotifiableException e) {
       log.error("*** ERROR *** " + e.getMessage());

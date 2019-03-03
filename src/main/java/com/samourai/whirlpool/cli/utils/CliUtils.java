@@ -3,12 +3,17 @@ package com.samourai.whirlpool.cli.utils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.io.Console;
 import java.lang.invoke.MethodHandles;
+import java.util.UUID;
 import org.bitcoinj.core.Sha256Hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CliUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  public static String generateUniqueString() {
+    return UUID.randomUUID().toString().replace("-", "");
+  }
 
   public static void waitUserAction(String message) throws NotifiableException {
     Console console = System.console();

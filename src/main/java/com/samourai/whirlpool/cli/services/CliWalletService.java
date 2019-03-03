@@ -4,6 +4,7 @@ import com.samourai.wallet.client.indexHandler.FileIndexHandler;
 import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
+import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -32,6 +33,7 @@ public class CliWalletService extends WhirlpoolWalletService {
   private static final String INDEX_FEE = "fee";
 
   private CliConfig cliConfig;
+  private CliConfigService cliConfigService;
   private FileIndexHandler fileIndexHandler;
   private HD_WalletFactoryJava hdWalletFactory;
   private WalletAggregateService walletAggregateService;
@@ -41,15 +43,23 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   public CliWalletService(
       CliConfig cliConfig,
+      CliConfigService cliConfigService,
       HD_WalletFactoryJava hdWalletFactory,
       WalletAggregateService walletAggregateService) {
     super(cliConfig.computeWhirlpoolWalletConfig());
     this.cliConfig = cliConfig;
+    this.cliConfigService = cliConfigService;
     this.hdWalletFactory = hdWalletFactory;
     this.walletAggregateService = walletAggregateService;
   }
 
   public WhirlpoolWallet openWallet(String seedWords, String seedPassphrase) throws Exception {
+    // require CliStatus.READY
+    if (!CliStatus.READY.equals(cliConfigService.getCliStatus())) {
+      throw new NotifiableException(
+          "Cannot start wallet: cliStatus=" + cliConfigService.getCliStatus());
+    }
+
     NetworkParameters params = cliConfig.getServer().getParams();
 
     // init fileIndexHandler

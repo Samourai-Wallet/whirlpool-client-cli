@@ -3,6 +3,9 @@ package com.samourai.whirlpool.cli.api.protocol;
 public class CliApiEndpoint {
   public static final String REST_PREFIX = "/rest/";
 
+  public static final String REST_CLI = REST_PREFIX + "cli";
+  public static final String REST_CLI_INIT = REST_PREFIX + "cli/init";
+
   public static final String REST_POOLS = REST_PREFIX + "pools";
 
   public static final String REST_WALLET_DEPOSIT = REST_PREFIX + "wallet/deposit";
@@ -19,6 +22,8 @@ public class CliApiEndpoint {
 
   public static final String[] REST_ENDPOINTS =
       new String[] {
+        REST_CLI,
+        REST_CLI_INIT,
         REST_POOLS,
         REST_WALLET_DEPOSIT,
         REST_MIX,
