@@ -28,7 +28,6 @@ public class ApplicationArgs {
   private static final String ARG_UTXO_KEY = "utxo-key";
   private static final String ARG_UTXO_BALANCE = "utxo-balance";
   private static final String ARG_SEED_PASSPHRASE = "seed-passphrase";
-  private static final String ARG_SEED_WORDS = "seed-words";
   private static final String ARG_SERVER = "server";
   private static final String ARG_MIXS = "mixs";
   private static final String ARG_LIST_POOLS = "list-pools";
@@ -46,6 +45,7 @@ public class ApplicationArgs {
   private static final String ARG_TOR = "tor";
   private static final String ARG_LISTEN = "listen";
   private static final String ARG_API_KEY = "api-key";
+  private static final String ARG_INIT = "init";
   private static final String UTXO_SEPARATOR = "-";
 
   private ApplicationArguments args;
@@ -192,21 +192,11 @@ public class ApplicationArgs {
     return utxoBalance;
   }
 
-  public String getSeedWords() throws NotifiableException {
-    String seedWords = optionalOption(ARG_SEED_WORDS);
-    if (seedWords == null) {
-      seedWords = CliUtils.readUserInput(ARG_SEED_WORDS, true);
-    }
-    Assert.notNull(seedWords, "seedWords are null");
-    return seedWords;
-  }
-
   public String getSeedPassphrase() throws NotifiableException {
     String seedPassphrase = optionalOption(ARG_SEED_PASSPHRASE);
-    if (seedPassphrase == null) {
+    if ("true".equals(seedPassphrase)) {
       seedPassphrase = CliUtils.readUserInput(ARG_SEED_PASSPHRASE, true);
     }
-    Assert.notNull(seedPassphrase, "seedPassphrase is null");
     return seedPassphrase;
   }
 
@@ -237,8 +227,8 @@ public class ApplicationArgs {
     return optionalOption(ARG_AGGREGATE_POSTMIX);
   }
 
-  public boolean isAutoTx0() {
-    return args.containsOption(ARG_AUTO_TX0);
+  public boolean isInit() {
+    return args.containsOption(ARG_INIT);
   }
 
   public static Integer getMainListen(String[] mainArgs) {

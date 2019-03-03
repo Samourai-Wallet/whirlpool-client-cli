@@ -92,6 +92,12 @@ java -jar target/whirlpool-client-version-run.jar --aggregate-postmix
 ```
 - aggregate-postmix: move funds back to premix-wallet. Or --aggregate-postmix=address to move funds to a specific address.
 
+### Configuration override
+Local configuration can be overriden with:
+```
+--api-key=
+```
+
 ### API
 whirlpool-client-cli can be managed with a REST API. See [README-API.md](README-API.md)
 

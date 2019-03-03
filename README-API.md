@@ -5,8 +5,10 @@ Required headers:
 * API_VERSION
 * API_KEY
 
+## Pools
 
 ### List pools: ```GET /rest/pools```
+Response:
 ```
 {
     "pools":[
@@ -33,6 +35,8 @@ Required headers:
 ### Deposit: ```GET /rest/wallet/deposit[?increment=false]```
 Parameters:
 * (optional) Use increment=true make sure this address won't be reused.
+
+Response:
 ```
 {
     depositAddress: "tb1qjxzp9z2ax8mg9820dvwasy2qtle4v2q6s0cant"
@@ -42,6 +46,7 @@ Parameters:
 ## Global mix control
 
 ### Mix state: ```GET /rest/mix```
+Response:
 ```
 {
 
@@ -78,6 +83,7 @@ Parameters:
 ## UTXO controls
 
 ### List utxos: ```GET /rest/utxos```
+Response:
 ```
 {
     deposit: {
@@ -97,15 +103,19 @@ Parameters:
 
 ### Configure utxo: ```POST /rest/utxos/{hash}:{index}```
 Parameters:
+* hash, index: utxo to configure
+
+Payload:
+* poolId: id of pool to join
+* mixsTarget: mixs limit (0 for unlimited)
 ```
 {
     poolId: "0.01btc",
     mixsTarget: 0
 }
 ```
-* poolId: id of pool to join
-* mixsTarget: mixs limit (0 for unlimited)
 
+Response:
 ```
 {
     (utxo detail)
@@ -116,6 +126,7 @@ Parameters:
 Parameters:
 * hash, index: utxo to spend for tx0
 
+Response:
 ```
 {
     "txid":"aa079c0323349f4abf3fb793bf2ed1ce1e11c53cd22aeced3554872033bfa722"
@@ -129,3 +140,57 @@ Parameters:
 ### Stop mixing UTXO: ```POST /rest/utxos/{hash}:{index}/stopMix```
 Parameters:
 * hash,index: utxo to stop mixing.
+
+
+## CLI
+
+### CLI state: ```GET /rest/cli```
+Response:
+```
+{
+    "cliStatus": "READY",
+    "loggedIn": true
+}
+```
+
+### login: ```POST /rest/cli/login```
+Payload:
+* seedPassphrase: passphrase of configured wallet
+```
+{
+    seedPassphrase: "..."
+}
+```
+
+Response:
+```
+{
+    "cliStatus": "READY",
+    "loggedIn": true
+}
+```
+
+### logout: ```POST /rest/cli/logout```
+Response:
+```
+{
+    "cliStatus": "READY",
+    "loggedIn": false
+}
+```
+
+### initialize: ```POST /rest/cli/init```
+Payload:
+* encryptedSeedWords: seed words of the wallet, encrypted with AES: base64(cyphertext) with cyphertext=
+```
+{
+    encryptedSeedWords: "..."
+}
+```
+
+Response:
+```
+{
+    apiKey: "..."
+}
+```

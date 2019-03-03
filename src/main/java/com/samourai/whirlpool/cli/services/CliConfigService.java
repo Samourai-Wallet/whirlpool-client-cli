@@ -44,7 +44,7 @@ public class CliConfigService {
     return CliStatus.READY.equals(cliStatus);
   }
 
-  public synchronized String initialize(String encryptedSeed) throws Exception {
+  public synchronized String initialize(String encryptedSeedWords) throws Exception {
     if (!CliStatus.NOT_INITIALIZED.equals(cliStatus)) {
       throw new NotifiableException("CLI is already initialized");
     }
@@ -55,12 +55,13 @@ public class CliConfigService {
     // save configuration file
     Map<String, String> entries = new HashMap<>();
     entries.put(KEY_APIKEY, apiKey);
-    entries.put(KEY_SEED, encryptedSeed);
+    entries.put(KEY_SEED, encryptedSeedWords);
     save(entries);
 
     // restart needed
     this.cliStatus = CliStatus.RESTART_NEEDED;
 
+    log.info("⣿ RESTART REQUIRED ⣿ Wallet inizialization success. Please restart CLI.");
     return apiKey;
   }
 

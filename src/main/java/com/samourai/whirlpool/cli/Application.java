@@ -2,11 +2,10 @@ package com.samourai.whirlpool.cli;
 
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.tor.client.JavaTorClient;
-import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
-import com.samourai.whirlpool.cli.run.RunUpgradeCli;
+import com.samourai.whirlpool.cli.run.RunCliInit;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
@@ -40,9 +39,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 @ServletComponentScan(value = "com.samourai.whirlpool.cli.config.filters")
 public class Application implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static final String INDEX_CLI_VERSION = "cliVersion";
-
-  private static final int CLI_VERSION = 3;
 
   private static Integer listenPort;
   private static ConfigurableApplicationContext applicationContext;
@@ -99,67 +95,9 @@ public class Application implements ApplicationRunner {
 
     WhirlpoolWallet whirlpoolWallet = null;
     try {
-      // initialize bitcoinj context
-      NetworkParameters params = cliConfig.getServer().getParams();
-      new Context(params);
-
-      // check pushTxService
-      if (!pushTxService.testConnectivity()) {
-        throw new NotifiableException("Unable to connect to pushTxService");
-      }
-
-      // check cli initialized
-      if (cliConfigService.isCliStatusReady()) {
-
-        // init wallet
-        whirlpoolWallet =
-            cliWalletService.openWallet(appArgs.getSeedWords(), appArgs.getSeedPassphrase());
-
-        // check whirlpool connectivity
-        if (!cliWalletService.testConnectivity()) {
-          throw new NotifiableException("Unable to connect to Whirlpool server");
-        }
-
-        // check upgrade wallet
-        checkUpgradeWallet();
-
-        if (RunCliCommand.hasCommandToRun(appArgs)) {
-          // WhirlpoolClient instanciation
-          WhirlpoolClientConfig whirlpoolClientConfig = cliConfig.computeWhirlpoolWalletConfig();
-          WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(whirlpoolClientConfig);
-
-          // execute specific command
-          new RunCliCommand(
-                  appArgs,
-                  whirlpoolClient,
-                  whirlpoolClientConfig,
-                  cliWalletService,
-                  bech32Util,
-                  walletAggregateService)
-              .run();
-        } else {
-          // start wallet
-          whirlpoolWallet.start();
-
-          // keep cli running
-          keepRunning();
-        }
-      } else {
-        // cli not initialized
-        log.warn("*** CLI config not initialized yet ***");
-        if (log.isDebugEnabled()) {
-          log.debug("CliStatus=" + cliConfigService.getCliStatus());
-        }
-
-        if (listenPort != null) {
-          log.info("Listening for remote initialization...");
-
-          // keep cli running for remote initialization
-          keepRunning();
-        }
-      }
+      runCli();
     } catch (NotifiableException e) {
-      log.error("*** ERROR *** " + e.getMessage());
+      log.error("⣿ ERROR ⣿ " + e.getMessage());
     } catch (IllegalArgumentException e) {
       log.info("Invalid arguments: " + e.getMessage());
     } catch (Exception e) {
@@ -180,6 +118,85 @@ public class Application implements ApplicationRunner {
     stompClient.disconnect();
   }
 
+  private void runCli() throws Exception {
+    // initialize bitcoinj context
+    NetworkParameters params = cliConfig.getServer().getParams();
+    new Context(params);
+
+    // check pushTxService
+    if (!pushTxService.testConnectivity()) {
+      throw new NotifiableException("Unable to connect to pushTxService");
+    }
+
+    // check whirlpool connectivity
+    if (!cliWalletService.testConnectivity()) {
+      throw new NotifiableException("Unable to connect to Whirlpool server");
+    }
+
+    // check cli initialized
+    if (!cliConfigService.isCliStatusReady()) {
+      // not initialized
+      if (log.isDebugEnabled()) {
+        log.debug("CliStatus=" + cliConfigService.getCliStatus());
+      }
+
+      if (appArgs.isInit()) {
+        // run interactive CLI initialization
+        new RunCliInit(appArgs, cliConfigService, cliWalletService).run();
+        return;
+      }
+
+      if (listenPort == null) {
+        // not initialized & not listening => exit
+        log.error(
+            "⣿ ERROR: INITIALIZATION REQUIRED ⣿ Please initialize with --init or run with --listen for remote initialization from GUI.");
+        return;
+      }
+
+      // keep cli running for remote initialization
+      log.warn("⣿ INITIALIZATION REQUIRED ⣿ CLI is listening for remote initialization...");
+      keepRunning();
+      return;
+    }
+
+    if (appArgs.getSeedPassphrase() == null) {
+      if (listenPort == null) {
+        // no passphrase & not listening => exit
+        log.error("⣿ ERROR: INCORRECT USAGE ⣿ Either launch with --seed-passphrase or --listen.");
+        return;
+      }
+      // no passphrase but listening => keep listening
+      log.info("⣿ LOGIN REQUIRED ⣿ CLI is listening for remote login to start mixing...");
+      keepRunning();
+      return;
+    }
+
+    // open wallet when passphrase providen through arguments
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.openWallet(appArgs.getSeedPassphrase());
+
+    if (RunCliCommand.hasCommandToRun(appArgs)) {
+      // WhirlpoolClient instanciation
+      WhirlpoolClientConfig whirlpoolClientConfig = cliConfig.computeWhirlpoolWalletConfig();
+      WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(whirlpoolClientConfig);
+
+      // execute specific command
+      new RunCliCommand(
+              appArgs,
+              whirlpoolClient,
+              whirlpoolClientConfig,
+              cliWalletService,
+              bech32Util,
+              walletAggregateService)
+          .run();
+    } else {
+      // start wallet
+      whirlpoolWallet.start();
+
+      // keep cli running
+      keepRunning();
+    }
+  }
+
   private void keepRunning() {
     while (true) {
       try {
@@ -189,28 +206,6 @@ public class Application implements ApplicationRunner {
       } catch (InterruptedException e) {
       }
     }
-  }
-
-  private void checkUpgradeWallet() throws Exception {
-    IIndexHandler cliVersionHandler =
-        cliWalletService.getFileIndexHandler().getIndexHandler(INDEX_CLI_VERSION, CLI_VERSION);
-    int lastVersion = cliVersionHandler.get();
-
-    if (lastVersion == CLI_VERSION) {
-      // up to date
-      if (log.isDebugEnabled()) {
-        log.debug("cli wallet is up to date: " + CLI_VERSION);
-      }
-      return;
-    }
-
-    if (log.isDebugEnabled()) {
-      log.debug(" • Upgrading cli wallet: " + lastVersion + " -> " + CLI_VERSION);
-    }
-    new RunUpgradeCli(cliWalletService).run(lastVersion);
-
-    // set new version
-    cliVersionHandler.set(CLI_VERSION);
   }
 
   private void setDebug(boolean isDebug, boolean isDebugClient) {

@@ -5,6 +5,8 @@ public class CliApiEndpoint {
 
   public static final String REST_CLI = REST_PREFIX + "cli";
   public static final String REST_CLI_INIT = REST_PREFIX + "cli/init";
+  public static final String REST_CLI_LOGIN = REST_PREFIX + "cli/login";
+  public static final String REST_CLI_LOGOUT = REST_PREFIX + "cli/logout";
 
   public static final String REST_POOLS = REST_PREFIX + "pools";
 
@@ -24,6 +26,8 @@ public class CliApiEndpoint {
       new String[] {
         REST_CLI,
         REST_CLI_INIT,
+        REST_CLI_LOGIN,
+        REST_CLI_LOGOUT,
         REST_POOLS,
         REST_WALLET_DEPOSIT,
         REST_MIX,
