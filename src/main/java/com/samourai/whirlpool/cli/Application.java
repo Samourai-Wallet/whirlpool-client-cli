@@ -178,6 +178,7 @@ public class Application implements ApplicationRunner {
 
     // authenticate to open wallet when passphrase providen through arguments
     WhirlpoolWallet whirlpoolWallet = cliWalletService.openWallet(authenticate());
+    log.info("⣿ AUTHENTICATION SUCCESS ⣿");
 
     if (RunCliCommand.hasCommandToRun(appArgs)) {
       // WhirlpoolClient instanciation
