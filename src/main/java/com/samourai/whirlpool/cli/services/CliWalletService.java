@@ -73,7 +73,10 @@ public class CliWalletService extends WhirlpoolWalletService {
     try {
       seedWords = decryptSeedWords(seedPassphrase);
     } catch (Exception e) {
-      log.error("decryptSeedWords failed, invalid passphrase?", e);
+      log.error("decryptSeedWords failed, invalid passphrase?");
+      if (log.isDebugEnabled()) {
+        log.debug("", e);
+      }
       throw new NotifiableException("Seed decrypt failed, invalid passphrase?");
     }
 

@@ -44,6 +44,7 @@ public class ApplicationArgs {
   private static final String ARG_API_KEY = "api-key";
   private static final String ARG_INIT = "init";
   private static final String ARG_AUTHENTICATE = "authenticate";
+  private static final String ARG_MIXS_TARGET = "mixs-target";
   private static final String UTXO_SEPARATOR = "-";
 
   private ApplicationArguments args;
@@ -120,6 +121,11 @@ public class ApplicationArgs {
     value = optionalOption(ARG_API_KEY);
     if (value != null) {
       cliConfig.setApiKey(value);
+    }
+
+    valueInt = optionalInt(ARG_MIXS_TARGET);
+    if (valueInt != null) {
+      cliConfig.getMix().setMixsTarget(valueInt);
     }
   }
 

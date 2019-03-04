@@ -107,6 +107,7 @@ public class CliConfig {
     @NotEmpty private boolean autoMix;
     @NotEmpty private boolean autoAggregatePostmix;
     @NotEmpty private Collection<String> poolIdsByPriority;
+    @NotEmpty private int mixsTarget;
 
     public int getClients() {
       return clients;
@@ -171,6 +172,14 @@ public class CliConfig {
     public void setPoolIdsByPriority(Collection<String> poolIdsByPriority) {
       this.poolIdsByPriority = poolIdsByPriority;
     }
+
+    public int getMixsTarget() {
+      return mixsTarget;
+    }
+
+    public void setMixsTarget(int mixsTarget) {
+      this.mixsTarget = mixsTarget;
+    }
   }
 
   private String mask(String value, int start, int end) {
@@ -218,7 +227,9 @@ public class CliConfig {
             + ", autoAggregatePostmix="
             + mix.isAutoAggregatePostmix()
             + ", poolIdsByPriority="
-            + poolIdsByPriorityStr);
+            + poolIdsByPriorityStr
+            + ", mixsTarget="
+            + mix.getMixsTarget());
     return configInfo;
   }
 
@@ -240,6 +251,7 @@ public class CliConfig {
     if (mix.getPoolIdsByPriority() != null && !mix.getPoolIdsByPriority().isEmpty()) {
       config.setPoolIdsByPriority(mix.getPoolIdsByPriority());
     }
+    config.setMixsTarget(mix.getMixsTarget());
     return config;
   }
 }

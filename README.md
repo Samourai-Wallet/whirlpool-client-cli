@@ -16,14 +16,15 @@ You can setup whirlpool-client-cli in 2 ways:
 ```
 java -jar target/whirlpool-client-version-run.jar
 [--listen[=8899]] [--authenticate]
-[--server={MAIN,TEST}] [--tor=true] [--debug] [--debug-client]
-[--pushtx=auto|interactive|http://user:password@host:port] [--scode=] [--tx0-max-outputs=] {args...}
+[--server={MAIN,TEST}] [--tor=true] [--mixs-target=]
+[--debug] [--debug-client] [--pushtx=auto|interactive|http://user:password@host:port] [--scode=] [--tx0-max-outputs=] {args...}
 ```
 
 #### Optional arguments:
 - listen: enable API for remote commands & GUI. Authentication on startup is optional, but you can authenticate on startup with --authenticate
 - server: whirlpool server to connect to
 - tor: enable TOR
+- mixs-target: number of mixs to achieve per UTXO
 
 #### Tech arguments: you probably shouldn't use it
 - debug: display debug logs from cli
