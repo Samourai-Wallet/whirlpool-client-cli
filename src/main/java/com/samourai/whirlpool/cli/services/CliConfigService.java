@@ -26,6 +26,7 @@ public class CliConfigService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final String KEY_APIKEY = "cli.apiKey";
   private static final String KEY_SEED = "cli.seed";
+  public static final String CLI_CONFIG_FILENAME = "whirlpool-client-cli.properties";
 
   private CliConfig cliConfig;
   private CliStatus cliStatus;
@@ -87,7 +88,7 @@ public class CliConfigService {
   }
 
   protected synchronized void save(Map<String, String> entries) throws Exception {
-    File f = new File("application-default.properties");
+    File f = new File(CLI_CONFIG_FILENAME);
     if (!f.exists()) {
       f.createNewFile();
     }

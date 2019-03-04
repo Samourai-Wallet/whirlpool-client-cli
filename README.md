@@ -8,7 +8,8 @@ Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool
 
 ## General usage
 ```
-java -jar target/whirlpool-client-version-run.jar [--listen[=8899]]
+java -jar target/whirlpool-client-version-run.jar --spring.config.location=classpath:application.properties,./whirlpool-client-cli.properties
+[--listen[=8899]]
 [--server={MAIN,TEST}] [--tor=true] [--debug] [--debug-client]
 [--pushtx=auto|interactive|http://user:password@host:port] [--scode=] [--tx0-max-outputs=] {args...}
 ```
