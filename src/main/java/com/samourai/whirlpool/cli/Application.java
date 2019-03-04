@@ -154,7 +154,8 @@ public class Application implements ApplicationRunner {
       }
 
       // keep cli running for remote initialization
-      log.warn("⣿ INITIALIZATION REQUIRED ⣿ CLI is listening for remote initialization...");
+      log.warn(
+          "⣿ INITIALIZATION REQUIRED ⣿ CLI is ready and listening for remote initialization from GUI... You can also initialize with --init");
       keepRunning();
       return;
     }
@@ -166,7 +167,8 @@ public class Application implements ApplicationRunner {
         return;
       }
       // no passphrase but listening => keep listening
-      log.info("⣿ LOGIN REQUIRED ⣿ CLI is listening for remote login to start mixing...");
+      log.info(
+          "⣿ REMOTE AUTHENTICATION REQUIRED ⣿ CLI is ready and listening for remote login to start mixing... You can also authenticate with --seed-passphrase");
       keepRunning();
       return;
     }

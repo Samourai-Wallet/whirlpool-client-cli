@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.run;
 
 import com.samourai.whirlpool.cli.ApplicationArgs;
+import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -29,7 +30,7 @@ public class RunCliInit {
     String seedWords = CliUtils.readUserInput("Seed words?", true);
 
     // encrypt seedWords with seedPassphrase
-    String encryptedSeedWords = cliWalletService.encryptSeedWords(seedWords, seedPassphrase);
+    Encrypted encryptedSeedWords = cliWalletService.encryptSeedWords(seedWords, seedPassphrase);
 
     // init
     cliConfigService.initialize(encryptedSeedWords);

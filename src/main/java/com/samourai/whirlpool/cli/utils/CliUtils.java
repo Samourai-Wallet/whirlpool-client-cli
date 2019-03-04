@@ -1,13 +1,10 @@
 package com.samourai.whirlpool.cli.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.io.Console;
 import java.lang.invoke.MethodHandles;
 import java.util.UUID;
 import org.bitcoinj.core.Sha256Hash;
-import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,35 +42,5 @@ public class CliUtils {
 
   public static String sha256Hash(String str) {
     return Sha256Hash.wrap(Sha256Hash.hash(str.getBytes())).toString();
-  }
-
-  public static String encryptSeedWords(String key, String seedWords) throws Exception {
-    /*SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-    KeySpec spec = new PBEKeySpec(key, salt, 1024, 256);
-    SecretKey tmp = factory.generateSecret(spec);
-    SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
-
-    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-    cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(iv));
-    String plaintext = new String(cipher.doFinal(ciphertext), "UTF-8");
-    return plaintext;*/
-    return null;
-  }
-
-  public static String decryptSeedWords(String key, String encryptedSeedWords64) throws Exception {
-    String encryptedSeedWords = new String(Base64.decode(encryptedSeedWords64), "UTF-8");
-    System.err.println("****encryptedSeedWords=" + encryptedSeedWords);
-    JsonNode encryptedJson = new ObjectMapper().readTree(encryptedSeedWords);
-
-    /*SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-    KeySpec spec = new PBEKeySpec(key, salt, 1024, 256);
-    SecretKey tmp = factory.generateSecret(spec);
-    SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
-
-    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-    cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(iv));
-    String plaintext = new String(cipher.doFinal(ciphertext), "UTF-8");
-    return plaintext;*/
-    return encryptedSeedWords;
   }
 }

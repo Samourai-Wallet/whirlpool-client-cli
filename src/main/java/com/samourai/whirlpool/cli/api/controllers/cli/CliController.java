@@ -2,11 +2,13 @@ package com.samourai.whirlpool.cli.api.controllers.cli;
 
 import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
+import com.samourai.whirlpool.cli.api.protocol.beans.ApiEncrypted;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitResponse;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliLoginRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliStatusResponse;
 import com.samourai.whirlpool.cli.beans.CliStatus;
+import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +29,9 @@ public class CliController extends AbstractRestController {
     checkHeaders(headers);
 
     CliStatus cliStatus = cliConfigService.getCliStatus();
+    String cliMessage = cliConfigService.getCliMessage();
     boolean loggedIn = cliWalletService.hasSessionWallet();
-    ApiCliStatusResponse response = new ApiCliStatusResponse(cliStatus, loggedIn);
+    ApiCliStatusResponse response = new ApiCliStatusResponse(cliStatus, cliMessage, loggedIn);
     return response;
   }
 
@@ -38,7 +41,9 @@ public class CliController extends AbstractRestController {
     checkHeaders(headers);
 
     // init
-    String apiKey = cliConfigService.initialize(payload.encryptedSeedWords);
+    ApiEncrypted sw = payload.encryptedSeedWords;
+    Encrypted seedWordsEncrypted = new Encrypted(sw.iv, sw.salt, sw.ct);
+    String apiKey = cliConfigService.initialize(seedWordsEncrypted);
 
     ApiCliInitResponse response = new ApiCliInitResponse(apiKey);
     return response;

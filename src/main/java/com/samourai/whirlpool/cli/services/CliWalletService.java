@@ -5,10 +5,12 @@ import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.whirlpool.cli.beans.CliStatus;
+import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.run.RunUpgradeCli;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.cli.utils.EncryptUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
@@ -16,6 +18,7 @@ import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.crypto.MnemonicException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -66,16 +69,28 @@ public class CliWalletService extends WhirlpoolWalletService {
 
     NetworkParameters params = cliConfig.getServer().getParams();
 
-    String seedWords = decryptSeedWords(seedPassphrase);
+    String seedWords;
+    try {
+      seedWords = decryptSeedWords(seedPassphrase);
+    } catch (Exception e) {
+      log.error("decryptSeedWords failed, invalid passphrase?", e);
+      throw new NotifiableException("Seed decrypt failed, invalid passphrase?");
+    }
 
     // init fileIndexHandler
     String seedEncrypted = cliConfig.getSeed();
     String walletIdentifier = CliUtils.sha256Hash(seedPassphrase + seedEncrypted + params.getId());
     this.fileIndexHandler = new FileIndexHandler(computeIndexFile(walletIdentifier));
 
-    // init wallet from seed
-    byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
-    HD_Wallet bip84w = hdWalletFactory.getBIP84(seed, seedPassphrase, params);
+    HD_Wallet bip84w;
+    try {
+      // init wallet from seed
+      byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
+      bip84w = hdWalletFactory.getBIP84(seed, seedPassphrase, params);
+    } catch (MnemonicException e) {
+      throw new NotifiableException(
+          "Invalid seed. You may want to reset CLI configuration and setup another seed.", e);
+    }
 
     // init bip84 at first run
     boolean initBip84 = (fileIndexHandler.get(INDEX_BIP84_INITIALIZED) != 1);
@@ -119,11 +134,11 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   private String decryptSeedWords(String seedPassphrase) throws Exception {
     String seedWordsEncrypted = cliConfig.getSeed();
-    return CliUtils.decryptSeedWords(seedPassphrase, seedWordsEncrypted);
+    return EncryptUtils.decrypt(seedPassphrase, seedWordsEncrypted);
   }
 
-  public String encryptSeedWords(String seedWords, String seedPassphrase) throws Exception {
-    return CliUtils.encryptSeedWords(seedPassphrase, seedWords);
+  public Encrypted encryptSeedWords(String seedWords, String seedPassphrase) throws Exception {
+    return EncryptUtils.encrypt(seedPassphrase, seedWords);
   }
 
   public void closeWallet() {

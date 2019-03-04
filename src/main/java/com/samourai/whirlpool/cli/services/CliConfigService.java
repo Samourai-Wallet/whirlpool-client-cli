@@ -1,8 +1,10 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.samourai.whirlpool.cli.beans.CliStatus;
+import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.cli.utils.EncryptUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,12 +29,13 @@ public class CliConfigService {
 
   private CliConfig cliConfig;
   private CliStatus cliStatus;
+  private String cliMessage;
 
   public CliConfigService(CliConfig cliConfig) {
     this.cliConfig = cliConfig;
     this.cliStatus = CliStatus.NOT_INITIALIZED;
     if (!Strings.isEmpty(cliConfig.getSeed()) && !Strings.isEmpty(cliConfig.getApiKey())) {
-      this.cliStatus = CliStatus.READY;
+      this.setCliStatus(CliStatus.READY);
     }
   }
 
@@ -40,14 +43,30 @@ public class CliConfigService {
     return cliStatus;
   }
 
+  public String getCliMessage() {
+    return cliMessage;
+  }
+
+  protected void setCliStatus(CliStatus cliStatus) {
+    this.setCliStatus(cliStatus, null);
+  }
+
+  protected void setCliStatus(CliStatus cliStatus, String cliMessage) {
+    this.cliStatus = cliStatus;
+    this.cliMessage = cliMessage;
+  }
+
   public boolean isCliStatusReady() {
     return CliStatus.READY.equals(cliStatus);
   }
 
-  public synchronized String initialize(String encryptedSeedWords) throws Exception {
+  public synchronized String initialize(Encrypted seedWordsEncrypted) throws Exception {
     if (!CliStatus.NOT_INITIALIZED.equals(cliStatus)) {
       throw new NotifiableException("CLI is already initialized");
     }
+
+    // serialize seedWordsEncrypted
+    String seedWordsEncryptedStr = EncryptUtils.serializeEncrypted(seedWordsEncrypted);
 
     // generate apiKey
     String apiKey = CliUtils.generateUniqueString();
@@ -55,11 +74,13 @@ public class CliConfigService {
     // save configuration file
     Map<String, String> entries = new HashMap<>();
     entries.put(KEY_APIKEY, apiKey);
-    entries.put(KEY_SEED, encryptedSeedWords);
+    entries.put(KEY_SEED, seedWordsEncryptedStr);
     save(entries);
 
     // restart needed
-    this.cliStatus = CliStatus.RESTART_NEEDED;
+    this.setCliStatus(
+        CliStatus.NOT_READY,
+        "CLI restart required. Wallet inizialization success. Please restart CLI.");
 
     log.info("⣿ RESTART REQUIRED ⣿ Wallet inizialization success. Please restart CLI.");
     return apiKey;

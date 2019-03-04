@@ -166,6 +166,7 @@ Response:
 ```
 {
     "cliStatus": "READY",
+    "cliMessage": "",
     "loggedIn": true
 }
 ```
@@ -175,6 +176,7 @@ Response:
 ```
 {
     "cliStatus": "READY",
+    "cliMessage": "",
     "loggedIn": false
 }
 ```
