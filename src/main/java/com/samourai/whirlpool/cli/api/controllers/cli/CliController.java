@@ -61,7 +61,7 @@ public class CliController extends AbstractRestController {
       throws Exception {
     checkHeaders(headers);
 
-    cliWalletService.openWallet(payload.seedPassphrase);
+    cliWalletService.openWallet(payload.seedPassphrase).start();
 
     // success
     return status(headers);

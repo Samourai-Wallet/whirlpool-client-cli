@@ -166,10 +166,12 @@ public class Application implements ApplicationRunner {
       return;
     }
 
-    if (!appArgs.isAuthenticate() && listenPort != null) {
+    if (!appArgs.isAuthenticate()
+        && listenPort != null
+        && !RunCliCommand.hasCommandToRun(appArgs)) {
       // no passphrase but listening => keep listening
       log.info(
-          "⣿ REMOTE AUTHENTICATION REQUIRED ⣿ CLI is ready and listening for remote login to start mixing... You can also authenticate on startup with --authenticate");
+          "⣿ WAITING FOR AUTHENTICATION ⣿ CLI is ready and listening for remote login from GUI to start mixing... You can also authenticate with --authenticate");
       keepRunning();
       return;
     }
