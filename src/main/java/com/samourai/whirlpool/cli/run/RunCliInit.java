@@ -43,7 +43,7 @@ public class RunCliInit {
     String apiKey = cliConfigService.initialize(encryptedSeedWords);
 
     log.info(
-        "⣿ API KEY GENERATED ⣿ An API key has been generated, please note it. You will need it to connect remotely from GUI (with --listen). Your API key is: "
+        "⣿ API KEY GENERATED ⣿ An API key has been generated, take note of it. You will need it to connect remotely from GUI (with --listen). Your API key is: "
             + apiKey);
   }
 }

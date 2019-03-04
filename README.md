@@ -6,6 +6,12 @@
 Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool) by Samourai-Wallet.
 
 
+## Setup
+You can setup whirlpool-client-cli in 2 ways:
+- commandline: run CLI with ```--init```
+- remotely through API: run CLI with ```--listen```, then open GUI
+
+
 ## General usage
 ```
 java -jar target/whirlpool-client-version-run.jar --spring.config.location=classpath:application.properties,./whirlpool-client-cli.properties
