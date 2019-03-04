@@ -9,6 +9,7 @@ import com.samourai.whirlpool.cli.run.RunCliInit;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
+import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
@@ -165,21 +166,16 @@ public class Application implements ApplicationRunner {
       return;
     }
 
-    if (appArgs.getSeedPassphrase() == null) {
-      if (listenPort == null) {
-        // no passphrase & not listening => exit
-        log.error("⣿ ERROR: INCORRECT USAGE ⣿ Either launch with --seed-passphrase or --listen.");
-        return;
-      }
+    if (!appArgs.isAuthenticate() && listenPort != null) {
       // no passphrase but listening => keep listening
       log.info(
-          "⣿ REMOTE AUTHENTICATION REQUIRED ⣿ CLI is ready and listening for remote login to start mixing... You can also authenticate with --seed-passphrase");
+          "⣿ REMOTE AUTHENTICATION REQUIRED ⣿ CLI is ready and listening for remote login to start mixing... You can authenticate on startup with --authenticate");
       keepRunning();
       return;
     }
 
-    // open wallet when passphrase providen through arguments
-    WhirlpoolWallet whirlpoolWallet = cliWalletService.openWallet(appArgs.getSeedPassphrase());
+    // authenticate to open wallet when passphrase providen through arguments
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.openWallet(authenticate());
 
     if (RunCliCommand.hasCommandToRun(appArgs)) {
       // WhirlpoolClient instanciation
@@ -214,6 +210,11 @@ public class Application implements ApplicationRunner {
       } catch (InterruptedException e) {
       }
     }
+  }
+
+  private String authenticate() throws Exception {
+    log.info("⣿ AUTHENTICATION ⣿ Your passphrase is required for Whirlpool startup.");
+    return CliUtils.readUserInput("Seed passphrase", true);
   }
 
   private void setDebug(boolean isDebug, boolean isDebugClient) {

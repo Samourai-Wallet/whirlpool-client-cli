@@ -1,8 +1,6 @@
 package com.samourai.whirlpool.cli;
 
 import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
@@ -27,7 +25,6 @@ public class ApplicationArgs {
   private static final String ARG_UTXO = "utxo";
   private static final String ARG_UTXO_KEY = "utxo-key";
   private static final String ARG_UTXO_BALANCE = "utxo-balance";
-  private static final String ARG_SEED_PASSPHRASE = "seed-passphrase";
   private static final String ARG_SERVER = "server";
   private static final String ARG_MIXS = "mixs";
   private static final String ARG_LIST_POOLS = "list-pools";
@@ -46,6 +43,7 @@ public class ApplicationArgs {
   private static final String ARG_LISTEN = "listen";
   private static final String ARG_API_KEY = "api-key";
   private static final String ARG_INIT = "init";
+  private static final String ARG_AUTHENTICATE = "authenticate";
   private static final String UTXO_SEPARATOR = "-";
 
   private ApplicationArguments args;
@@ -192,14 +190,6 @@ public class ApplicationArgs {
     return utxoBalance;
   }
 
-  public String getSeedPassphrase() throws NotifiableException {
-    String seedPassphrase = optionalOption(ARG_SEED_PASSPHRASE);
-    if ("true".equals(seedPassphrase)) {
-      seedPassphrase = CliUtils.readUserInput(ARG_SEED_PASSPHRASE, true);
-    }
-    return seedPassphrase;
-  }
-
   public int getMixs() {
     final int mixs;
     try {
@@ -229,6 +219,10 @@ public class ApplicationArgs {
 
   public boolean isInit() {
     return args.containsOption(ARG_INIT);
+  }
+
+  public boolean isAuthenticate() {
+    return args.containsOption(ARG_AUTHENTICATE);
   }
 
   public static Integer getMainListen(String[] mainArgs) {
