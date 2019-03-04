@@ -29,7 +29,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   private static final int CLI_VERSION = 3;
 
-  private static final String INDEX_BIP84_INITIALIZED = "bip84init";
+  private static final String INDEX_INITIALIZED = "init";
   private static final String INDEX_DEPOSIT = "deposit";
   private static final String INDEX_DEPOSIT_CHANGE = "deposit_change";
   private static final String INDEX_PREMIX = "premix";
@@ -96,7 +96,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     }
 
     // init bip84 at first run
-    boolean initBip84 = (fileIndexHandler.get(INDEX_BIP84_INITIALIZED) != 1);
+    boolean initBip84 = (fileIndexHandler.get(INDEX_INITIALIZED) != 1);
 
     // deposit, premix & postmix wallet indexs
     IIndexHandler depositIndexHandler = fileIndexHandler.getIndexHandler(INDEX_DEPOSIT);
@@ -124,7 +124,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
     if (initBip84) {
       // save initialized state
-      fileIndexHandler.set(INDEX_BIP84_INITIALIZED, 1);
+      fileIndexHandler.set(INDEX_INITIALIZED, 1);
     }
 
     this.sessionWallet = new CliWallet(whirlpoolWallet, cliConfig, walletAggregateService, this);
