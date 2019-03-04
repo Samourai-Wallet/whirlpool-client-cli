@@ -14,7 +14,7 @@ You can setup whirlpool-client-cli in 2 ways:
 
 ## General usage
 ```
-java -jar target/whirlpool-client-version-run.jar --spring.config.location=classpath:application.properties,./whirlpool-client-cli.properties
+java -jar target/whirlpool-client-version-run.jar
 [--listen[=8899]]
 [--server={MAIN,TEST}] [--tor=true] [--debug] [--debug-client]
 [--pushtx=auto|interactive|http://user:password@host:port] [--scode=] [--tx0-max-outputs=] {args...}

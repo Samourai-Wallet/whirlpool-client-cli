@@ -53,6 +53,11 @@ public class Application implements ApplicationRunner {
   @Autowired private WalletAggregateService walletAggregateService;
 
   public static void main(String... args) {
+    // override configuration with local file
+    System.setProperty(
+        "spring.config.location",
+        "classpath:application.properties,./" + CliConfigService.CLI_CONFIG_FILENAME);
+
     // start REST api if --listen
     listenPort = ApplicationArgs.getMainListen(args);
     WebApplicationType wat =
@@ -149,7 +154,7 @@ public class Application implements ApplicationRunner {
       if (listenPort == null) {
         // not initialized & not listening => exit
         log.error(
-            "⣿ ERROR: INITIALIZATION REQUIRED ⣿ Please initialize with --init or run with --listen for remote initialization from GUI.");
+            "⣿ ERROR: INITIALIZATION REQUIRED ⣿ Please initialize with --init (or run with --listen for remote initialization from GUI).");
         return;
       }
 
