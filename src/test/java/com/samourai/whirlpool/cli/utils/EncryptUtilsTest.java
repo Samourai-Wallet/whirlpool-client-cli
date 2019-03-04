@@ -18,17 +18,28 @@ public class EncryptUtilsTest {
   private static final String CT =
       "lCBj/IxN8IucuRN55CL1Wolk6noorpFQGTJtUl4MB/W7WxypUSDeZZKAkCpqMe2VkajaONNKIfydkwWhrRFmL6J5iBI0sR92zqhWmIywfrCZjWNWz5I+yv/GizMeu/xZ8apAswftp6r+tSo=";
 
+  private static final String KEY = "test";
+  private static final String PLAIN =
+      "abandon abandon abandon abandon abandon abandon abandon abandon abandon ability absorb acid";
+
+  @Test
+  public void encrypt() throws Exception {
+    Encrypted encrypted = EncryptUtils.encrypt(KEY, PLAIN);
+
+    String decrypted = EncryptUtils.decrypt(KEY, encrypted);
+
+    Assert.assertEquals(PLAIN, decrypted);
+  }
+
   @Test
   public void decrypt() throws Exception {
     String iv = IV;
     String salt = SALT;
     String ct = CT;
     Encrypted encrypted = new Encrypted(iv, salt, ct);
-    String decryptedSeedWords = EncryptUtils.decrypt("test", encrypted);
+    String decryptedSeedWords = EncryptUtils.decrypt(KEY, encrypted);
 
-    String expected =
-        "abandon abandon abandon abandon abandon abandon abandon abandon abandon ability absorb acid";
-    Assert.assertEquals(expected, decryptedSeedWords);
+    Assert.assertEquals(PLAIN, decryptedSeedWords);
   }
 
   @Test

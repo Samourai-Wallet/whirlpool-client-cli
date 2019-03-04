@@ -5,7 +5,6 @@ import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.utils.EncryptUtils;
-import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -62,10 +61,6 @@ public class CliConfigService {
   }
 
   public synchronized String initialize(Encrypted seedWordsEncrypted) throws Exception {
-    if (!CliStatus.NOT_INITIALIZED.equals(cliStatus)) {
-      throw new NotifiableException("CLI is already initialized");
-    }
-
     // serialize seedWordsEncrypted
     String seedWordsEncryptedStr = EncryptUtils.serializeEncrypted(seedWordsEncrypted);
 

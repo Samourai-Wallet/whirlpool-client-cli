@@ -132,6 +132,19 @@ public class CliWalletService extends WhirlpoolWalletService {
     return sessionWallet;
   }
 
+  public boolean checkSeedValid(String seedWords, String seedPassphrase) throws Exception {
+    NetworkParameters params = cliConfig.getServer().getParams();
+    try {
+      // init wallet from seed
+      byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
+      hdWalletFactory.getBIP84(seed, seedPassphrase, params);
+      return true;
+    } catch (MnemonicException e) {
+      log.error("", e);
+      return false;
+    }
+  }
+
   private String decryptSeedWords(String seedPassphrase) throws Exception {
     String seedWordsEncrypted = cliConfig.getSeed();
     return EncryptUtils.decrypt(seedPassphrase, seedWordsEncrypted);

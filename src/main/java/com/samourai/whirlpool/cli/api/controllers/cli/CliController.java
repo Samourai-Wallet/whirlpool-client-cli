@@ -11,6 +11,7 @@ import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,6 +40,11 @@ public class CliController extends AbstractRestController {
   public ApiCliInitResponse init(
       @RequestHeader HttpHeaders headers, @RequestBody ApiCliInitRequest payload) throws Exception {
     checkHeaders(headers);
+
+    // security: check not already initialized
+    if (!CliStatus.NOT_INITIALIZED.equals(cliConfigService.getCliStatus())) {
+      throw new NotifiableException("CLI is already initialized.");
+    }
 
     // init
     ApiEncrypted sw = payload.encryptedSeedWords;

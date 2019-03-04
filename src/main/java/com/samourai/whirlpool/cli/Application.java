@@ -123,6 +123,12 @@ public class Application implements ApplicationRunner {
     NetworkParameters params = cliConfig.getServer().getParams();
     new Context(params);
 
+    // check init
+    if (appArgs.isInit()) {
+      new RunCliInit(appArgs, cliConfigService, cliWalletService).run();
+      return;
+    }
+
     // check pushTxService
     if (!pushTxService.testConnectivity()) {
       throw new NotifiableException("Unable to connect to pushTxService");
@@ -138,12 +144,6 @@ public class Application implements ApplicationRunner {
       // not initialized
       if (log.isDebugEnabled()) {
         log.debug("CliStatus=" + cliConfigService.getCliStatus());
-      }
-
-      if (appArgs.isInit()) {
-        // run interactive CLI initialization
-        new RunCliInit(appArgs, cliConfigService, cliWalletService).run();
-        return;
       }
 
       if (listenPort == null) {
@@ -188,7 +188,8 @@ public class Application implements ApplicationRunner {
               whirlpoolClientConfig,
               cliWalletService,
               bech32Util,
-              walletAggregateService)
+              walletAggregateService,
+              cliConfigService)
           .run();
     } else {
       // start wallet

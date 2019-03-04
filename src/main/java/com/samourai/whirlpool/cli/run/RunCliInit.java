@@ -5,6 +5,7 @@ import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,13 +27,23 @@ public class RunCliInit {
   }
 
   public void run() throws Exception {
-    String seedPassphrase = CliUtils.readUserInput("Seed passphrase?", true);
-    String seedWords = CliUtils.readUserInput("Seed words?", true);
+    log.info(
+        "⣿ CLI INITIALIZATION ⣿ This will intialize CLI and connect it to your existing Samourai Wallet.");
+    String seedPassphrase = CliUtils.readUserInput("Seed passphrase", true);
+    String seedWords = CliUtils.readUserInput("Seed words", true);
+
+    if (!cliWalletService.checkSeedValid(seedWords, seedPassphrase)) {
+      throw new NotifiableException("Your seed is invalid. Please try again.");
+    }
 
     // encrypt seedWords with seedPassphrase
     Encrypted encryptedSeedWords = cliWalletService.encryptSeedWords(seedWords, seedPassphrase);
 
     // init
-    cliConfigService.initialize(encryptedSeedWords);
+    String apiKey = cliConfigService.initialize(encryptedSeedWords);
+
+    log.info(
+        "⣿ API KEY GENERATED ⣿ An API key has been generated, please note it. You will need it to connect remotely from GUI (with --listen). Your API key is: "
+            + apiKey);
   }
 }

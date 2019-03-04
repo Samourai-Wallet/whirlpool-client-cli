@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli.run;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.ApplicationArgs;
+import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
@@ -22,6 +23,7 @@ public class RunCliCommand {
   private CliWalletService cliWalletService;
   private Bech32UtilGeneric bech32Util;
   private WalletAggregateService walletAggregateService;
+  private CliConfigService cliConfigService;
 
   public RunCliCommand(
       ApplicationArgs appArgs,
@@ -29,13 +31,15 @@ public class RunCliCommand {
       WhirlpoolClientConfig whirlpoolClientConfig,
       CliWalletService cliWalletService,
       Bech32UtilGeneric bech32Util,
-      WalletAggregateService walletAggregateService) {
+      WalletAggregateService walletAggregateService,
+      CliConfigService cliConfigService) {
     this.appArgs = appArgs;
     this.whirlpoolClient = whirlpoolClient;
     this.whirlpoolClientConfig = whirlpoolClientConfig;
     this.cliWalletService = cliWalletService;
     this.bech32Util = bech32Util;
     this.walletAggregateService = walletAggregateService;
+    this.cliConfigService = cliConfigService;
   }
 
   public void run() throws Exception {

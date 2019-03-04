@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.utils;
 
 import com.samourai.whirlpool.cli.beans.Encrypted;
 import java.lang.invoke.MethodHandles;
+import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -19,21 +20,26 @@ public class EncryptUtils {
   private static final int CHECK_IV_LENGTH = 16;
   private static final int CHECK_SALT_LENGTH = 8;
 
+  private static final String CRYPT_SF_ALGORITHM = "PBKDF2WithHmacSHA256";
+  private static final String CRYPT_ALGORITHM = "AES";
+  private static final String CRYPT_CIPHER = "AES/GCM/NoPadding";
   private static final int CRYPT_KEY_LENGTH = 256;
   private static final int CRYPT_TAG_LENGTH = 128;
   private static final int CRYPT_ITERATIONS = 10000;
 
-  public static Encrypted encrypt(String key, String seedWords) throws Exception {
-    /*SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-    KeySpec spec = new PBEKeySpec(key, salt, 1024, 256);
-    SecretKey tmp = factory.generateSecret(spec);
-    SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
+  private static final SecureRandom secureRandom = new SecureRandom();
 
-    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-    cipher.init(Cipher.DECRYPT_MODE, secret, new IvParameterSpec(iv));
-    String plaintext = new String(cipher.doFinal(ciphertext), "UTF-8");
-    return plaintext;*/
-    return null;
+  public static Encrypted encrypt(String key, String plain) throws Exception {
+    Encrypted encrypted =
+        encrypt(
+            key.toCharArray(),
+            plain.getBytes("UTF-8"),
+            CRYPT_ITERATIONS,
+            CRYPT_KEY_LENGTH,
+            CRYPT_TAG_LENGTH,
+            CHECK_IV_LENGTH,
+            CHECK_SALT_LENGTH);
+    return encrypted;
   }
 
   public static String decrypt(String key, String encryptedSerialized) throws Exception {
@@ -54,22 +60,52 @@ public class EncryptUtils {
     return plaintext;
   }
 
+  public static Encrypted encrypt(
+      char[] key,
+      byte[] plainBytes,
+      int iterations,
+      int keyLength,
+      int tagLength,
+      int ivLength,
+      int saltLength)
+      throws Exception {
+
+    final byte[] ivBytes = new byte[ivLength];
+    secureRandom.nextBytes(ivBytes);
+
+    final byte[] saltBytes = new byte[saltLength];
+    secureRandom.nextBytes(saltBytes);
+
+    SecretKeyFactory factory = SecretKeyFactory.getInstance(CRYPT_SF_ALGORITHM);
+    KeySpec spec = new PBEKeySpec(key, saltBytes, iterations, keyLength);
+    SecretKey tmp = factory.generateSecret(spec);
+    SecretKeySpec secret = new SecretKeySpec(tmp.getEncoded(), CRYPT_ALGORITHM);
+
+    Cipher cipher = Cipher.getInstance(CRYPT_CIPHER);
+    GCMParameterSpec ivSpec = new GCMParameterSpec(tagLength, ivBytes);
+    cipher.init(Cipher.ENCRYPT_MODE, secret, ivSpec);
+
+    byte[] ctBytes = cipher.doFinal(plainBytes);
+
+    Encrypted encrypted = new Encrypted(ivBytes, saltBytes, ctBytes);
+    return encrypted;
+  }
+
   public static String decrypt(
       char[] key,
       byte[] ivBytes,
       byte[] saltBytes,
       byte[] ctBytes,
-      int iterationCount,
+      int iterations,
       int keyLength,
       int tagLength)
       throws Exception {
-    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-    KeySpec spec = new PBEKeySpec(key, saltBytes, iterationCount, keyLength);
+    SecretKeyFactory factory = SecretKeyFactory.getInstance(CRYPT_SF_ALGORITHM);
+    KeySpec spec = new PBEKeySpec(key, saltBytes, iterations, keyLength);
     SecretKey tmp = factory.generateSecret(spec);
-    SecretKey secret = new SecretKeySpec(tmp.getEncoded(), "AES");
+    SecretKeySpec secret = new SecretKeySpec(tmp.getEncoded(), CRYPT_ALGORITHM);
 
-    Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-
+    Cipher cipher = Cipher.getInstance(CRYPT_CIPHER);
     GCMParameterSpec ivSpec = new GCMParameterSpec(tagLength, ivBytes);
     cipher.init(Cipher.DECRYPT_MODE, secret, ivSpec);
 
