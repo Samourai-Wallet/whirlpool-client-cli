@@ -27,10 +27,22 @@ public class RunCliInit {
   }
 
   public void run() throws Exception {
-    log.info(
-        "⣿ CLI INITIALIZATION ⣿ This will intialize CLI and connect it to your existing Samourai Wallet.");
+    log.info(CliUtils.LOG_SEPARATOR);
+    log.info("⣿ CLI INITIALIZATION");
+    log.info("⣿ This will intialize CLI and connect it to your existing Samourai Wallet.");
+    log.info("⣿ ");
+    log.info("⣿ Your passphrase is used to encrypt your wallet seed, but won't be stored.");
+    log.info("⣿ Your passphrase is required for each whirlpool startup.");
+    log.info("⣿ • Please type your seed passphrase");
     String seedPassphrase = CliUtils.readUserInput("Seed passphrase", true);
+    log.info("⣿ ");
+
+    log.info("⣿ Your seed words will be encrypted in ./" + CliConfigService.CLI_CONFIG_FILENAME);
+    log.info("⣿ whirlpool will never ask again for it.");
+    log.info("⣿ • Please type your seed words (12 words separated with space, no quotes)");
     String seedWords = CliUtils.readUserInput("Seed words", true);
+    log.info("⣿ ");
+    log.info("⣿ • Encrypting seed...");
 
     if (!cliWalletService.checkSeedValid(seedWords, seedPassphrase)) {
       throw new NotifiableException("Your seed is invalid. Please try again.");
@@ -42,8 +54,17 @@ public class RunCliInit {
     // init
     String apiKey = cliConfigService.initialize(encryptedSeedWords);
 
-    log.info(
-        "⣿ API KEY GENERATED ⣿ An API key has been generated, take note of it. You will need it to connect remotely from GUI (with --listen). Your API key is: "
-            + apiKey);
+    log.info(CliUtils.LOG_SEPARATOR);
+    log.info("⣿ API KEY GENERATED");
+    log.info("⣿ Please take note of your API Key.");
+    log.info("⣿ You will need it to connect remotely from GUI.");
+    log.info("⣿ Your API key is: " + apiKey);
+    log.info(CliUtils.LOG_SEPARATOR);
+    log.info("");
+    log.info(CliUtils.LOG_SEPARATOR);
+    log.info("⣿ RESTART REQUIRED");
+    log.info("⣿ Wallet inizialization success.");
+    log.info("⣿ Please restart CLI.");
+    log.info(CliUtils.LOG_SEPARATOR);
   }
 }

@@ -130,7 +130,7 @@ public class Application implements ApplicationRunner {
     new Context(params);
 
     // check init
-    if (appArgs.isInit()) {
+    if (appArgs.isInit() || (cliConfigService.isCliStatusNotInitialized() && listenPort == null)) {
       new RunCliInit(appArgs, cliConfigService, cliWalletService).run();
       return;
     }
@@ -146,22 +146,18 @@ public class Application implements ApplicationRunner {
     }
 
     // check cli initialized
-    if (!cliConfigService.isCliStatusReady()) {
+    if (cliConfigService.isCliStatusNotInitialized()) {
       // not initialized
       if (log.isDebugEnabled()) {
         log.debug("CliStatus=" + cliConfigService.getCliStatus());
       }
 
-      if (listenPort == null) {
-        // not initialized & not listening => exit
-        log.error(
-            "⣿ ERROR: INITIALIZATION REQUIRED ⣿ Please initialize with --init (or run with --listen for remote initialization from GUI).");
-        return;
-      }
-
       // keep cli running for remote initialization
-      log.warn(
-          "⣿ INITIALIZATION REQUIRED ⣿ CLI is ready and listening for remote initialization from GUI... You can also initialize with --init");
+      log.warn(CliUtils.LOG_SEPARATOR);
+      log.warn("⣿ INITIALIZATION REQUIRED");
+      log.warn("⣿ Please start GUI to initialize CLI.");
+      log.warn("⣿ Or initialize with --init");
+      log.warn(CliUtils.LOG_SEPARATOR);
       keepRunning();
       return;
     }
@@ -170,15 +166,22 @@ public class Application implements ApplicationRunner {
         && listenPort != null
         && !RunCliCommand.hasCommandToRun(appArgs)) {
       // no passphrase but listening => keep listening
-      log.info(
-          "⣿ WAITING FOR AUTHENTICATION ⣿ CLI is ready and listening for remote login from GUI to start mixing... You can also authenticate with --authenticate");
+      log.info(CliUtils.LOG_SEPARATOR);
+      log.info("⣿ AUTHENTICATION REQUIRED");
+      log.info("⣿ Whirlpool is NOT started.");
+      log.info("⣿ Please start GUI to authenticate and start mixing.");
+      log.info("⣿ Or authenticate with --authenticate");
+      log.info(CliUtils.LOG_SEPARATOR);
       keepRunning();
       return;
     }
 
     // authenticate to open wallet when passphrase providen through arguments
     WhirlpoolWallet whirlpoolWallet = cliWalletService.openWallet(authenticate());
-    log.info("⣿ AUTHENTICATION SUCCESS ⣿");
+    log.info(CliUtils.LOG_SEPARATOR);
+    log.info("⣿ AUTHENTICATION SUCCESS");
+    log.info("⣿ Whirlpool is starting...");
+    log.info(CliUtils.LOG_SEPARATOR);
 
     if (RunCliCommand.hasCommandToRun(appArgs)) {
       // WhirlpoolClient instanciation
@@ -216,7 +219,10 @@ public class Application implements ApplicationRunner {
   }
 
   private String authenticate() throws Exception {
-    log.info("⣿ AUTHENTICATION ⣿ Your passphrase is required for Whirlpool startup.");
+    log.info(CliUtils.LOG_SEPARATOR);
+    log.info("⣿ AUTHENTICATION REQUIRED");
+    log.info("⣿ Whirlpool is NOT started.");
+    log.info("⣿ • Please type your seed passphrase to authenticate and start mixing.");
     return CliUtils.readUserInput("Seed passphrase", true);
   }
 

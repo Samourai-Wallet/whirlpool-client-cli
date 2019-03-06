@@ -60,6 +60,10 @@ public class CliConfigService {
     return CliStatus.READY.equals(cliStatus);
   }
 
+  public boolean isCliStatusNotInitialized() {
+    return CliStatus.NOT_INITIALIZED.equals(cliStatus);
+  }
+
   public synchronized String initialize(Encrypted seedWordsEncrypted) throws Exception {
     // serialize seedWordsEncrypted
     String seedWordsEncryptedStr = EncryptUtils.serializeEncrypted(seedWordsEncrypted);
@@ -77,8 +81,6 @@ public class CliConfigService {
     this.setCliStatus(
         CliStatus.NOT_READY,
         "CLI restart required. Wallet inizialization success. Please restart CLI.");
-
-    log.info("⣿ RESTART REQUIRED ⣿ Wallet inizialization success. Please restart CLI.");
     return apiKey;
   }
 
