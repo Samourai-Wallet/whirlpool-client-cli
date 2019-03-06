@@ -45,6 +45,7 @@ public class ApplicationArgs {
   private static final String ARG_INIT = "init";
   private static final String ARG_AUTHENTICATE = "authenticate";
   private static final String ARG_MIXS_TARGET = "mixs-target";
+  private static final String ARG_DISABLE_POSTMIX = "disable-postmix";
   private static final String UTXO_SEPARATOR = "-";
 
   private ApplicationArguments args;
@@ -126,6 +127,11 @@ public class ApplicationArgs {
     valueInt = optionalInt(ARG_MIXS_TARGET);
     if (valueInt != null) {
       cliConfig.getMix().setMixsTarget(valueInt);
+    }
+
+    valueBool = optionalBoolean(ARG_DISABLE_POSTMIX);
+    if (valueBool != null) {
+      cliConfig.getMix().setDisablePostmix(valueBool);
     }
   }
 

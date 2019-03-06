@@ -108,6 +108,7 @@ public class CliConfig {
     @NotEmpty private boolean autoAggregatePostmix;
     @NotEmpty private Collection<String> poolIdsByPriority;
     @NotEmpty private int mixsTarget;
+    @NotEmpty private boolean disablePostmix;
 
     public int getClients() {
       return clients;
@@ -180,6 +181,14 @@ public class CliConfig {
     public void setMixsTarget(int mixsTarget) {
       this.mixsTarget = mixsTarget;
     }
+
+    public boolean isDisablePostmix() {
+      return disablePostmix;
+    }
+
+    public void setDisablePostmix(boolean disablePostmix) {
+      this.disablePostmix = disablePostmix;
+    }
   }
 
   private String mask(String value, int start, int end) {
@@ -229,7 +238,9 @@ public class CliConfig {
             + ", poolIdsByPriority="
             + poolIdsByPriorityStr
             + ", mixsTarget="
-            + mix.getMixsTarget());
+            + mix.getMixsTarget()
+            + ", disablePostmix="
+            + mix.isDisablePostmix());
     return configInfo;
   }
 
