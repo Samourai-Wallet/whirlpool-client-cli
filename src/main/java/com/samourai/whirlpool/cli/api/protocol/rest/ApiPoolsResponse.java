@@ -15,9 +15,8 @@ public class ApiPoolsResponse {
             .stream()
             .map(
                 pool -> {
-                  long feeValue = pool.getFeeValue();
                   long tx0BalanceMin =
-                      tx0Service.computeSpendFromBalanceMin(pool, feeValue, feeSatPerByte, 1);
+                      tx0Service.computeSpendFromBalanceMin(pool, feeSatPerByte, 1);
                   return new ApiPool(pool, tx0BalanceMin);
                 })
             .collect(Collectors.toList());
