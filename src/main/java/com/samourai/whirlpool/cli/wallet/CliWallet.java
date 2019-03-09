@@ -49,7 +49,7 @@ public class CliWallet extends WhirlpoolWallet {
   }
 
   @Override
-  public void onEmptyWalletException(EmptyWalletException e) {
+  public synchronized void onEmptyWalletException(EmptyWalletException e) {
     try {
       autoRefill(e);
     } catch (Exception ee) {
@@ -107,9 +107,15 @@ public class CliWallet extends WhirlpoolWallet {
     Exception aggregateException = null;
     try {
       walletAggregateService.consolidateTestnet(this);
-    } catch(Exception ee) {
+      if (log.isDebugEnabled()) {
+        log.debug("AutoAggregatePostmix SUCCESS. ");
+      }
+    } catch (Exception ee) {
       // resume wallet before throwing exception (to retry later)
       aggregateException = ee;
+      if (log.isDebugEnabled()) {
+        log.debug("AutoAggregatePostmix ERROR, will throw error later.");
+      }
     }
 
     clearCache();
@@ -120,6 +126,11 @@ public class CliWallet extends WhirlpoolWallet {
         log.debug("Restarting wallet after auto-aggregate-postmix.");
       }
       start();
+    } else {
+
+      if (log.isDebugEnabled()) {
+        log.debug("NOT restarting wallet after auto-aggregate-postmix.");
+      }
     }
 
     if (aggregateException != null) {
