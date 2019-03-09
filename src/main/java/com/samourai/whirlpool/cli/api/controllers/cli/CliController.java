@@ -6,7 +6,7 @@ import com.samourai.whirlpool.cli.api.protocol.beans.ApiEncrypted;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitResponse;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliLoginRequest;
-import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliStatusResponse;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliStateResponse;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.services.CliConfigService;
@@ -26,13 +26,10 @@ public class CliController extends AbstractRestController {
   @Autowired private CliWalletService cliWalletService;
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI, method = RequestMethod.GET)
-  public ApiCliStatusResponse status(@RequestHeader HttpHeaders headers) throws Exception {
+  public ApiCliStateResponse state(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
 
-    CliStatus cliStatus = cliConfigService.getCliStatus();
-    String cliMessage = cliConfigService.getCliMessage();
-    boolean loggedIn = cliWalletService.hasSessionWallet();
-    ApiCliStatusResponse response = new ApiCliStatusResponse(cliStatus, cliMessage, loggedIn);
+    ApiCliStateResponse response = new ApiCliStateResponse(cliWalletService.getCliState());
     return response;
   }
 
@@ -56,7 +53,7 @@ public class CliController extends AbstractRestController {
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI_LOGIN, method = RequestMethod.POST)
-  public ApiCliStatusResponse login(
+  public ApiCliStateResponse login(
       @RequestHeader HttpHeaders headers, @RequestBody ApiCliLoginRequest payload)
       throws Exception {
     checkHeaders(headers);
@@ -64,16 +61,16 @@ public class CliController extends AbstractRestController {
     cliWalletService.openWallet(payload.seedPassphrase).start();
 
     // success
-    return status(headers);
+    return state(headers);
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI_LOGOUT, method = RequestMethod.POST)
-  public ApiCliStatusResponse logout(@RequestHeader HttpHeaders headers) throws Exception {
+  public ApiCliStateResponse logout(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
 
     cliWalletService.closeWallet();
 
     // success
-    return status(headers);
+    return state(headers);
   }
 }

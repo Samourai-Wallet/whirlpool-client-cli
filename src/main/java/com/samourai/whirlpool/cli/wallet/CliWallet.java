@@ -151,6 +151,8 @@ public class CliWallet extends WhirlpoolWallet {
     super.mixQueue(whirlpoolUtxo);
   }
 
+  // make public
+
   @Override
   public Bip84ApiWallet getWalletDeposit() {
     return super.getWalletDeposit();

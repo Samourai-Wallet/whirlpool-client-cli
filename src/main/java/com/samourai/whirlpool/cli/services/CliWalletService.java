@@ -4,6 +4,7 @@ import com.samourai.wallet.client.indexHandler.FileIndexHandler;
 import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
+import com.samourai.whirlpool.cli.beans.CliState;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
@@ -214,5 +215,12 @@ public class CliWalletService extends WhirlpoolWalletService {
 
     // set new version
     cliVersionHandler.set(CLI_VERSION);
+  }
+
+  public CliState getCliState() {
+    CliStatus cliStatus = cliConfigService.getCliStatus();
+    String cliMessage = cliConfigService.getCliMessage();
+    boolean loggedIn = hasSessionWallet();
+    return new CliState(cliStatus, cliMessage, loggedIn);
   }
 }

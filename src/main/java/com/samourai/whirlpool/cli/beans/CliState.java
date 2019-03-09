@@ -1,13 +1,11 @@
-package com.samourai.whirlpool.cli.api.protocol.rest;
+package com.samourai.whirlpool.cli.beans;
 
-import com.samourai.whirlpool.cli.beans.CliStatus;
-
-public class ApiCliStatusResponse {
+public class CliState {
   private CliStatus cliStatus;
   private String cliMessage;
   private boolean loggedIn;
 
-  public ApiCliStatusResponse(CliStatus cliStatus, String cliMessage, boolean loggedIn) {
+  public CliState(CliStatus cliStatus, String cliMessage, boolean loggedIn) {
     this.cliStatus = cliStatus;
     this.cliMessage = cliMessage;
     this.loggedIn = loggedIn;
