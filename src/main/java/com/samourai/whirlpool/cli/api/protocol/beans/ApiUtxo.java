@@ -36,10 +36,7 @@ public class ApiUtxo {
     this.status = whirlpoolUtxo.getStatus();
     this.progressPercent = whirlpoolUtxo.getProgressPercent();
     this.progressLabel = whirlpoolUtxo.getProgressLabel();
-    this.poolId =
-        whirlpoolUtxo.getUtxoConfig().getPool() != null
-            ? whirlpoolUtxo.getUtxoConfig().getPool().getPoolId()
-            : null;
+    this.poolId = whirlpoolUtxo.getUtxoConfig().getPoolId();
     this.priority = whirlpoolUtxo.getUtxoConfig().getPriority();
     this.mixsTarget = whirlpoolUtxo.getUtxoConfig().getMixsTarget();
     this.mixsDone = whirlpoolUtxo.getUtxoConfig().getMixsDone();

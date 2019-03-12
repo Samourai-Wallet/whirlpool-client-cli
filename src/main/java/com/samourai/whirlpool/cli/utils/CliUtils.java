@@ -4,7 +4,6 @@ import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.io.Console;
 import java.lang.invoke.MethodHandles;
 import java.util.UUID;
-import org.bitcoinj.core.Sha256Hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +38,5 @@ public class CliUtils {
     } else {
       throw new NotifiableException("⣿ INPUT REQUIRED ⣿ " + message + "?>");
     }
-  }
-
-  public static String sha256Hash(String str) {
-    return Sha256Hash.wrap(Sha256Hash.hash(str.getBytes())).toString();
   }
 }

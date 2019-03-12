@@ -25,6 +25,7 @@ public class CliConfig {
   @NotEmpty private boolean tor;
   @NotEmpty private String apiKey;
   @NotEmpty private String seed;
+  @NotEmpty private int persistDelay;
   @NotEmpty private MixConfig mix;
 
   private static final String PUSHTX_AUTO = "auto";
@@ -88,6 +89,14 @@ public class CliConfig {
 
   public void setSeed(String seed) {
     this.seed = seed;
+  }
+
+  public int getPersistDelay() {
+    return persistDelay;
+  }
+
+  public void setPersistDelay(int persistDelay) {
+    this.persistDelay = persistDelay;
   }
 
   public MixConfig getMix() {
@@ -249,6 +258,7 @@ public class CliConfig {
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }
+    config.setPersistDelay(persistDelay);
 
     config.setMaxClients(mix.getClients());
     config.setClientDelay(mix.getClientDelay());

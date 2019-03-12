@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.services;
 
-import com.samourai.wallet.client.indexHandler.FileIndexHandler;
+import com.google.common.primitives.Bytes;
 import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
@@ -10,12 +10,14 @@ import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.run.RunUpgradeCli;
-import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.utils.EncryptUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
+import com.samourai.whirlpool.client.wallet.persist.FileWhirlpoolWalletPersistHandler;
+import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import org.bitcoinj.core.NetworkParameters;
@@ -30,19 +32,10 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   private static final int CLI_VERSION = 3;
 
-  private static final String INDEX_INITIALIZED = "init";
-  private static final String INDEX_DEPOSIT = "deposit";
-  private static final String INDEX_DEPOSIT_CHANGE = "deposit_change";
-  private static final String INDEX_PREMIX = "premix";
-  private static final String INDEX_PREMIX_CHANGE = "premix_change";
-  private static final String INDEX_POSTMIX = "postmix";
-  private static final String INDEX_POSTMIX_CHANGE = "postmix_change";
-  private static final String INDEX_FEE = "fee";
   private static final String INDEX_CLI_VERSION = "cliVersion";
 
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
-  private FileIndexHandler fileIndexHandler;
   private HD_WalletFactoryJava hdWalletFactory;
   private WalletAggregateService walletAggregateService;
 
@@ -81,57 +74,29 @@ public class CliWalletService extends WhirlpoolWalletService {
       throw new NotifiableException("Seed decrypt failed, invalid passphrase?");
     }
 
-    // init fileIndexHandler
-    String seedEncrypted = cliConfig.getSeed();
-    String walletIdentifier = CliUtils.sha256Hash(seedPassphrase + seedEncrypted + params.getId());
-    this.fileIndexHandler = new FileIndexHandler(computeIndexFile(walletIdentifier));
-
+    // identifier
+    String walletIdentifier;
     HD_Wallet bip84w;
     try {
       // init wallet from seed
       byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
       bip84w = hdWalletFactory.getBIP84(seed, seedPassphrase, params);
+      walletIdentifier = ClientUtils.sha256Hash(Bytes.concat(seed, params.getId().getBytes()));
     } catch (MnemonicException e) {
       throw new NotifiableException(
           "Invalid seed. You may want to reset CLI configuration and setup another seed.", e);
     }
 
-    // init bip84 at first run
-    boolean initBip84 = (fileIndexHandler.get(INDEX_INITIALIZED) != 1);
-
-    // deposit, premix & postmix wallet indexs
-    IIndexHandler depositIndexHandler = fileIndexHandler.getIndexHandler(INDEX_DEPOSIT);
-    IIndexHandler depositChangeIndexHandler =
-        fileIndexHandler.getIndexHandler(INDEX_DEPOSIT_CHANGE);
-    IIndexHandler premixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_PREMIX);
-    IIndexHandler premixChangeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_PREMIX_CHANGE);
-    IIndexHandler postmixIndexHandler = fileIndexHandler.getIndexHandler(INDEX_POSTMIX);
-    IIndexHandler postmixChangeIndexHandler =
-        fileIndexHandler.getIndexHandler(INDEX_POSTMIX_CHANGE);
-    IIndexHandler feeIndexHandler = fileIndexHandler.getIndexHandler(INDEX_FEE);
-
-    // services
-    WhirlpoolWallet whirlpoolWallet =
-        openWallet(
-            bip84w,
-            depositIndexHandler,
-            depositChangeIndexHandler,
-            premixIndexHandler,
-            premixChangeIndexHandler,
-            postmixIndexHandler,
-            postmixChangeIndexHandler,
-            feeIndexHandler,
-            initBip84);
-
-    if (initBip84) {
-      // save initialized state
-      fileIndexHandler.set(INDEX_INITIALIZED, 1);
-    }
-
+    // open wallet
+    File indexFile = computeIndexFile(walletIdentifier);
+    File utxosFile = computeUtxosFile(walletIdentifier);
+    WhirlpoolWalletPersistHandler walletPersistHandler =
+        new FileWhirlpoolWalletPersistHandler(indexFile, utxosFile);
+    WhirlpoolWallet whirlpoolWallet = openWallet(bip84w, walletPersistHandler);
     this.sessionWallet = new CliWallet(whirlpoolWallet, cliConfig, walletAggregateService, this);
 
     // check upgrade wallet
-    checkUpgradeWallet();
+    checkUpgradeWallet(whirlpoolWallet);
 
     return sessionWallet;
   }
@@ -181,6 +146,18 @@ public class CliWalletService extends WhirlpoolWalletService {
     if (log.isDebugEnabled()) {
       log.debug("indexFile: " + path);
     }
+    return computeFile(path);
+  }
+
+  private File computeUtxosFile(String walletIdentifier) throws NotifiableException {
+    String path = "whirlpool-cli-utxos-" + walletIdentifier + ".json";
+    if (log.isDebugEnabled()) {
+      log.debug("utxosFile: " + path);
+    }
+    return computeFile(path);
+  }
+
+  private File computeFile(String path) throws NotifiableException {
     File f = new File(path);
     if (!f.exists()) {
       if (log.isDebugEnabled()) {
@@ -195,9 +172,9 @@ public class CliWalletService extends WhirlpoolWalletService {
     return f;
   }
 
-  private void checkUpgradeWallet() throws Exception {
+  private void checkUpgradeWallet(WhirlpoolWallet whirlpoolWallet) throws Exception {
     IIndexHandler cliVersionHandler =
-        fileIndexHandler.getIndexHandler(INDEX_CLI_VERSION, CLI_VERSION);
+        whirlpoolWallet.getWalletPersistHandler().getIndexHandler(INDEX_CLI_VERSION, CLI_VERSION);
     int lastVersion = cliVersionHandler.get();
 
     if (lastVersion == CLI_VERSION) {
