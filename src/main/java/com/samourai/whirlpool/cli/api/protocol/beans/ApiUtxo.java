@@ -17,7 +17,6 @@ public class ApiUtxo {
   private Integer progressPercent;
   private String progressLabel;
   private String poolId;
-  private int priority;
   private int mixsTarget;
   private int mixsDone;
   private String message;
@@ -37,7 +36,6 @@ public class ApiUtxo {
     this.progressPercent = whirlpoolUtxo.getProgressPercent();
     this.progressLabel = whirlpoolUtxo.getProgressLabel();
     this.poolId = whirlpoolUtxo.getUtxoConfig().getPoolId();
-    this.priority = whirlpoolUtxo.getUtxoConfig().getPriority();
     this.mixsTarget = whirlpoolUtxo.getUtxoConfig().getMixsTarget();
     this.mixsDone = whirlpoolUtxo.getUtxoConfig().getMixsDone();
     this.message = whirlpoolUtxo.getMessage();
@@ -86,10 +84,6 @@ public class ApiUtxo {
 
   public String getPoolId() {
     return poolId;
-  }
-
-  public int getPriority() {
-    return priority;
   }
 
   public int getMixsTarget() {
