@@ -57,6 +57,10 @@ public class WalletAggregateService {
 
   public boolean toAddress(Bip84ApiWallet sourceWallet, String destinationAddress)
       throws Exception {
+    if (!formatUtils.isTestNet(cliConfig.getServer().getParams())) {
+      throw new NotifiableException(
+          "aggregate toAddress is disabled on mainnet for security reasons.");
+    }
     return doAggregate(sourceWallet, destinationAddress, null);
   }
 
@@ -131,10 +135,9 @@ public class WalletAggregateService {
     pushTxService.pushTx(txAggregate);
   }
 
-  public boolean consolidateTestnet(CliWallet cliWallet) throws Exception {
+  public boolean consolidateWallet(CliWallet cliWallet) throws Exception {
     if (!formatUtils.isTestNet(cliConfig.getServer().getParams())) {
-      throw new NotifiableException(
-          "consolidateTestnet cannot be run on mainnet for privacy reasons.");
+      log.warn("You should NOT consolidateWallet on mainnet for privacy reasons!");
     }
 
     Bip84ApiWallet depositWallet = cliWallet.getWalletDeposit();

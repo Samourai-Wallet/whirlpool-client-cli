@@ -59,7 +59,7 @@ public class RunCliCommand {
       CliWallet cliWallet = cliWalletService.getSessionWallet();
 
       // go aggregate and consolidate
-      walletAggregateService.consolidateTestnet(cliWallet);
+      walletAggregateService.consolidateWallet(cliWallet);
 
       // should we move to a specific address?
       String toAddress = appArgs.getAggregatePostmix();
