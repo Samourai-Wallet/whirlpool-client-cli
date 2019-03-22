@@ -208,8 +208,8 @@ public class CliConfig {
 
   public Map<String, String> getConfigInfo() {
     Map<String, String> configInfo = new LinkedHashMap<>();
-    String xpub = server.getFeeXpub();
-    String xpubMasked = mask(xpub, 6, 4);
+    String feeX = server.getFeeData();
+    String feeXMasked = mask(feeX, 6, 4);
     configInfo.put(
         "server",
         "url="
@@ -218,8 +218,8 @@ public class CliConfig {
             + server.getParams()
             + ", ssl="
             + Boolean.toString(server.isSsl())
-            + ", feeXpub="
-            + xpubMasked);
+            + ", feeX="
+            + feeXMasked);
     configInfo.put("pushtx", pushtx);
     configInfo.put("tor", Boolean.toString(tor));
     configInfo.put("apiKey", !Strings.isEmpty(apiKey) ? mask(apiKey, 3, 3) : "null");
