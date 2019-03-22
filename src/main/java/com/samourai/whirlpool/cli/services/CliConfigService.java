@@ -78,10 +78,13 @@ public class CliConfigService {
     save(entries);
 
     // restart needed
-    this.setCliStatus(
-        CliStatus.NOT_READY,
+    this.setCliStatusNotReady(
         "CLI restart required. Wallet inizialization success. Please restart CLI.");
     return apiKey;
+  }
+
+  public void setCliStatusNotReady(String error) {
+    this.setCliStatus(CliStatus.NOT_READY, error);
   }
 
   protected synchronized void save(Map<String, String> entries) throws Exception {

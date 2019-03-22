@@ -81,10 +81,13 @@ public class CliWalletService extends WhirlpoolWalletService {
       // init wallet from seed
       byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
       bip84w = hdWalletFactory.getBIP84(seed, seedPassphrase, params);
-      walletIdentifier = ClientUtils.sha256Hash(Bytes.concat(seed, params.getId().getBytes()));
+      walletIdentifier = computeWalletIdentifier(seed, seedPassphrase, params);
     } catch (MnemonicException e) {
-      throw new NotifiableException(
-          "Invalid seed. You may want to reset CLI configuration and setup another seed.", e);
+      // invalid configuration
+      String error =
+          "Configured seed is invalid. You may want to reset CLI configuration and setup another seed.";
+      cliConfigService.setCliStatusNotReady(error);
+      throw new NotifiableException(error, e);
     }
 
     // open wallet
@@ -139,6 +142,12 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   public boolean hasSessionWallet() {
     return sessionWallet != null;
+  }
+
+  private String computeWalletIdentifier(
+      byte[] seed, String seedPassphrase, NetworkParameters params) {
+    return ClientUtils.sha256Hash(
+        Bytes.concat(seed, seedPassphrase.getBytes(), params.getId().getBytes()));
   }
 
   private File computeIndexFile(String walletIdentifier) throws NotifiableException {

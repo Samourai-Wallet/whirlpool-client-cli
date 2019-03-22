@@ -103,7 +103,7 @@ public class Application implements ApplicationRunner {
     try {
       runCli();
     } catch (NotifiableException e) {
-      log.error("⣿ ERROR ⣿ " + e.getMessage());
+      whirlpoolWallet.onNotifiableException(e);
     } catch (IllegalArgumentException e) {
       log.info("Invalid arguments: " + e.getMessage());
     } catch (Exception e) {

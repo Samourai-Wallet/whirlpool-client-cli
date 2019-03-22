@@ -53,8 +53,6 @@ public class CliWallet extends WhirlpoolWallet {
     try {
       autoRefill(e);
     } catch (Exception ee) {
-      log.error("", ee);
-
       // default log
       super.onEmptyWalletException(e);
     }
@@ -93,20 +91,14 @@ public class CliWallet extends WhirlpoolWallet {
       return;
     }
 
-    // stop wallet for auto-aggregate
-    boolean wasStarted = isStarted();
-    if (wasStarted) {
-      if (log.isDebugEnabled()) {
-        log.debug("Stopping wallet for auto-aggregate-postmix.");
-      }
-      stop();
-    }
-
     // auto aggregate postmix
     log.info(" o AutoAggregatePostmix: depositWallet wallet is empty => aggregating");
     Exception aggregateException = null;
     try {
-      walletAggregateService.consolidateWallet(this);
+      boolean success = walletAggregateService.consolidateWallet(this);
+      if (!success) {
+        throw new NotifiableException("AutoAggregatePostmix failed (nothing to aggregate?)");
+      }
       if (log.isDebugEnabled()) {
         log.debug("AutoAggregatePostmix SUCCESS. ");
       }
@@ -120,22 +112,14 @@ public class CliWallet extends WhirlpoolWallet {
 
     clearCache();
 
-    // resume wallet
-    if (wasStarted) {
-      if (log.isDebugEnabled()) {
-        log.debug("Restarting wallet after auto-aggregate-postmix.");
-      }
-      start();
-    } else {
-
-      if (log.isDebugEnabled()) {
-        log.debug("NOT restarting wallet after auto-aggregate-postmix.");
-      }
-    }
-
     if (aggregateException != null) {
       throw aggregateException;
     }
+  }
+
+  @Override
+  public void notifyError(String message) {
+    log.error("⣿ ERROR ⣿ " + message);
   }
 
   @Override

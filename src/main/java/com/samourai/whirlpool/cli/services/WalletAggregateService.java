@@ -87,9 +87,7 @@ public class WalletAggregateService {
       for (int i = offset; i < (offset + AGGREGATED_UTXOS_PER_TX) && i < utxos.size(); i++) {
         subsetUtxos.add(utxos.get(i));
       }
-      // allow aggregate 1 utxo when moving to specific address, otherwise 2 utxos min
-      // (otherwise infinite loop on RunUpgrade)
-      if (subsetUtxos.size() > 1 || (subsetUtxos.size() == 1 && destinationAddress != null)) {
+      if (!subsetUtxos.isEmpty()) {
         String toAddress = destinationAddress;
         if (toAddress == null) {
           toAddress = bech32Util.toBech32(destinationWallet.getNextAddress(), params);
@@ -150,6 +148,10 @@ public class WalletAggregateService {
     log.info(" • Consolidating premix -> deposit...");
     toWallet(premixWallet, depositWallet);
 
+    if (depositWallet.fetchUtxos().size() < 2) {
+      log.info(" • Consolidating deposit... nothing to aggregate.");
+      return false;
+    }
     log.info(" • Consolidating deposit...");
     boolean success = toWallet(depositWallet, depositWallet);
     return success;
