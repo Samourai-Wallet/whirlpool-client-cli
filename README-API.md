@@ -149,7 +149,10 @@ Response:
 ```
 {
     "cliStatus": "READY",
-    "loggedIn": true
+    "loggedIn": true,
+    "cliMessage": "",
+    "network": "test",
+    "serverUrl": ""
 }
 ```
 
