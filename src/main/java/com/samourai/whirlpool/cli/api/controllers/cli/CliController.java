@@ -9,6 +9,7 @@ import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliLoginRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliStateResponse;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.Encrypted;
+import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -24,12 +25,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class CliController extends AbstractRestController {
   @Autowired private CliConfigService cliConfigService;
   @Autowired private CliWalletService cliWalletService;
+  @Autowired private CliConfig cliConfig;
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI, method = RequestMethod.GET)
   public ApiCliStateResponse state(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
 
-    ApiCliStateResponse response = new ApiCliStateResponse(cliWalletService.getCliState());
+    ApiCliStateResponse response =
+        new ApiCliStateResponse(cliWalletService.getCliState(), cliConfig.getServer());
     return response;
   }
 
