@@ -193,9 +193,10 @@ Payload:
 }
 ```
 
-Response:
-```
-{
-    apiKey: "..."
-}
-```
+### get config: ```GET /rest/cli/config```
+
+### set config: ```PUT /rest/cli/config```
+
+### reset config: ```DELETE /rest/cli/config```
+
+

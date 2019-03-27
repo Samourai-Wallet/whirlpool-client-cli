@@ -42,4 +42,11 @@ public class CliConfigController extends AbstractRestController {
       cliConfigService.setServer(whirlpoolServer);
     }
   }
+
+  @RequestMapping(value = CliApiEndpoint.REST_CLI_CONFIG, method = RequestMethod.DELETE)
+  public void resetCliConfig(@RequestHeader HttpHeaders headers) throws Exception {
+    checkHeaders(headers);
+
+    cliConfigService.resetConfiguration();
+  }
 }

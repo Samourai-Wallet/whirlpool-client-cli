@@ -5,6 +5,7 @@ import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.utils.EncryptUtils;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -87,7 +88,7 @@ public class CliConfigService {
   }
 
   public Properties loadEntries() throws Exception {
-    Resource resource = new FileSystemResource(new File(CLI_CONFIG_FILENAME));
+    Resource resource = new FileSystemResource(getConfigurationFile());
     Properties props = PropertiesLoaderUtils.loadProperties(resource);
     return props;
   }
@@ -106,12 +107,26 @@ public class CliConfigService {
     this.setCliStatusNotReady("CLI restart required. Configuration updated. Please restart CLI.");
   }
 
+  public synchronized void resetConfiguration() throws Exception {
+    log.info("resetConfiguration");
+
+    File f = getConfigurationFile();
+    if (f.exists()) {
+      if (!f.delete()) {
+        throw new NotifiableException("Could not delete " + f.getAbsolutePath());
+      }
+    }
+
+    // restart needed
+    this.setCliStatusNotReady("CLI restart required. Configuration reset. Please restart CLI.");
+  }
+
   public void setCliStatusNotReady(String error) {
     this.setCliStatus(CliStatus.NOT_READY, error);
   }
 
   protected synchronized void save(Properties props) throws Exception {
-    File f = new File(CLI_CONFIG_FILENAME);
+    File f = getConfigurationFile();
     if (!f.exists()) {
       f.createNewFile();
     }
@@ -119,5 +134,9 @@ public class CliConfigService {
     OutputStream out = new FileOutputStream(f);
     DefaultPropertiesPersister p = new DefaultPropertiesPersister();
     p.store(props, out, "Updated by application");
+  }
+
+  private File getConfigurationFile() {
+    return new File(CLI_CONFIG_FILENAME);
   }
 }
