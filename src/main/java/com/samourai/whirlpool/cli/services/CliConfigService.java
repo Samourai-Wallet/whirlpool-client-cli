@@ -5,18 +5,18 @@ import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.utils.EncryptUtils;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DefaultPropertiesPersister;
 
@@ -25,6 +25,7 @@ public class CliConfigService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final String KEY_APIKEY = "cli.apiKey";
   private static final String KEY_SEED = "cli.seed";
+  private static final String KEY_SERVER = "cli.server";
   public static final String CLI_CONFIG_FILENAME = "whirlpool-cli-config.properties";
 
   private CliConfig cliConfig;
@@ -65,6 +66,8 @@ public class CliConfigService {
   }
 
   public synchronized String initialize(Encrypted seedWordsEncrypted) throws Exception {
+    log.info("initialize");
+
     // serialize seedWordsEncrypted
     String seedWordsEncryptedStr = EncryptUtils.serializeEncrypted(seedWordsEncrypted);
 
@@ -72,10 +75,10 @@ public class CliConfigService {
     String apiKey = CliUtils.generateUniqueString();
 
     // save configuration file
-    Map<String, String> entries = new HashMap<>();
-    entries.put(KEY_APIKEY, apiKey);
-    entries.put(KEY_SEED, seedWordsEncryptedStr);
-    save(entries);
+    Properties props = new Properties();
+    props.put(KEY_APIKEY, apiKey);
+    props.put(KEY_SEED, seedWordsEncryptedStr);
+    save(props);
 
     // restart needed
     this.setCliStatusNotReady(
@@ -83,21 +86,34 @@ public class CliConfigService {
     return apiKey;
   }
 
+  public Properties loadEntries() throws Exception {
+    Resource resource = new FileSystemResource(new File(CLI_CONFIG_FILENAME));
+    Properties props = PropertiesLoaderUtils.loadProperties(resource);
+    return props;
+  }
+
+  public synchronized void setServer(WhirlpoolServer whirlpoolServer) throws Exception {
+    if (whirlpoolServer == null) {
+      throw new IllegalArgumentException();
+    }
+    log.info("setServer: " + whirlpoolServer);
+
+    Properties props = loadEntries();
+    props.put(KEY_SERVER, whirlpoolServer.name());
+    save(props);
+
+    // restart needed
+    this.setCliStatusNotReady("CLI restart required. Configuration updated. Please restart CLI.");
+  }
+
   public void setCliStatusNotReady(String error) {
     this.setCliStatus(CliStatus.NOT_READY, error);
   }
 
-  protected synchronized void save(Map<String, String> entries) throws Exception {
+  protected synchronized void save(Properties props) throws Exception {
     File f = new File(CLI_CONFIG_FILENAME);
     if (!f.exists()) {
       f.createNewFile();
-    }
-
-    Properties props = new Properties();
-    props.load(new FileInputStream(f));
-
-    for (Entry<String, String> entry : entries.entrySet()) {
-      props.setProperty(entry.getKey(), entry.getValue());
     }
 
     OutputStream out = new FileOutputStream(f);
