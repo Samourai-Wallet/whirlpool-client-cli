@@ -119,7 +119,7 @@ public class CliWallet extends WhirlpoolWallet {
 
   @Override
   public void notifyError(String message) {
-    log.error("⣿ ERROR ⣿ " + message);
+    CliUtils.notifyError(message);
   }
 
   @Override

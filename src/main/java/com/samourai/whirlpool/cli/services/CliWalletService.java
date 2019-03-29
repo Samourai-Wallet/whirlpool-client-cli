@@ -54,7 +54,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     this.walletAggregateService = walletAggregateService;
   }
 
-  public WhirlpoolWallet openWallet(String seedPassphrase) throws Exception {
+  public CliWallet openWallet(String seedPassphrase) throws Exception {
     // require CliStatus.READY
     if (!CliStatus.READY.equals(cliConfigService.getCliStatus())) {
       throw new NotifiableException(

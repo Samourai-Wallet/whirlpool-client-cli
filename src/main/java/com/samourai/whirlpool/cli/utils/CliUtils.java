@@ -39,4 +39,8 @@ public class CliUtils {
       throw new NotifiableException("⣿ INPUT REQUIRED ⣿ " + message + "?>");
     }
   }
+
+  public static void notifyError(String message) {
+    log.error("⣿ ERROR ⣿ " + message);
+  }
 }

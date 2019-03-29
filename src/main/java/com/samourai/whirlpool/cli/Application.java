@@ -10,10 +10,10 @@ import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
-import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
@@ -99,11 +99,10 @@ public class Application implements ApplicationRunner {
       log.debug("config/initial: listen: " + (listenPort != null ? listenPort : "false"));
     }
 
-    WhirlpoolWallet whirlpoolWallet = null;
     try {
       runCli();
     } catch (NotifiableException e) {
-      whirlpoolWallet.onNotifiableException(e);
+      CliUtils.notifyError(e.getMessage());
     } catch (IllegalArgumentException e) {
       log.info("Invalid arguments: " + e.getMessage());
     } catch (Exception e) {
@@ -111,11 +110,6 @@ public class Application implements ApplicationRunner {
     }
 
     log.info("------------ whirlpool-client-cli ending ------------");
-
-    // stop cliWallet
-    if (whirlpoolWallet != null && whirlpoolWallet.isStarted()) {
-      whirlpoolWallet.stop();
-    }
 
     // disconnect
     if (torClient.isPresent()) {
@@ -168,7 +162,7 @@ public class Application implements ApplicationRunner {
       // no passphrase but listening => keep listening
       log.info(CliUtils.LOG_SEPARATOR);
       log.info("⣿ AUTHENTICATION REQUIRED");
-      log.info("⣿ Whirlpool is NOT started.");
+      log.info("⣿ Whirlpool wallet is CLOSED.");
       log.info("⣿ Please start GUI to authenticate and start mixing.");
       log.info("⣿ Or authenticate with --authenticate");
       log.info(CliUtils.LOG_SEPARATOR);
@@ -177,33 +171,40 @@ public class Application implements ApplicationRunner {
     }
 
     // authenticate to open wallet when passphrase providen through arguments
-    WhirlpoolWallet whirlpoolWallet = cliWalletService.openWallet(authenticate());
-    log.info(CliUtils.LOG_SEPARATOR);
-    log.info("⣿ AUTHENTICATION SUCCESS");
-    log.info("⣿ Whirlpool is starting...");
-    log.info(CliUtils.LOG_SEPARATOR);
+    CliWallet cliWallet = cliWalletService.openWallet(authenticate());
+    try {
+      log.info(CliUtils.LOG_SEPARATOR);
+      log.info("⣿ AUTHENTICATION SUCCESS");
+      log.info("⣿ Whirlpool is starting...");
+      log.info(CliUtils.LOG_SEPARATOR);
 
-    if (RunCliCommand.hasCommandToRun(appArgs)) {
-      // WhirlpoolClient instanciation
-      WhirlpoolClientConfig whirlpoolClientConfig = cliConfig.computeWhirlpoolWalletConfig();
-      WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(whirlpoolClientConfig);
+      if (RunCliCommand.hasCommandToRun(appArgs)) {
+        // WhirlpoolClient instanciation
+        WhirlpoolClientConfig whirlpoolClientConfig = cliConfig.computeWhirlpoolWalletConfig();
+        WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(whirlpoolClientConfig);
 
-      // execute specific command
-      new RunCliCommand(
-              appArgs,
-              whirlpoolClient,
-              whirlpoolClientConfig,
-              cliWalletService,
-              bech32Util,
-              walletAggregateService,
-              cliConfigService)
-          .run();
-    } else {
-      // start wallet
-      whirlpoolWallet.start();
+        // execute specific command
+        new RunCliCommand(
+                appArgs,
+                whirlpoolClient,
+                whirlpoolClientConfig,
+                cliWalletService,
+                bech32Util,
+                walletAggregateService,
+                cliConfigService)
+            .run();
+      } else {
+        // start wallet
+        cliWallet.start();
 
-      // keep cli running
-      keepRunning();
+        // keep cli running
+        keepRunning();
+      }
+    } finally {
+      // stop cliWallet
+      if (cliWallet != null && cliWallet.isStarted()) {
+        cliWallet.stop();
+      }
     }
   }
 
@@ -221,7 +222,7 @@ public class Application implements ApplicationRunner {
   private String authenticate() throws Exception {
     log.info(CliUtils.LOG_SEPARATOR);
     log.info("⣿ AUTHENTICATION REQUIRED");
-    log.info("⣿ Whirlpool is NOT started.");
+    log.info("⣿ Whirlpool wallet is CLOSED.");
     log.info("⣿ • Please type your seed passphrase to authenticate and start mixing.");
     return CliUtils.readUserInput("Seed passphrase", true);
   }
