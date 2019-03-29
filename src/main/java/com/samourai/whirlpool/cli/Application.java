@@ -43,6 +43,7 @@ public class Application implements ApplicationRunner {
 
   private static Integer listenPort;
   private static ConfigurableApplicationContext applicationContext;
+  private static int exitCode = 0;
 
   @Autowired private ApplicationArgs appArgs;
   @Autowired private CliConfig cliConfig;
@@ -70,8 +71,9 @@ public class Application implements ApplicationRunner {
     // run
     applicationContext = new SpringApplicationBuilder(Application.class).web(wat).run(args);
 
-    // quit?
+    // exit with exitCode
     applicationContext.close();
+    System.exit(exitCode);
   }
 
   @Override
@@ -102,10 +104,13 @@ public class Application implements ApplicationRunner {
     try {
       runCli();
     } catch (NotifiableException e) {
+      exitCode = 1;
       CliUtils.notifyError(e.getMessage());
     } catch (IllegalArgumentException e) {
+      exitCode = 1;
       log.info("Invalid arguments: " + e.getMessage());
     } catch (Exception e) {
+      exitCode = 1;
       log.error("", e);
     }
 
