@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli.utils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.io.Console;
 import java.lang.invoke.MethodHandles;
+import java.util.Scanner;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,18 +27,26 @@ public class CliUtils {
     }
   }
 
-  public static String readUserInput(String message, boolean secret) throws NotifiableException {
+  public static String readUserInput(String message, boolean secret) {
     Console console = System.console();
+    String inviteMessage = "⣿ INPUT REQUIRED ⣿ " + message + "?>";
+
+    // read line
+    String line;
     if (console != null) {
-      console.printf("⣿ INPUT REQUIRED ⣿ " + message + "?>");
-      String line = secret ? new String(console.readPassword()).trim() : console.readLine().trim();
-      if (line.isEmpty()) {
-        return null;
-      }
-      return line;
+      console.printf(inviteMessage);
+      line = secret ? new String(console.readPassword()) : console.readLine();
     } else {
-      throw new NotifiableException("⣿ INPUT REQUIRED ⣿ " + message + "?>");
+      // allow console redirection
+      Scanner input = new Scanner(System.in);
+      System.out.print(inviteMessage);
+      line = input.nextLine();
     }
+    line = line.trim();
+    if (line.isEmpty()) {
+      return null;
+    }
+    return line;
   }
 
   public static void notifyError(String message) {
