@@ -49,6 +49,11 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
             WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
             printUtxos("POSTMIX", whirlpoolWallet.getUtxosPostmix());
           }
+        } else {
+          synchronized (this) {
+            // when redirecting input
+            wait(5000);
+          }
         }
         printState();
       } catch (Exception e) {
@@ -111,7 +116,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
   private void printUtxos(String account, Collection<WhirlpoolUtxo> utxos) {
     try {
       log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
-      log.info("⣿ " + account+" UTXOS:");
+      log.info("⣿ " + account + " UTXOS:");
       CliUtils.logWhirlpoolUtxos(utxos);
 
     } catch (Exception e) {
