@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 public class CliWallet extends WhirlpoolWallet {
   private static final Logger log = LoggerFactory.getLogger(CliWallet.class);
-  private static final int CLI_STATUS_DELAY = 10000;
+  private static final int CLI_STATUS_DELAY = 5000;
 
   private CliConfig cliConfig;
   private WalletAggregateService walletAggregateService;
@@ -133,6 +133,10 @@ public class CliWallet extends WhirlpoolWallet {
       return;
     }
     super.mixQueue(whirlpoolUtxo);
+  }
+
+  public void interactive() {
+    cliStatusOrchestrator.interactive();
   }
 
   // make public

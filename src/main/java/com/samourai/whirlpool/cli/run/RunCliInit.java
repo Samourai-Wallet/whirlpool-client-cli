@@ -34,13 +34,13 @@ public class RunCliInit {
     log.info("⣿ Your passphrase is used to encrypt your wallet seed, but won't be stored.");
     log.info("⣿ Your passphrase is required for each whirlpool startup.");
     log.info("⣿ • Please type your seed passphrase");
-    String seedPassphrase = CliUtils.readUserInput("Seed passphrase", true);
+    String seedPassphrase = CliUtils.readUserInputRequired("Seed passphrase?", true);
     log.info("⣿ ");
 
     log.info("⣿ Your seed words will be encrypted in ./" + CliConfigService.CLI_CONFIG_FILENAME);
     log.info("⣿ whirlpool will never ask again for it.");
     log.info("⣿ • Please type your seed words (12 words separated with space, no quotes)");
-    String seedWords = CliUtils.readUserInput("Seed words", true);
+    String seedWords = CliUtils.readUserInputRequired("Seed words?", true);
     log.info("⣿ ");
     log.info("⣿ • Encrypting seed...");
 

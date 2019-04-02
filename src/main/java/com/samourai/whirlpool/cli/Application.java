@@ -203,7 +203,7 @@ public class Application implements ApplicationRunner {
         cliWallet.start();
 
         // keep cli running
-        keepRunning();
+        cliWallet.interactive();
       }
     } finally {
       // stop cliWallet
@@ -229,7 +229,7 @@ public class Application implements ApplicationRunner {
     log.info("⣿ AUTHENTICATION REQUIRED");
     log.info("⣿ Whirlpool wallet is CLOSED.");
     log.info("⣿ • Please type your seed passphrase to authenticate and start mixing.");
-    return CliUtils.readUserInput("Seed passphrase", true);
+    return CliUtils.readUserInputRequired("Seed passphrase?", true);
   }
 
   private void setDebug(boolean isDebug, boolean isDebugClient) {
