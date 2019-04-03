@@ -20,31 +20,22 @@ public class CliListener implements WhirlpoolClientListener {
   }
 
   @Override
-  public void success(int nbMixs, MixSuccess mixSuccess) {
-    // super.success(nbMixs, mixSuccess); // no log at success
+  public void success(MixSuccess mixSuccess) {
     done = true;
 
-    // override with custom code here: all mixs success
+    // override with custom code here: success
   }
 
   @Override
-  public void fail(int currentMix, int nbMixs) {
+  public void fail() {
     done = true;
 
     // override with custom code here: failure
   }
 
   @Override
-  public void progress(
-      int currentMix, int nbMixs, MixStep step, String stepInfo, int stepNumber, int nbSteps) {
+  public void progress(MixStep step, String stepInfo, int stepNumber, int nbSteps) {
 
     // override with custom code here: mix progress
-  }
-
-  @Override
-  public void mixSuccess(int currentMix, int nbMixs, MixSuccess mixSuccess) {
-
-    // override with custom code here: one mix success (check if more mixs remaining with
-    // currentMix==nbMixs)
   }
 }

@@ -20,6 +20,7 @@ import com.samourai.whirlpool.client.wallet.persist.FileWhirlpoolWalletPersistHa
 import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
+import javax.crypto.AEADBadTagException;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.MnemonicException;
 import org.slf4j.Logger;
@@ -68,7 +69,7 @@ public class CliWalletService extends WhirlpoolWalletService {
       seedWords = decryptSeedWords(seedPassphrase);
     } catch (Exception e) {
       log.error("decryptSeedWords failed, invalid passphrase?");
-      if (log.isDebugEnabled()) {
+      if (log.isDebugEnabled() && !(e instanceof AEADBadTagException)) {
         log.debug("", e);
       }
       throw new NotifiableException("Seed decrypt failed, invalid passphrase?");

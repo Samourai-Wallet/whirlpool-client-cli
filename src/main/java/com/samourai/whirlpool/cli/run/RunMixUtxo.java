@@ -34,7 +34,7 @@ public class RunMixUtxo {
     this.params = params;
   }
 
-  public void run(String utxoHash, long utxoIdx, String utxoKey, long utxoBalance, int mixs)
+  public void run(String utxoHash, long utxoIdx, String utxoKey, long utxoBalance)
       throws Exception {
 
     // pools
@@ -56,7 +56,7 @@ public class RunMixUtxo {
     MixParams mixParams =
         new MixParams(pool.getPoolId(), pool.getDenomination(), premixHandler, postmixHandler);
     CliListener listener = new CliListener();
-    whirlpoolClientConfig.newClient().whirlpool(mixParams, mixs, listener);
+    whirlpoolClientConfig.newClient().whirlpool(mixParams, listener);
     listener.waitDone();
   }
 }

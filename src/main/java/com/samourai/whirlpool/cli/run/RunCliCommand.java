@@ -51,10 +51,9 @@ public class RunCliCommand {
       long utxoIdx = appArgs.getUtxoIdx();
       String utxoKey = appArgs.getUtxoKey();
       long utxoBalance = appArgs.getUtxoBalance();
-      final int mixs = appArgs.getMixs();
 
       new RunMixUtxo(whirlpoolClientConfig, cliWalletService, params)
-          .run(utxoHash, utxoIdx, utxoKey, utxoBalance, mixs);
+          .run(utxoHash, utxoIdx, utxoKey, utxoBalance);
     } else if (appArgs.isAggregatePostmix()) {
       CliWallet cliWallet = cliWalletService.getSessionWallet();
 

@@ -73,7 +73,6 @@ You need a valid pre-mix utxo (output of a valid tx0) to mix.
 ```
 --server={MAIN,TEST} --pool=
 --utxo= --utxo-key= --utxo-balance=
-[--mixs=1]
 ```
 
 Example:
@@ -84,8 +83,6 @@ java -jar target/whirlpool-client-version-run.jar --server=TEST --pool=0.1btc --
 - utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)
 - utxo-key: ECKey for pre-mix input
 - utxo-balance: pre-mix input balance (in satoshis). Whole utxo-balance balance will be spent.
-- mixs: (1 to N) number of mixes to complete. Client will keep running until completing this number of mixes.
-
 
 ### Aggregate postmix / move funds
 Move all postmix funds back to premix wallet and consolidate to a single UTXO.

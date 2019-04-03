@@ -26,7 +26,6 @@ public class ApplicationArgs {
   private static final String ARG_UTXO_KEY = "utxo-key";
   private static final String ARG_UTXO_BALANCE = "utxo-balance";
   private static final String ARG_SERVER = "server";
-  private static final String ARG_MIXS = "mixs";
   private static final String ARG_LIST_POOLS = "list-pools";
   private static final String ARG_POOL_ID = "pool";
   private static final String ARG_SCODE = "scode";
@@ -200,17 +199,6 @@ public class ApplicationArgs {
       throw new IllegalArgumentException("Numeric value expected for option: " + ARG_UTXO_BALANCE);
     }
     return utxoBalance;
-  }
-
-  public int getMixs() {
-    final int mixs;
-    try {
-      mixs = Integer.parseInt(requireOption(ARG_MIXS, "1"));
-      Assert.isTrue(mixs > 0, "mixs should be > 0");
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_MIXS);
-    }
-    return mixs;
   }
 
   public boolean isListPools() {
