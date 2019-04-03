@@ -80,7 +80,7 @@ public class CliUtils {
   }
 
   public static void logWhirlpoolUtxos(Collection<WhirlpoolUtxo> utxos) {
-    String lineFormat = "| %10s | %10s | %70s | %50s | %16s | %10s | %10s | %6s |\n";
+    String lineFormat = "| %10s | %8s | %68s | %45s | %14s | %10s | %10s | %6s |\n";
     StringBuilder sb = new StringBuilder();
     sb.append(
         String.format(

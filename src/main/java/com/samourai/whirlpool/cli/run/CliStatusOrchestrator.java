@@ -77,7 +77,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + mixState.getNbIdle()
               + " idle, "
               + mixState.getNbQueued()
-              + " queue. Commands: [T]hreads, [D]eposit, [P]remix, P[O]stmix\r");
+              + " queued. Commands: [T]hreads, [D]eposit, [P]remix, P[O]stmix\r");
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED");
     } catch (Exception e) {
