@@ -6,17 +6,18 @@ import javax.websocket.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.ConnectionLostException;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
 public class JavaStompClient implements IStompClient {
   private static final Logger log = LoggerFactory.getLogger(JavaStompClient.class);
+  private static final int HEARTBEAT_DELAY = 20000;
 
   private WebSocketStompClient stompClient;
   private StompSession stompSession;
@@ -130,22 +131,27 @@ public class JavaStompClient implements IStompClient {
         super.handleTransportError(session, exception);
         log.error(
             " ! transportError: " + exception.getClass().getName() + ": " + exception.getMessage());
+        disconnect();
+        onDisconnect.onMessage(exception);
 
-        if (exception instanceof ConnectionLostException) {
-          disconnect();
-          onDisconnect.onMessage(exception);
-        } else {
-          if (log.isDebugEnabled()) {
-            log.error("", exception);
-          }
+        if (log.isDebugEnabled()) {
+          log.error("", exception);
         }
       }
     };
   }
 
   private WebSocketStompClient computeWebSocketClient() {
+    // enable heartbeat (mandatory to detect client disconnect)
+    ThreadPoolTaskScheduler te = new ThreadPoolTaskScheduler();
+    te.setPoolSize(1);
+    te.setThreadNamePrefix("wss-heartbeat-thread-");
+    te.initialize();
+
     WebSocketStompClient stompClient = new WebSocketStompClient(new StandardWebSocketClient());
     stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+    stompClient.setTaskScheduler(te);
+    stompClient.setDefaultHeartbeat(new long[] {HEARTBEAT_DELAY, HEARTBEAT_DELAY});
     return stompClient;
   }
 
