@@ -176,7 +176,13 @@ public class Application implements ApplicationRunner {
     }
 
     // authenticate to open wallet when passphrase providen through arguments
-    CliWallet cliWallet = cliWalletService.openWallet(authenticate());
+    String seedPassphrase = authenticate();
+
+    // we may have authenticated from API in the meantime...
+    CliWallet cliWallet =
+        cliWalletService.hasSessionWallet()
+            ? cliWalletService.getSessionWallet()
+            : cliWalletService.openWallet(seedPassphrase);
     try {
       log.info(CliUtils.LOG_SEPARATOR);
       log.info("⣿ AUTHENTICATION SUCCESS");
