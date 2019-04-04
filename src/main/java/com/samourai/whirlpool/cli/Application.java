@@ -250,8 +250,6 @@ public class Application implements ApplicationRunner {
       // Utils.setLoggerDebug("org.springframework.security");
     } else {
       LogbackUtils.setLogLevel("org.silvertunnel_ng.netlib", Level.WARN.toString());
-      LogbackUtils.setLogLevel("org.springframework", Level.WARN.toString());
-      LogbackUtils.setLogLevel("org.apache", Level.WARN.toString());
     }
 
     if (isDebugClient) {
