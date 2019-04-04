@@ -110,6 +110,9 @@ public class CliWallet extends WhirlpoolWallet {
       }
     }
 
+    // reset mixing threads to avoid mixing obsolete consolidated utxos
+    mixOrchestrator.stopMixingClients();
+
     clearCache();
 
     if (aggregateException != null) {
