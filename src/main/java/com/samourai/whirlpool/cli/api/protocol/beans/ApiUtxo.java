@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.api.protocol.beans;
 
 import com.samourai.api.client.beans.UnspentResponse.UnspentOutput;
+import com.samourai.whirlpool.client.wallet.beans.MixableStatus;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoStatus;
@@ -14,6 +15,7 @@ public class ApiUtxo {
 
   private WhirlpoolAccount account;
   private WhirlpoolUtxoStatus status;
+  private MixableStatus mixableStatus;
   private Integer progressPercent;
   private String progressLabel;
   private String poolId;
@@ -33,6 +35,7 @@ public class ApiUtxo {
 
     this.account = whirlpoolUtxo.getAccount();
     this.status = whirlpoolUtxo.getStatus();
+    this.mixableStatus = whirlpoolUtxo.getMixableStatus();
     this.progressPercent = whirlpoolUtxo.getProgressPercent();
     this.progressLabel = whirlpoolUtxo.getProgressLabel();
     this.poolId = whirlpoolUtxo.getUtxoConfig().getPoolId();
@@ -72,6 +75,10 @@ public class ApiUtxo {
 
   public WhirlpoolUtxoStatus getStatus() {
     return status;
+  }
+
+  public MixableStatus getMixableStatus() {
+    return mixableStatus;
   }
 
   public Integer getProgressPercent() {

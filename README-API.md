@@ -63,6 +63,7 @@ Response:
         "path":"M/0/166",
         "account":"PREMIX",
         "status":"MIX_STARTED",
+        "mixableStatus":"MIXABLE",
         "progressPercent":"10",
         "progressLabel":"CONNECTING",
         "poolId":"0.01btc",

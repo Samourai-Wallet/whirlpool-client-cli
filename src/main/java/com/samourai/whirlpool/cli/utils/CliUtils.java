@@ -1,15 +1,9 @@
 package com.samourai.whirlpool.cli.utils;
 
-import com.samourai.api.client.beans.UnspentResponse.UnspentOutput;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.utils.ClientUtils;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoConfig;
 import java.io.Console;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Scanner;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -77,43 +71,5 @@ public class CliUtils {
 
   public static void notifyError(String message) {
     log.error("⣿ ERROR ⣿ " + message);
-  }
-
-  public static void logWhirlpoolUtxos(Collection<WhirlpoolUtxo> utxos) {
-    String lineFormat = "| %10s | %8s | %68s | %45s | %14s | %10s | %10s | %6s |\n";
-    StringBuilder sb = new StringBuilder();
-    sb.append(
-        String.format(
-            lineFormat,
-            "BALANCE",
-            "CONFIRMS",
-            "UTXO",
-            "ADDRESS",
-            "PATH",
-            "STATUS",
-            "POOL",
-            "MIXS"));
-    sb.append(String.format(lineFormat, "(btc)", "", "", "", "", "", "", ""));
-    Iterator var3 = utxos.iterator();
-
-    while (var3.hasNext()) {
-      WhirlpoolUtxo whirlpoolUtxo = (WhirlpoolUtxo) var3.next();
-      WhirlpoolUtxoConfig utxoConfig = whirlpoolUtxo.getUtxoConfig();
-      UnspentOutput o = whirlpoolUtxo.getUtxo();
-      String utxo = o.tx_hash + ":" + o.tx_output_n;
-      sb.append(
-          String.format(
-              lineFormat,
-              ClientUtils.satToBtc(o.value),
-              o.confirmations,
-              utxo,
-              o.addr,
-              o.getPath(),
-              whirlpoolUtxo.getStatus().name(),
-              utxoConfig.getPoolId() != null ? utxoConfig.getPoolId() : "-",
-              utxoConfig.getMixsDone() + "/" + utxoConfig.getMixsTarget()));
-    }
-
-    log.info("\n" + sb.toString());
   }
 }

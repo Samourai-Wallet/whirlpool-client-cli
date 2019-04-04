@@ -4,6 +4,7 @@ import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.MixOrchestratorState;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
@@ -117,7 +118,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
     try {
       log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
       log.info("⣿ " + account + " UTXOS:");
-      CliUtils.logWhirlpoolUtxos(utxos);
+      ClientUtils.logWhirlpoolUtxos(utxos);
 
     } catch (Exception e) {
       log.error("", e);
