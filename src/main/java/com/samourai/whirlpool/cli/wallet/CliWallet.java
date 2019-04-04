@@ -51,9 +51,15 @@ public class CliWallet extends WhirlpoolWallet {
   @Override
   public synchronized void onEmptyWalletException(EmptyWalletException e) {
     try {
-      autoRefill(e);
+      if (cliConfig.getMix().isAutoAggregatePostmix()) {
+        // run autoAggregatePostmix
+        autoRefill(e);
+      } else {
+        // default management
+        throw e;
+      }
     } catch (Exception ee) {
-      // default log
+      // default management
       super.onEmptyWalletException(e);
     }
   }
@@ -81,17 +87,11 @@ public class CliWallet extends WhirlpoolWallet {
       log.debug("requiredBalance=" + requiredBalance + " => missingBalance=" + missingBalance);
     }
     if (missingBalance > 0) {
+      // cannot autoAggregatePostmix
       throw new EmptyWalletException("Insufficient balance to continue", missingBalance);
     }
 
-    String depositAddress = getDepositAddress(false);
-    String message = e.getMessageDeposit(depositAddress);
-    if (!cliConfig.getMix().isAutoAggregatePostmix()) {
-      CliUtils.waitUserAction(message);
-      return;
-    }
-
-    // auto aggregate postmix
+    // auto aggregate postmix is possible
     log.info(" o AutoAggregatePostmix: depositWallet wallet is empty => aggregating");
     Exception aggregateException = null;
     try {

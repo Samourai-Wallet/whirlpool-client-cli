@@ -43,6 +43,7 @@ public class Application implements ApplicationRunner {
 
   private static Integer listenPort;
   private static boolean debug;
+  private static boolean debugClient;
   private static ConfigurableApplicationContext applicationContext;
   private static int exitCode = 0;
 
@@ -71,7 +72,8 @@ public class Application implements ApplicationRunner {
 
     // enable debug logs with --debug
     debug = ApplicationArgs.isMainDebug(args);
-    setDebug(debug, ApplicationArgs.isMainDebugClient(args));
+    debugClient = ApplicationArgs.isMainDebugClient(args);
+    setDebug(debug, debugClient);
 
     // run
     applicationContext =
@@ -84,6 +86,7 @@ public class Application implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
+    setDebug(debug, debugClient); // run twice to fix incorrect log level
     log.info("------------ whirlpool-client-cli starting ------------");
     log.info(
         "Running whirlpool-client {} on java {}",
@@ -233,7 +236,7 @@ public class Application implements ApplicationRunner {
     }
   }
 
-  private String authenticate() throws Exception {
+  private String authenticate() {
     log.info(CliUtils.LOG_SEPARATOR);
     log.info("⣿ AUTHENTICATION REQUIRED");
     log.info("⣿ Whirlpool wallet is CLOSED.");
@@ -242,6 +245,15 @@ public class Application implements ApplicationRunner {
   }
 
   private static void setDebug(boolean isDebug, boolean isDebugClient) {
+    if (isDebug) {
+      LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
+      // Utils.setLoggerDebug("org.springframework.security");
+    } else {
+      LogbackUtils.setLogLevel("org.silvertunnel_ng.netlib", Level.WARN.toString());
+      LogbackUtils.setLogLevel("org.springframework", Level.WARN.toString());
+      LogbackUtils.setLogLevel("org.apache", Level.WARN.toString());
+    }
+
     if (isDebugClient) {
       LogbackUtils.setLogLevel("com.samourai.whirlpool.client", Level.DEBUG.toString());
       LogbackUtils.setLogLevel("com.samourai.stomp.client", Level.DEBUG.toString());
@@ -251,11 +263,9 @@ public class Application implements ApplicationRunner {
     }
 
     if (isDebug) {
-      LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
       LogbackUtils.setLogLevel("com.samourai.whirlpool.client.wallet", Level.DEBUG.toString());
-      // Utils.setLoggerDebug("org.springframework.security");
-    } else {
-      LogbackUtils.setLogLevel("org.silvertunnel_ng.netlib", Level.WARN.toString());
+      LogbackUtils.setLogLevel(
+          "com.samourai.whirlpool.client.wallet.orchestrator", Level.DEBUG.toString());
     }
 
     // skip noisy logs
