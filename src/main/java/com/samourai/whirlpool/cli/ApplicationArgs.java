@@ -134,22 +134,6 @@ public class ApplicationArgs {
     }
   }
 
-  public boolean isDebug() {
-    Boolean value = optionalBoolean(ARG_DEBUG);
-    if (value == null) {
-      value = false;
-    }
-    return value;
-  }
-
-  public boolean isDebugClient() {
-    Boolean value = optionalBoolean(ARG_DEBUG_CLIENT);
-    if (value == null) {
-      value = false;
-    }
-    return value;
-  }
-
   private Collection<String> getPoolIdsByPriority() {
     List<String> poolIdsByPriority = new LinkedList<>();
 
@@ -227,6 +211,14 @@ public class ApplicationArgs {
 
   public static Integer getMainListen(String[] mainArgs) {
     return mainInteger(mainArgs, ARG_LISTEN, null, LISTEN_DEFAULT_PORT);
+  }
+
+  public static boolean isMainDebug(String[] mainArgs) {
+    return Boolean.parseBoolean(mainArg(mainArgs, ARG_DEBUG, "false", "true"));
+  }
+
+  public static boolean isMainDebugClient(String[] mainArgs) {
+    return Boolean.parseBoolean(mainArg(mainArgs, ARG_DEBUG_CLIENT, "false", "true"));
   }
 
   private String requireOption(String name, String defaultValue) {
