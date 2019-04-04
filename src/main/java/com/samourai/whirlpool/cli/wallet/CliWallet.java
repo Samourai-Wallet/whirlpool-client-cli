@@ -76,11 +76,11 @@ public class CliWallet extends WhirlpoolWallet {
       log.debug("totalBalance=" + totalBalance);
     }
 
-    long missingBalance = totalBalance - requiredBalance;
+    long missingBalance = requiredBalance - totalBalance;
     if (log.isDebugEnabled()) {
       log.debug("requiredBalance=" + requiredBalance + " => missingBalance=" + missingBalance);
     }
-    if (totalBalance < requiredBalance) {
+    if (missingBalance > 0) {
       throw new EmptyWalletException("Insufficient balance to continue", missingBalance);
     }
 
