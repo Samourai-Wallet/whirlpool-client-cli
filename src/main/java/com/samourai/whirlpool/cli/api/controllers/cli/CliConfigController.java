@@ -7,8 +7,6 @@ import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliConfigRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliConfigResponse;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,10 +35,7 @@ public class CliConfigController extends AbstractRestController {
     checkHeaders(headers);
 
     ApiCliConfig apiCliConfig = payload.getConfig();
-    if (!Strings.isEmpty(apiCliConfig.getServer())) {
-      WhirlpoolServer whirlpoolServer = WhirlpoolServer.valueOf(apiCliConfig.getServer());
-      cliConfigService.setServer(whirlpoolServer);
-    }
+    cliConfigService.setApiConfig(apiCliConfig);
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI_CONFIG, method = RequestMethod.DELETE)

@@ -1,5 +1,7 @@
 package com.samourai.whirlpool.cli.services;
 
+import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
+import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig.ApiMixConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
@@ -11,6 +13,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
+import java.util.Map.Entry;
 import java.util.Properties;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
@@ -27,6 +30,10 @@ public class CliConfigService {
   private static final String KEY_APIKEY = "cli.apiKey";
   private static final String KEY_SEED = "cli.seed";
   private static final String KEY_SERVER = "cli.server";
+  private static final String KEY_MIX_AUTO_TX0 = "cli.mix.autoTx0";
+  private static final String KEY_MIX_AUTO_MIX = "cli.mix.autoMix";
+  private static final String KEY_MIX_AUTO_AGGREGATE_POSTMIX = "cli.mix.autoAggregatePostmix";
+  private static final String KEY_MIX_POOL_IDS_BY_PRIORITY = "cli.mix.poolIdsByPriority";
   public static final String CLI_CONFIG_FILENAME = "whirlpool-cli-config.properties";
 
   private CliConfig cliConfig;
@@ -93,14 +100,41 @@ public class CliConfigService {
     return props;
   }
 
-  public synchronized void setServer(WhirlpoolServer whirlpoolServer) throws Exception {
-    if (whirlpoolServer == null) {
-      throw new IllegalArgumentException();
-    }
-    log.info("setServer: " + whirlpoolServer);
-
+  public synchronized void setApiConfig(ApiCliConfig apiCliConfig) throws Exception {
     Properties props = loadEntries();
+
+    WhirlpoolServer whirlpoolServer = WhirlpoolServer.valueOf(apiCliConfig.getServer());
+    if (whirlpoolServer == null) {
+      throw new NotifiableException("Invalid value for: server");
+    }
     props.put(KEY_SERVER, whirlpoolServer.name());
+
+    ApiMixConfig mixConfig = apiCliConfig.getMix();
+    if (mixConfig != null) {
+      if (mixConfig.isAutoTx0() != null) {
+        props.put(KEY_MIX_AUTO_TX0, Boolean.toString(mixConfig.isAutoTx0()));
+      }
+      if (mixConfig.isAutoMix() != null) {
+        props.put(KEY_MIX_AUTO_MIX, Boolean.toString(mixConfig.isAutoMix()));
+      }
+      if (mixConfig.isAutoAggregatePostmix() != null) {
+        if (mixConfig.isAutoAggregatePostmix() && WhirlpoolServer.MAIN.equals(whirlpoolServer)) {
+          throw new NotifiableException("AutoAggregatePostmix cannot be enabled for MainNet");
+        }
+        props.put(
+            KEY_MIX_AUTO_AGGREGATE_POSTMIX, Boolean.toString(mixConfig.isAutoAggregatePostmix()));
+      }
+      if (mixConfig.getPoolIdsByPriority() != null && !mixConfig.getPoolIdsByPriority().isEmpty()) {
+        props.put(KEY_MIX_POOL_IDS_BY_PRIORITY, mixConfig.getPoolIdsByPriority());
+      }
+    }
+
+    // log
+    for (Entry<Object, Object> entry : props.entrySet()) {
+      log.info("set " + entry.getKey() + ": " + entry.getValue());
+    }
+
+    // save
     save(props);
 
     // restart needed
@@ -126,6 +160,10 @@ public class CliConfigService {
   }
 
   protected synchronized void save(Properties props) throws Exception {
+    if (props.isEmpty()) {
+      throw new IllegalArgumentException("Configuration to save is empty");
+    }
+
     File f = getConfigurationFile();
     if (!f.exists()) {
       f.createNewFile();
