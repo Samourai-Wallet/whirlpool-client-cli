@@ -118,8 +118,13 @@ public class CliConfigService {
         props.put(KEY_MIX_AUTO_MIX, Boolean.toString(mixConfig.isAutoMix()));
       }
       if (mixConfig.isAutoAggregatePostmix() != null) {
-        if (mixConfig.isAutoAggregatePostmix() && WhirlpoolServer.MAIN.equals(whirlpoolServer)) {
-          throw new NotifiableException("AutoAggregatePostmix cannot be enabled for MainNet");
+        if (mixConfig.isAutoAggregatePostmix()) {
+          if (WhirlpoolServer.MAIN.equals(whirlpoolServer)) {
+            throw new NotifiableException("AutoAggregatePostmix cannot be enabled for MainNet");
+          }
+          if (!mixConfig.isAutoTx0()) {
+            throw new NotifiableException("AutoAggregatePostmix cannot be enabled without AutoTx0");
+          }
         }
         props.put(
             KEY_MIX_AUTO_AGGREGATE_POSTMIX, Boolean.toString(mixConfig.isAutoAggregatePostmix()));

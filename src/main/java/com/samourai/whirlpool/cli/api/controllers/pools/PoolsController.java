@@ -25,7 +25,8 @@ public class PoolsController extends AbstractRestController {
     checkHeaders(headers);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     Collection<Pool> poolsByPreference = whirlpoolWallet.getPoolsByPreference(true); // clear cache
+    Collection<Pool> poolsAvailable = whirlpoolWallet.getPoolsAvailable(false);
     int feeSatPerByte = whirlpoolWallet.getFeeSatPerByte();
-    return new ApiPoolsResponse(poolsByPreference, feeSatPerByte, tx0Service);
+    return new ApiPoolsResponse(poolsByPreference, poolsAvailable, feeSatPerByte, tx0Service);
   }
 }
