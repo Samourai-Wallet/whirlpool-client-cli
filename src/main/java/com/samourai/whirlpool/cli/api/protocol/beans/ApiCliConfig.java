@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.api.protocol.beans;
 
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfig.MixConfig;
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class ApiCliConfig {
@@ -43,6 +44,8 @@ public class ApiCliConfig {
       this.autoTx0 = mixConfig.isAutoTx0();
       this.autoMix = mixConfig.isAutoMix();
       this.autoAggregatePostmix = mixConfig.isAutoAggregatePostmix();
+      this.poolIdsByPriority = new ArrayList<>();
+      this.poolIdsByPriority.addAll(mixConfig.getPoolIdsByPriority());
     }
 
     public Boolean isAutoTx0() {

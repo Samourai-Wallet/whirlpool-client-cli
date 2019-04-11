@@ -124,8 +124,10 @@ public class CliConfigService {
         props.put(
             KEY_MIX_AUTO_AGGREGATE_POSTMIX, Boolean.toString(mixConfig.isAutoAggregatePostmix()));
       }
-      if (mixConfig.getPoolIdsByPriority() != null && !mixConfig.getPoolIdsByPriority().isEmpty()) {
-        props.put(KEY_MIX_POOL_IDS_BY_PRIORITY, mixConfig.getPoolIdsByPriority());
+      if (mixConfig.getPoolIdsByPriority() != null) {
+        // poolIdsByPriority[0] = '' => no pool preference
+        String poolIds = String.join(",", mixConfig.getPoolIdsByPriority());
+        props.put(KEY_MIX_POOL_IDS_BY_PRIORITY, poolIds);
       }
     }
 
