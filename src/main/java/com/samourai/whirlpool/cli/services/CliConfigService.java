@@ -1,14 +1,12 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
-import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig.ApiMixConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.utils.EncryptUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -27,14 +25,9 @@ import org.springframework.util.DefaultPropertiesPersister;
 @Service
 public class CliConfigService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  public static final String CLI_CONFIG_FILENAME = "whirlpool-cli-config.properties";
   private static final String KEY_APIKEY = "cli.apiKey";
   private static final String KEY_SEED = "cli.seed";
-  private static final String KEY_SERVER = "cli.server";
-  private static final String KEY_MIX_AUTO_TX0 = "cli.mix.autoTx0";
-  private static final String KEY_MIX_AUTO_MIX = "cli.mix.autoMix";
-  private static final String KEY_MIX_AUTO_AGGREGATE_POSTMIX = "cli.mix.autoAggregatePostmix";
-  private static final String KEY_MIX_POOL_IDS_BY_PRIORITY = "cli.mix.poolIdsByPriority";
-  public static final String CLI_CONFIG_FILENAME = "whirlpool-cli-config.properties";
 
   private CliConfig cliConfig;
   private CliStatus cliStatus;
@@ -103,38 +96,7 @@ public class CliConfigService {
   public synchronized void setApiConfig(ApiCliConfig apiCliConfig) throws Exception {
     Properties props = loadEntries();
 
-    WhirlpoolServer whirlpoolServer = WhirlpoolServer.valueOf(apiCliConfig.getServer());
-    if (whirlpoolServer == null) {
-      throw new NotifiableException("Invalid value for: server");
-    }
-    props.put(KEY_SERVER, whirlpoolServer.name());
-
-    ApiMixConfig mixConfig = apiCliConfig.getMix();
-    if (mixConfig != null) {
-      if (mixConfig.isAutoTx0() != null) {
-        props.put(KEY_MIX_AUTO_TX0, Boolean.toString(mixConfig.isAutoTx0()));
-      }
-      if (mixConfig.isAutoMix() != null) {
-        props.put(KEY_MIX_AUTO_MIX, Boolean.toString(mixConfig.isAutoMix()));
-      }
-      if (mixConfig.isAutoAggregatePostmix() != null) {
-        if (mixConfig.isAutoAggregatePostmix()) {
-          if (WhirlpoolServer.MAIN.equals(whirlpoolServer)) {
-            throw new NotifiableException("AutoAggregatePostmix cannot be enabled for MainNet");
-          }
-          if (!mixConfig.isAutoTx0()) {
-            throw new NotifiableException("AutoAggregatePostmix cannot be enabled without AutoTx0");
-          }
-        }
-        props.put(
-            KEY_MIX_AUTO_AGGREGATE_POSTMIX, Boolean.toString(mixConfig.isAutoAggregatePostmix()));
-      }
-      if (mixConfig.getPoolIdsByPriority() != null) {
-        // poolIdsByPriority[0] = '' => no pool preference
-        String poolIds = String.join(",", mixConfig.getPoolIdsByPriority());
-        props.put(KEY_MIX_POOL_IDS_BY_PRIORITY, poolIds);
-      }
-    }
+    apiCliConfig.toProperties(props);
 
     // log
     for (Entry<Object, Object> entry : props.entrySet()) {
