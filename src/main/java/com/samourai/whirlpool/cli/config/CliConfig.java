@@ -1,12 +1,15 @@
 package com.samourai.whirlpool.cli.config;
 
+import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.cli.services.JavaStompClientService;
+import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.validation.constraints.NotEmpty;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,8 @@ public class CliConfig {
   @NotEmpty private String apiKey;
   @NotEmpty private String seed;
   @NotEmpty private int persistDelay;
+  @NotEmpty private String proxy;
+  private Optional<CliProxy> _cliProxy;
   @NotEmpty private MixConfig mix;
 
   private static final String PUSHTX_AUTO = "auto";
@@ -97,6 +102,21 @@ public class CliConfig {
 
   public void setPersistDelay(int persistDelay) {
     this.persistDelay = persistDelay;
+  }
+
+  public String getProxy() {
+    return proxy;
+  }
+
+  public Optional<CliProxy> getCliProxy() {
+    if (_cliProxy == null) {
+      _cliProxy = Optional.of(CliUtils.computeProxyOrNull(proxy));
+    }
+    return _cliProxy;
+  }
+
+  public void setProxy(String proxy) {
+    this.proxy = proxy;
   }
 
   public MixConfig getMix() {
@@ -224,6 +244,8 @@ public class CliConfig {
     configInfo.put("tor", Boolean.toString(tor));
     configInfo.put("apiKey", !Strings.isEmpty(apiKey) ? mask(apiKey, 3, 3) : "null");
     configInfo.put("seed", !Strings.isEmpty(seed) ? mask(seed, 3, 3) : "null");
+    configInfo.put("persistDelay", Integer.toString(persistDelay));
+    configInfo.put("proxy", !Strings.isEmpty(proxy) ? proxy : "null");
     String poolIdsByPriorityStr = "null";
     if (mix.getPoolIdsByPriority() != null && !mix.getPoolIdsByPriority().isEmpty()) {
       poolIdsByPriorityStr = Strings.join(mix.getPoolIdsByPriority(), ',');

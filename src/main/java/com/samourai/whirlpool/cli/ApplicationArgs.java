@@ -39,6 +39,7 @@ public class ApplicationArgs {
   private static final String ARG_AUTO_MIX = "auto-mix";
   private static final String ARG_PUSHTX = "pushtx";
   private static final String ARG_TOR = "tor";
+  private static final String ARG_PROXY = "proxy";
   private static final String ARG_LISTEN = "listen";
   private static final String ARG_API_KEY = "api-key";
   private static final String ARG_INIT = "init";
@@ -96,6 +97,11 @@ public class ApplicationArgs {
     valueBool = optionalBoolean(ARG_TOR);
     if (valueBool != null) {
       cliConfig.setTor(valueBool);
+    }
+
+    value = optionalOption(ARG_PROXY);
+    if (value != null) {
+      cliConfig.setProxy(value);
     }
 
     valueInt = optionalInt(ARG_CLIENTS);
