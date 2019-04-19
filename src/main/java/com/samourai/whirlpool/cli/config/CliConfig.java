@@ -110,7 +110,7 @@ public class CliConfig {
 
   public Optional<CliProxy> getCliProxy() {
     if (_cliProxy == null) {
-      _cliProxy = Optional.of(CliUtils.computeProxyOrNull(proxy));
+      _cliProxy = Optional.ofNullable(CliUtils.computeProxyOrNull(proxy));
     }
     return _cliProxy;
   }

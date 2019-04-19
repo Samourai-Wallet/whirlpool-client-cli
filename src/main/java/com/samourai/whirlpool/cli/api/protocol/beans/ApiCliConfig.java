@@ -34,10 +34,9 @@ public class ApiCliConfig {
 
   public void toProperties(Properties props) throws NotifiableException {
     // server is mandatory
-    WhirlpoolServer whirlpoolServer = WhirlpoolServer.valueOf(server);
-    if (whirlpoolServer == null) {
-      throw new NotifiableException("Invalid value for: server");
-    }
+    WhirlpoolServer whirlpoolServer =
+        WhirlpoolServer.find(server)
+            .orElseThrow(() -> new NotifiableException("Invalid value for: server"));
     props.put(KEY_SERVER, whirlpoolServer.name());
 
     if (scode != null) {

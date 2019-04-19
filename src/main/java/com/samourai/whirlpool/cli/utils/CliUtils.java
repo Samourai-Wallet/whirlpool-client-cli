@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.utils;
 
 import com.samourai.whirlpool.cli.beans.CliProxy;
+import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.io.Console;
 import java.io.IOException;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 public class CliUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   public static final String LOG_SEPARATOR = "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿";
-  private static final String PROXY_PROTOCOL_SOCKS5 = "socks5";
 
   public static String generateUniqueString() {
     return UUID.randomUUID().toString().replace("-", "");
@@ -76,28 +76,50 @@ public class CliUtils {
     log.error("⣿ ERROR ⣿ " + message);
   }
 
-  public static CliProxy computeProxyOrNull(String proxy) {
+  public static CliProxy computeProxyOrNull(final String proxy) {
     if (StringUtils.isEmpty(proxy)) {
       return null;
     }
-    proxy = proxy.toLowerCase();
     String[] splitProtocol = proxy.split("://");
     if (splitProtocol.length != 2) {
       throw new IllegalArgumentException("Invalid proxy: " + proxy);
     }
-    if (!PROXY_PROTOCOL_SOCKS5.equals(splitProtocol[0])) {
-      throw new IllegalArgumentException("Unsupported proxy protocol: " + proxy);
-    }
+    CliProxyProtocol proxyProtocol =
+        CliProxyProtocol.find(splitProtocol[0].toUpperCase())
+            .orElseThrow(
+                () -> new IllegalArgumentException("Unsupported proxy protocol: " + proxy));
     String[] split = splitProtocol[1].split(":");
     if (split.length != 2) {
       throw new IllegalArgumentException("Invalid proxy: " + proxy);
     }
     try {
       int port = Integer.parseInt(split[1]);
+      if (port < 1) {
+        throw new IllegalArgumentException("Invalid proxy port: " + proxy);
+      }
       String host = split[0];
-      return new CliProxy(host, port);
+      if (StringUtils.isEmpty(host)) {
+        throw new IllegalArgumentException("Invalid proxy host: " + proxy);
+      }
+      return new CliProxy(proxyProtocol, host, port);
     } catch (Exception e) {
       throw new IllegalArgumentException("Invalid proxy: " + proxy);
+    }
+  }
+
+  public static void useProxy(CliProxy cliProxy) {
+    String portStr = Integer.toString(cliProxy.getPort()); // important cast
+    switch (cliProxy.getProtocol()) {
+      case SOCKS:
+        System.getProperties().put("socksProxyHost", cliProxy.getHost());
+        System.getProperties().put("socksProxyPort", portStr);
+        break;
+      case HTTP:
+        System.getProperties().put("http.proxyHost", cliProxy.getHost());
+        System.getProperties().put("http.proxyPort", portStr);
+        System.getProperties().put("https.proxyHost", cliProxy.getHost());
+        System.getProperties().put("https.proxyPort", portStr);
+        break;
     }
   }
 }

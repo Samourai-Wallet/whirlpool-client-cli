@@ -61,7 +61,10 @@ public class ApplicationArgs {
 
     value = optionalOption(ARG_SERVER);
     if (value != null) {
-      cliConfig.setServer(Enum.valueOf(WhirlpoolServer.class, value));
+      java8.util.Optional<WhirlpoolServer> whirlpoolServer = WhirlpoolServer.find(value);
+      if (whirlpoolServer.isPresent()) {
+        cliConfig.setServer(whirlpoolServer.get());
+      }
     }
 
     Collection<String> poolIdsBypriority = getPoolIdsByPriority();

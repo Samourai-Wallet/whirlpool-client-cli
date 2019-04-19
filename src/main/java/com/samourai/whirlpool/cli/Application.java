@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.tor.client.JavaTorClient;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
+import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunCliInit;
@@ -98,7 +99,13 @@ public class Application implements ApplicationRunner {
       }
     }
 
-    Optional<JavaTorClient> torClient = Optional.empty();
+    // setup proxy
+    Optional<CliProxy> cliProxyOptional = cliConfig.getCliProxy();
+    if (cliProxyOptional.isPresent()) {
+      CliProxy cliProxy = cliProxyOptional.get();
+      log.info("Using proxy: " + cliProxy);
+      CliUtils.useProxy(cliProxy);
+    }
 
     if (log.isDebugEnabled()) {
       for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
@@ -123,6 +130,7 @@ public class Application implements ApplicationRunner {
     log.info("------------ whirlpool-client-cli ending ------------");
 
     // disconnect
+    Optional<JavaTorClient> torClient = Optional.empty();
     if (torClient.isPresent()) {
       torClient.get().disconnect();
     }
@@ -275,5 +283,8 @@ public class Application implements ApplicationRunner {
     LogbackUtils.setLogLevel(
         "org.springframework.boot.web.servlet.filter.OrderedRequestContextFilter",
         Level.INFO.toString());
+
+    // LogbackUtils.setLogLevel("com", Level.DEBUG.toString());
+    // LogbackUtils.setLogLevel("org", Level.DEBUG.toString());
   }
 }

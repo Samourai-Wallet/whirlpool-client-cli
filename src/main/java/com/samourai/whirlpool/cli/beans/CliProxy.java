@@ -1,12 +1,18 @@
 package com.samourai.whirlpool.cli.beans;
 
 public class CliProxy {
+  private CliProxyProtocol protocol;
   private String host;
   private int port;
 
-  public CliProxy(String host, int port) {
+  public CliProxy(CliProxyProtocol protocol, String host, int port) {
+    this.protocol = protocol;
     this.host = host;
     this.port = port;
+  }
+
+  public CliProxyProtocol getProtocol() {
+    return protocol;
   }
 
   public String getHost() {
@@ -19,6 +25,6 @@ public class CliProxy {
 
   @Override
   public String toString() {
-    return host + ":" + port;
+    return protocol + "://" + host + ":" + port;
   }
 }

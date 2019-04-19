@@ -4,6 +4,7 @@ import com.samourai.whirlpool.cli.beans.Encrypted;
 import java.lang.invoke.MethodHandles;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
+import java.util.Arrays;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -12,7 +13,6 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.util.Arrays;
 
 public class EncryptUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -134,12 +134,12 @@ public class EncryptUtils {
     System.arraycopy(ct, 0, concat, iv.length + salt.length, ct.length);
 
     // base64 encode
-    return org.spongycastle.util.encoders.Base64.toBase64String(concat);
+    return org.bouncycastle.util.encoders.Base64.toBase64String(concat);
   }
 
   protected static Encrypted unserializeEncrypted(String apiEncryptedSerialized) throws Exception {
     // base64 decode
-    byte[] concat = org.spongycastle.util.encoders.Base64.decode(apiEncryptedSerialized);
+    byte[] concat = org.bouncycastle.util.encoders.Base64.decode(apiEncryptedSerialized);
 
     // un-concat
     if (concat.length <= CHECK_IV_LENGTH + CHECK_SALT_LENGTH) {
