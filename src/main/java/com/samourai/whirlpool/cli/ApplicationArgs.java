@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli;
 
+import com.samourai.whirlpool.cli.beans.TorMode;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.lang.invoke.MethodHandles;
@@ -97,9 +98,12 @@ public class ApplicationArgs {
       cliConfig.setPushtx(value);
     }
 
-    valueBool = optionalBoolean(ARG_TOR);
-    if (valueBool != null) {
-      cliConfig.setTor(valueBool);
+    value = optionalOption(ARG_TOR);
+    if (value != null) {
+      java8.util.Optional<TorMode> torMode = TorMode.find(value.toUpperCase());
+      if (torMode.isPresent()) {
+        cliConfig.setTor(torMode.get());
+      }
     }
 
     value = optionalOption(ARG_PROXY);

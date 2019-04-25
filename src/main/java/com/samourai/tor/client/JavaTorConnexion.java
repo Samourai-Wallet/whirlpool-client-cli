@@ -9,9 +9,12 @@ import org.silvertunnel_ng.netlib.api.NetLayerIDs;
 
 public class JavaTorConnexion {
   private NetFactory netFactory;
+  private boolean privateCircuit;
+  private NetlibURLStreamHandlerFactory urlFactory;
 
-  public JavaTorConnexion(NetFactory netFactory) {
+  public JavaTorConnexion(NetFactory netFactory, boolean privateCircuit) {
     this.netFactory = netFactory;
+    this.privateCircuit = privateCircuit;
   }
 
   public URL getUrl(String urlStr) throws Exception {
@@ -23,15 +26,23 @@ public class JavaTorConnexion {
   }
 
   private NetlibURLStreamHandlerFactory computeStreamHandlerFactory(NetFactory netFactory) {
-    NetLayer netLayer = netFactory.getNetLayerById(NetLayerIDs.TOR);
-    netLayer.waitUntilReady(); // wait connected
+    if (urlFactory == null) {
+      NetLayer netLayer = netFactory.getNetLayerById(NetLayerIDs.TOR);
+      netLayer.waitUntilReady(); // wait connected
 
-    NetlibURLStreamHandlerFactory urlFactory = new NetlibURLStreamHandlerFactory(false);
-    urlFactory.setNetLayerForHttpHttpsFtp(netLayer);
+      urlFactory = new NetlibURLStreamHandlerFactory(false);
+      urlFactory.setNetLayerForHttpHttpsFtp(netLayer);
+    }
     return urlFactory;
   }
 
   public void close() {
-    netFactory.clearRegisteredNetLayers();
+    close(false);
+  }
+
+  public void close(boolean closeShared) {
+    if (privateCircuit || closeShared) {
+      netFactory.clearRegisteredNetLayers();
+    }
   }
 }
