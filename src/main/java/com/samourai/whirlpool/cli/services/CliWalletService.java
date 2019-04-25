@@ -3,15 +3,15 @@ package com.samourai.whirlpool.cli.services;
 import com.google.common.primitives.Bytes;
 import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.client.indexHandler.IIndexHandler;
+import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
+import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.whirlpool.cli.beans.CliState;
 import com.samourai.whirlpool.cli.beans.CliStatus;
-import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.run.RunUpgradeCli;
-import com.samourai.whirlpool.cli.utils.EncryptUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -119,26 +119,9 @@ public class CliWalletService extends WhirlpoolWalletService {
     return sessionWallet;
   }
 
-  public boolean checkSeedValid(String seedWords, String seedPassphrase) throws Exception {
-    NetworkParameters params = cliConfig.getServer().getParams();
-    try {
-      // init wallet from seed
-      byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
-      hdWalletFactory.getBIP84(seed, seedPassphrase, params);
-      return true;
-    } catch (MnemonicException e) {
-      log.error("", e);
-      return false;
-    }
-  }
-
   private String decryptSeedWords(String seedPassphrase) throws Exception {
     String seedWordsEncrypted = cliConfig.getSeed();
-    return EncryptUtils.decrypt(seedPassphrase, seedWordsEncrypted);
-  }
-
-  public Encrypted encryptSeedWords(String seedWords, String seedPassphrase) throws Exception {
-    return EncryptUtils.encrypt(seedPassphrase, seedWords);
+    return AESUtil.decrypt(seedPassphrase, new CharSequenceX(seedWordsEncrypted));
   }
 
   public void closeWallet() {

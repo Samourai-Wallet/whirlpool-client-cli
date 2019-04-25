@@ -22,7 +22,7 @@ public class ApiCliConfig {
   private String proxy;
   private ApiMixConfig mix;
 
-  private static final String KEY_SERVER = "cli.server";
+  public static final String KEY_SERVER = "cli.server";
   private static final String KEY_SCODE = "cli.scode";
   private static final String KEY_TOR = "cli.tor";
   private static final String KEY_PROXY = "cli.proxy";

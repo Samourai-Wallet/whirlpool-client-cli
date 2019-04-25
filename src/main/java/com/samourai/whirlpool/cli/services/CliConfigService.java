@@ -1,18 +1,20 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
+import com.samourai.whirlpool.cli.beans.CliPairingPayload;
 import com.samourai.whirlpool.cli.beans.CliStatus;
-import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.cli.utils.EncryptUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.Map.Entry;
 import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +68,24 @@ public class CliConfigService {
     return CliStatus.NOT_INITIALIZED.equals(cliStatus);
   }
 
-  public synchronized String initialize(Encrypted seedWordsEncrypted) throws Exception {
-    log.info("initialize");
+  public String initialize(String pairingPayloadStr) throws NotifiableException {
+    // parse payload
+    CliPairingPayload pairingPayload = CliPairingPayload.parse(pairingPayloadStr);
 
-    // serialize seedWordsEncrypted
-    String seedWordsEncryptedStr = EncryptUtils.serializeEncrypted(seedWordsEncrypted);
+    // initialize
+    String encryptedMnemonic = pairingPayload.getPairing().getMnemonic();
+    WhirlpoolServer whirlpoolServer = pairingPayload.getPairing().getNetwork().getWhirlpoolServer();
+    return initialize(encryptedMnemonic, whirlpoolServer);
+  }
+
+  private synchronized String initialize(String encryptedMnemonic, WhirlpoolServer whirlpoolServer)
+      throws NotifiableException {
+    if (whirlpoolServer == null) {
+      throw new NotifiableException("Invalid server");
+    }
+    if (StringUtils.isEmpty(encryptedMnemonic)) {
+      throw new NotifiableException("Invalid mnemonic");
+    }
 
     // generate apiKey
     String apiKey = CliUtils.generateUniqueString();
@@ -78,8 +93,14 @@ public class CliConfigService {
     // save configuration file
     Properties props = new Properties();
     props.put(KEY_APIKEY, apiKey);
-    props.put(KEY_SEED, seedWordsEncryptedStr);
-    save(props);
+    props.put(KEY_SEED, encryptedMnemonic);
+    props.put(ApiCliConfig.KEY_SERVER, whirlpoolServer.name());
+    try {
+      save(props);
+    } catch (Exception e) {
+      log.error("", e);
+      throw new NotifiableException("Unable to save CLI configuration");
+    }
 
     // restart needed
     this.setCliStatusNotReady(

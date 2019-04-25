@@ -2,13 +2,11 @@ package com.samourai.whirlpool.cli.api.controllers.cli;
 
 import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
-import com.samourai.whirlpool.cli.api.protocol.beans.ApiEncrypted;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitResponse;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliLoginRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliStateResponse;
 import com.samourai.whirlpool.cli.beans.CliStatus;
-import com.samourai.whirlpool.cli.beans.Encrypted;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
@@ -47,9 +45,8 @@ public class CliController extends AbstractRestController {
     }
 
     // init
-    ApiEncrypted sw = payload.encryptedSeedWords;
-    Encrypted seedWordsEncrypted = new Encrypted(sw.iv, sw.salt, sw.ct);
-    String apiKey = cliConfigService.initialize(seedWordsEncrypted);
+    String pairingPayload = payload.pairingPayload;
+    String apiKey = cliConfigService.initialize(pairingPayload);
 
     ApiCliInitResponse response = new ApiCliInitResponse(apiKey);
     return response;
