@@ -1,23 +1,31 @@
 package com.samourai.whirlpool.cli.api.protocol.beans;
 
+import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.TorMode;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfig.MixConfig;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ApiCliConfig {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   private String server;
   private String scode;
   private String tor;
+  private String proxy;
   private ApiMixConfig mix;
 
   private static final String KEY_SERVER = "cli.server";
   private static final String KEY_SCODE = "cli.scode";
   private static final String KEY_TOR = "cli.tor";
+  private static final String KEY_PROXY = "cli.proxy";
   private static final String KEY_MIX_CLIENTS = "cli.mix.clients";
   private static final String KEY_MIX_CLIENT_DELAY = "cli.mix.clientDelay";
   private static final String KEY_MIX_TX0_MAX_OUTPUTS = "cli.mix.tx0MaxOutputs";
@@ -33,6 +41,7 @@ public class ApiCliConfig {
     this.server = cliConfig.getServer().name();
     this.scode = cliConfig.getScode();
     this.tor = cliConfig.getTor().name();
+    this.proxy = cliConfig.getProxy();
     this.mix = new ApiMixConfig(cliConfig.getMix());
   }
 
@@ -51,6 +60,13 @@ public class ApiCliConfig {
       TorMode torMode =
           TorMode.find(tor).orElseThrow(() -> new NotifiableException("Invalid value for: tor"));
       props.put(KEY_TOR, torMode.name());
+    }
+
+    if (proxy != null) {
+      if (!CliProxy.validate(proxy)) {
+        throw new NotifiableException("Invalid value for: proxy");
+      }
+      props.put(KEY_PROXY, proxy.trim());
     }
 
     if (mix != null) {
@@ -80,6 +96,14 @@ public class ApiCliConfig {
 
   public void setTor(String tor) {
     this.tor = tor;
+  }
+
+  public String getProxy() {
+    return proxy;
+  }
+
+  public void setProxy(String proxy) {
+    this.proxy = proxy;
   }
 
   public ApiMixConfig getMix() {

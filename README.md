@@ -27,7 +27,10 @@ java -jar target/whirlpool-client-version-run.jar
     REGISTER_OUTPUT = use TOR for REGISTER_OUTPUT (use regular connexion for other traffic)
     ALL = route all traffic to Tor (same identity for all traffic)
     false = disable TOR
-- proxy: use proxy
+- proxy: connect through SOCKS/HTTP proxy.
+    Tor proxy: socks://localhost:9050
+    Tor Browser: socks://localhost:9150
+    HTTP proxy: http://your-proxy:8080
 - mixs-target: number of mixs to achieve per UTXO
 
 #### Tech arguments: you probably shouldn't use it

@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.beans;
 
-import java8.util.Optional;
+import java.util.Optional;
 
 public enum CliProxyProtocol {
   HTTP,
