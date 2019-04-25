@@ -33,7 +33,7 @@ public class RunCliInit {
     log.info("⣿ ");
     String serversStr = StringUtils.join(WhirlpoolServer.values(), " | ");
     log.info(
-        "⣿ To get your pairing payload, open 'Settings/Transactions/Experimental' in Samourai Wallet.");
+        "⣿ Get your pairing payload in Samourai Wallet, go to 'Settings/Transactions/Experimental'");
     log.info("⣿ • Paste your pairing payload here:");
     String pairingPayload = CliUtils.readUserInputRequired("Pairing payload?", false);
     log.info("⣿ ");

@@ -73,7 +73,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
     String seedWords;
     try {
-      seedWords = decryptSeedWords(seedPassphrase);
+      seedWords = decryptSeedWords(cliConfig.getSeed(), seedPassphrase);
     } catch (Exception e) {
       log.error("decryptSeedWords failed, invalid passphrase?");
       if (log.isDebugEnabled() && !(e instanceof AEADBadTagException)) {
@@ -119,8 +119,8 @@ public class CliWalletService extends WhirlpoolWalletService {
     return sessionWallet;
   }
 
-  private String decryptSeedWords(String seedPassphrase) throws Exception {
-    String seedWordsEncrypted = cliConfig.getSeed();
+  protected String decryptSeedWords(String seedWordsEncrypted, String seedPassphrase)
+      throws Exception {
     return AESUtil.decrypt(seedPassphrase, new CharSequenceX(seedWordsEncrypted));
   }
 

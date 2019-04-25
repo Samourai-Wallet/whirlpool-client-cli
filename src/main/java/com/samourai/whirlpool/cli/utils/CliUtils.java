@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 public class CliUtils {
   private static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   public static final String LOG_SEPARATOR = "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿";
+  public static final String SPRING_PROFILE_TESTING = "testing";
 
   public static String generateUniqueString() {
     return UUID.randomUUID().toString().replace("-", "");

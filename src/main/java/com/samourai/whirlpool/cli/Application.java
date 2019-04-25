@@ -33,6 +33,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.Environment;
 
 /** Command-line client. */
 @SpringBootApplication
@@ -46,6 +47,7 @@ public class Application implements ApplicationRunner {
   private static ConfigurableApplicationContext applicationContext;
   private static int exitCode = 0;
 
+  @Autowired Environment env;
   @Autowired private ApplicationArgs appArgs;
   @Autowired private CliConfig cliConfig;
   @Autowired private CliConfigService cliConfigService;
@@ -113,6 +115,10 @@ public class Application implements ApplicationRunner {
       log.info("PROXY is DISABLED.");
     }
 
+    if (env.acceptsProfiles(CliUtils.SPRING_PROFILE_TESTING)) {
+      log.info("Running unit test...");
+      return;
+    }
     try {
       runCli();
     } catch (NotifiableException e) {

@@ -187,10 +187,10 @@ Response:
 
 ### initialize: ```POST /rest/cli/init```
 Payload:
-* encryptedSeedWords: seed words of the wallet, encrypted with AES: base64(cyphertext) with cyphertext=
+* pairingPayload: pairing payload from Samourai Wallet
 ```
 {
-    encryptedSeedWords: "..."
+    pairingPayload: "..."
 }
 ```
 
