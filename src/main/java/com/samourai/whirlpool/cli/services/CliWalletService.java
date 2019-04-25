@@ -91,11 +91,7 @@ public class CliWalletService extends WhirlpoolWalletService {
       bip84w = hdWalletFactory.getBIP84(seed, seedPassphrase, params);
       walletIdentifier = computeWalletIdentifier(seed, seedPassphrase, params);
     } catch (MnemonicException e) {
-      // invalid configuration
-      String error =
-          "Configured seed is invalid. You may want to reset CLI configuration and setup another seed.";
-      cliConfigService.setCliStatusNotReady(error);
-      throw new NotifiableException(error, e);
+      throw new NotifiableException("Mnemonic failed, invalid passphrase?");
     }
 
     // open wallet
@@ -121,7 +117,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   protected String decryptSeedWords(String seedWordsEncrypted, String seedPassphrase)
       throws Exception {
-    return AESUtil.decrypt(seedPassphrase, new CharSequenceX(seedWordsEncrypted));
+    return AESUtil.decrypt(seedWordsEncrypted, new CharSequenceX(seedPassphrase));
   }
 
   public void closeWallet() {
