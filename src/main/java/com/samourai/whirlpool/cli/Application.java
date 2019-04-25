@@ -1,7 +1,5 @@
 package com.samourai.whirlpool.cli;
 
-import com.samourai.stomp.client.JavaStompClient;
-import com.samourai.tor.client.JavaTorClient;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
@@ -53,7 +51,6 @@ public class Application implements ApplicationRunner {
   @Autowired private CliConfigService cliConfigService;
   @Autowired private CliWalletService cliWalletService;
   @Autowired private PushTxService pushTxService;
-  @Autowired private JavaStompClient stompClient;
   @Autowired private Bech32UtilGeneric bech32Util;
   @Autowired private WalletAggregateService walletAggregateService;
 
@@ -99,19 +96,21 @@ public class Application implements ApplicationRunner {
       }
     }
 
-    // setup proxy
-    Optional<CliProxy> cliProxyOptional = cliConfig.getCliProxy();
-    if (cliProxyOptional.isPresent()) {
-      CliProxy cliProxy = cliProxyOptional.get();
-      log.info("Using proxy: " + cliProxy);
-      CliUtils.useProxy(cliProxy);
-    }
-
     if (log.isDebugEnabled()) {
       for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
         log.debug("config/override: " + entry.getKey() + ": " + entry.getValue());
       }
       log.debug("config/initial: listen: " + (listenPort != null ? listenPort : "false"));
+    }
+
+    // setup proxy
+    Optional<CliProxy> cliProxyOptional = cliConfig.getCliProxy();
+    if (cliProxyOptional.isPresent()) {
+      CliProxy cliProxy = cliProxyOptional.get();
+      log.info("PROXY is ENABLED. Using: " + cliProxy);
+      CliUtils.useProxy(cliProxy);
+    } else {
+      log.info("PROXY is DISABLED.");
     }
 
     try {
@@ -128,13 +127,6 @@ public class Application implements ApplicationRunner {
     }
 
     log.info("------------ whirlpool-client-cli ending ------------");
-
-    // disconnect
-    Optional<JavaTorClient> torClient = Optional.empty();
-    if (torClient.isPresent()) {
-      torClient.get().disconnect();
-    }
-    stompClient.disconnect();
   }
 
   private void runCli() throws Exception {

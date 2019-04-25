@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.google.common.primitives.Bytes;
+import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
@@ -39,6 +40,8 @@ public class CliWalletService extends WhirlpoolWalletService {
   private CliConfigService cliConfigService;
   private HD_WalletFactoryJava hdWalletFactory;
   private WalletAggregateService walletAggregateService;
+  private JavaStompClient stompClient;
+  private CliTorClientService cliTorClientService;
 
   // available when wallet is opened
   private CliWallet sessionWallet = null;
@@ -47,12 +50,16 @@ public class CliWalletService extends WhirlpoolWalletService {
       CliConfig cliConfig,
       CliConfigService cliConfigService,
       HD_WalletFactoryJava hdWalletFactory,
-      WalletAggregateService walletAggregateService) {
+      WalletAggregateService walletAggregateService,
+      JavaStompClient stompClient,
+      CliTorClientService cliTorClientService) {
     super(cliConfig.computeWhirlpoolWalletConfig());
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.hdWalletFactory = hdWalletFactory;
     this.walletAggregateService = walletAggregateService;
+    this.stompClient = stompClient;
+    this.cliTorClientService = cliTorClientService;
   }
 
   public CliWallet openWallet(String seedPassphrase) throws Exception {
@@ -97,7 +104,14 @@ public class CliWalletService extends WhirlpoolWalletService {
     WhirlpoolWalletPersistHandler walletPersistHandler =
         new FileWhirlpoolWalletPersistHandler(indexFile, utxosFile);
     WhirlpoolWallet whirlpoolWallet = openWallet(bip84w, walletPersistHandler);
-    this.sessionWallet = new CliWallet(whirlpoolWallet, cliConfig, walletAggregateService, this);
+    this.sessionWallet =
+        new CliWallet(
+            whirlpoolWallet,
+            cliConfig,
+            walletAggregateService,
+            stompClient,
+            cliTorClientService,
+            this);
 
     // check upgrade wallet
     checkUpgradeWallet(whirlpoolWallet);

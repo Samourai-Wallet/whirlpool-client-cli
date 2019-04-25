@@ -10,21 +10,30 @@ import org.slf4j.LoggerFactory;
 
 public class JavaTorClient {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final int SLEEP_WAIT_READY = 1000;
 
   private NetFactory sharedNetFactory;
   private List<NetFactory> netFactories = new ArrayList<>();
   private int nbPrivateConnexions;
 
-  public JavaTorClient() {
-    this.nbPrivateConnexions = 1;
+  public JavaTorClient(int nbPrivateConnexions) {
+    this.nbPrivateConnexions = nbPrivateConnexions;
   }
 
   public void connect() {
     // start connecting
-    adjustPrivateConnexions();
+    if (log.isDebugEnabled()) {
+      log.debug("Connecting");
+    }
+    adjustConnexions();
+    waitSharedConnexionReady();
+    waitPrivateConnexionReady(this.nbPrivateConnexions);
   }
 
   public void disconnect() {
+    if (log.isDebugEnabled()) {
+      log.debug("Disconnecting");
+    }
     if (sharedNetFactory != null) {
       sharedNetFactory.clearRegisteredNetLayers();
       sharedNetFactory = null;
@@ -53,7 +62,23 @@ public class JavaTorClient {
 
   private synchronized NetFactory getSharedNetFactory() {
     if (sharedNetFactory == null) {
-      sharedNetFactory = getNetFactoryReady();
+      if (log.isDebugEnabled()) {
+        log.debug("Creating sharedNetFactory");
+      }
+      sharedNetFactory = createNetFactory();
+    }
+    return sharedNetFactory;
+  }
+
+  public NetFactory waitSharedConnexionReady() {
+    NetFactory sharedNetFactory = getSharedNetFactory();
+    int lastReadyPercent = 0;
+    while (!isReady(sharedNetFactory)) {
+      int readyPercent = getReadyPercent(sharedNetFactory);
+      if (readyPercent != lastReadyPercent) {
+        log.info("Connecting TOR... (" + readyPercent + "%)");
+      }
+      lastReadyPercent = readyPercent;
     }
     return sharedNetFactory;
   }
@@ -89,26 +114,25 @@ public class JavaTorClient {
 
     // remove
     netFactories.remove(netFactory);
+    adjustConnexions();
 
-    // create a new one for next time
-    netFactories.add(createNetFactory());
     return netFactory;
   }
 
-  public void waitConnexionReady(int nbConnexions) {
+  public void waitPrivateConnexionReady(int nbConnexions) {
     for (int i = 0; i < nbConnexions; i++) {
       double lastBestIndicator = -1;
       while (true) {
         int nbReady = 0;
         double bestIndicator = 0;
         for (NetFactory nf : netFactories) {
-          double indicator = nf.getNetLayerById(NetLayerIDs.TOR).getStatus().getReadyIndicator();
-          if (indicator == 1.0) {
+          if (isReady(nf)) {
             nbReady++;
             if (nbReady == nbConnexions) {
               return;
             }
           } else {
+            double indicator = getReadyPercent(nf);
             if (indicator > bestIndicator) {
               bestIndicator = indicator;
               lastBestIndicator = bestIndicator;
@@ -117,23 +141,27 @@ public class JavaTorClient {
         }
         if (bestIndicator != lastBestIndicator) {
           log.info(
-              "Connecting TOR "
-                  + nbReady
-                  + "/"
-                  + nbConnexions
-                  + "... ("
-                  + (Math.round(bestIndicator) * 100)
-                  + "%)");
+              "Connecting TOR " + nbReady + "/" + nbConnexions + "... (" + bestIndicator + "%)");
         }
         try {
-          Thread.sleep(1000);
+          Thread.sleep(SLEEP_WAIT_READY);
         } catch (InterruptedException e) {
         }
       }
     }
   }
 
-  private void adjustPrivateConnexions() {
+  private boolean isReady(NetFactory nf) {
+    double indicator = nf.getNetLayerById(NetLayerIDs.TOR).getStatus().getReadyIndicator();
+    return indicator == 1.0;
+  }
+
+  private int getReadyPercent(NetFactory nf) {
+    double indicator = nf.getNetLayerById(NetLayerIDs.TOR).getStatus().getReadyIndicator();
+    return (int) Math.round(indicator) * 100;
+  }
+
+  private void adjustConnexions() {
     int nbToAdd = nbPrivateConnexions - netFactories.size();
     if (nbToAdd == 0) {
       return;
@@ -167,11 +195,11 @@ public class JavaTorClient {
 
   protected synchronized void removeConnexion(NetFactory netFactory) {
     this.netFactories.remove(netFactory);
-    adjustPrivateConnexions();
+    adjustConnexions();
   }
 
   public void setNbPrivateConnexions(int nbPrivateConnexions) {
     this.nbPrivateConnexions = nbPrivateConnexions;
-    adjustPrivateConnexions();
+    adjustConnexions();
   }
 }

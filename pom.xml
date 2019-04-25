@@ -54,6 +54,21 @@
             <groupId>org.silvertunnel-ng</groupId>
             <artifactId>netlib</artifactId>
             <version>0.0.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.directory.studio</groupId>
+                    <artifactId>org.apache.httpcomponents.httpcore</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.8</version>
         </dependency>
         <dependency>
             <groupId>com.github.kevinsawicki</groupId>

@@ -1,16 +1,20 @@
 package com.samourai.whirlpool.cli.wallet;
 
+import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
+import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
+import com.samourai.whirlpool.client.whirlpool.listener.WhirlpoolClientListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,15 +25,21 @@ public class CliWallet extends WhirlpoolWallet {
   private CliConfig cliConfig;
   private WalletAggregateService walletAggregateService;
   private CliStatusOrchestrator cliStatusOrchestrator;
+  private JavaStompClient stompClient;
+  private CliTorClientService cliTorClientService;
 
   public CliWallet(
       WhirlpoolWallet whirlpoolWallet,
       CliConfig cliConfig,
       WalletAggregateService walletAggregateService,
+      JavaStompClient stompClient,
+      CliTorClientService cliTorClientService,
       CliWalletService cliWalletService) {
     super(whirlpoolWallet);
     this.cliConfig = cliConfig;
     this.walletAggregateService = walletAggregateService;
+    this.stompClient = stompClient;
+    this.cliTorClientService = cliTorClientService;
 
     // log status
     this.cliStatusOrchestrator =
@@ -38,6 +48,7 @@ public class CliWallet extends WhirlpoolWallet {
 
   @Override
   public void start() {
+    // start wallet
     super.start();
     this.cliStatusOrchestrator.start();
   }
@@ -46,6 +57,20 @@ public class CliWallet extends WhirlpoolWallet {
   public void stop() {
     super.stop();
     this.cliStatusOrchestrator.stop();
+
+    // disconnect STOMP
+    stompClient.disconnect();
+
+    // disconnect TOR
+    cliTorClientService.disconnect();
+  }
+
+  @Override
+  public WhirlpoolClient mix(WhirlpoolUtxo whirlpoolUtxo, WhirlpoolClientListener notifyListener)
+      throws NotifiableException {
+    // connect TOR
+    cliTorClientService.connect();
+    return super.mix(whirlpoolUtxo, notifyListener);
   }
 
   @Override

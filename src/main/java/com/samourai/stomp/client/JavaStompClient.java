@@ -48,9 +48,8 @@ public class JavaStompClient implements IStompClient {
 
     StompHeaders stompHeadersObj = computeStompHeaders(stompHeaders);
     try {
-
       this.stompSession =
-          stompClient
+          stompClient // set stompSession twice, as we need it for getSessionId()
               .connect(
                   url,
                   (WebSocketHttpHeaders) null,
@@ -116,8 +115,11 @@ public class JavaStompClient implements IStompClient {
       public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
         super.afterConnected(session, connectedHeaders);
         if (log.isDebugEnabled()) {
-          log.debug("connected, connectedHeaders=" + connectedHeaders);
+          log.debug(
+              "connected, connectedHeaders=" + connectedHeaders + ", stompSession=" + stompSession);
         }
+        // set session twice, as we need it for subscribe
+        stompSession = session;
         // send back connected headers through IStompMessage
         IStompMessage stompMessage = new JavaStompMessage(connectedHeaders, null);
         onConnectOnDisconnectListener.onMessage(stompMessage);
