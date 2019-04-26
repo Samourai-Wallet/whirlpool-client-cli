@@ -1,7 +1,6 @@
 package com.samourai.whirlpool.cli.config;
 
 import com.samourai.whirlpool.cli.beans.CliProxy;
-import com.samourai.whirlpool.cli.beans.TorMode;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.cli.services.JavaStompClientService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -26,7 +25,7 @@ public class CliConfig {
 
   private String scode;
   @NotEmpty private String pushtx;
-  @NotEmpty private TorMode tor;
+  @NotEmpty private boolean tor;
   @NotEmpty private String apiKey;
   @NotEmpty private String seed;
   @NotEmpty private int persistDelay;
@@ -73,11 +72,11 @@ public class CliConfig {
     this.pushtx = pushtx;
   }
 
-  public TorMode getTor() {
+  public boolean getTor() {
     return tor;
   }
 
-  public void setTor(TorMode tor) {
+  public void setTor(boolean tor) {
     this.tor = tor;
   }
 
@@ -242,7 +241,7 @@ public class CliConfig {
             + ", feeX="
             + feeXMasked);
     configInfo.put("pushtx", pushtx);
-    configInfo.put("tor", tor.name());
+    configInfo.put("tor", Boolean.toString(tor));
     configInfo.put("apiKey", !Strings.isEmpty(apiKey) ? mask(apiKey, 3, 3) : "null");
     configInfo.put("seed", !Strings.isEmpty(seed) ? mask(seed, 3, 3) : "null");
     configInfo.put("persistDelay", Integer.toString(persistDelay));

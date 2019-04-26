@@ -1,7 +1,6 @@
 package com.samourai.whirlpool.cli.api.protocol.beans;
 
 import com.samourai.whirlpool.cli.beans.CliProxy;
-import com.samourai.whirlpool.cli.beans.TorMode;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfig.MixConfig;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -10,6 +9,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +18,7 @@ public class ApiCliConfig {
 
   private String server;
   private String scode;
-  private String tor;
+  private Boolean tor;
   private String proxy;
   private ApiMixConfig mix;
 
@@ -40,7 +40,7 @@ public class ApiCliConfig {
   public ApiCliConfig(CliConfig cliConfig) {
     this.server = cliConfig.getServer().name();
     this.scode = cliConfig.getScode();
-    this.tor = cliConfig.getTor().name();
+    this.tor = cliConfig.getTor();
     this.proxy = cliConfig.getProxy();
     this.mix = new ApiMixConfig(cliConfig.getMix());
   }
@@ -57,13 +57,11 @@ public class ApiCliConfig {
     }
 
     if (tor != null) {
-      TorMode torMode =
-          TorMode.find(tor).orElseThrow(() -> new NotifiableException("Invalid value for: tor"));
-      props.put(KEY_TOR, torMode.name());
+      props.put(KEY_TOR, Boolean.toString(tor));
     }
 
     if (proxy != null) {
-      if (!CliProxy.validate(proxy)) {
+      if (!StringUtils.isEmpty(proxy) && !CliProxy.validate(proxy)) {
         throw new NotifiableException("Invalid value for: proxy");
       }
       props.put(KEY_PROXY, proxy.trim());
@@ -90,11 +88,11 @@ public class ApiCliConfig {
     this.scode = scode;
   }
 
-  public String getTor() {
+  public Boolean getTor() {
     return tor;
   }
 
-  public void setTor(String tor) {
+  public void setTor(Boolean tor) {
     this.tor = tor;
   }
 

@@ -2,7 +2,6 @@ package com.samourai.whirlpool.cli.services;
 
 import com.samourai.tor.client.JavaTorClient;
 import com.samourai.tor.client.JavaTorConnexion;
-import com.samourai.whirlpool.cli.beans.TorMode;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
@@ -40,16 +39,7 @@ public class CliTorClientService {
   }
 
   private Optional<JavaTorClient> getTorClient() {
-    if (TorMode.FALSE.equals(cliConfig.getTor())) {
-      if (log.isDebugEnabled()) {
-        log.debug("TOR is DISABLED.");
-      }
-      if (torClient.isPresent()) {
-        // disconnect
-        torClient.get().disconnect();
-        torClient = Optional.empty();
-      }
-    } else {
+    if (cliConfig.getTor()) {
       if (log.isDebugEnabled()) {
         log.debug("TOR is ENABLED.");
       }
@@ -60,6 +50,15 @@ public class CliTorClientService {
         // connect (1 shared connexion for all TOR traffic)
         torClient = Optional.of(new JavaTorClient(0));
         torClient.get().connect();
+      }
+    } else {
+      if (log.isDebugEnabled()) {
+        log.debug("TOR is DISABLED.");
+      }
+      if (torClient.isPresent()) {
+        // disconnect
+        torClient.get().disconnect();
+        torClient = Optional.empty();
       }
     }
     return torClient;
@@ -79,12 +78,6 @@ public class CliTorClientService {
   }
 
   private boolean useTor(boolean isRegisterOutput) {
-    if (TorMode.ALL.equals(cliConfig.getTor())) {
-      return true;
-    }
-    if (TorMode.REGISTER_OUTPUT.equals(cliConfig.getTor()) && isRegisterOutput) {
-      return true;
-    }
-    return false;
+    return cliConfig.getTor();
   }
 }
