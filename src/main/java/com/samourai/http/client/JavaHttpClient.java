@@ -38,6 +38,7 @@ public class JavaHttpClient implements IHttpClient {
         // standard connexion
         request = HttpRequest.get(urlStr);
       }
+      setHeaders(request);
       execute(request);
       T result = objectMapper.readValue(request.bytes(), entityClass);
       // keep sharedTorConnexion open
@@ -68,6 +69,7 @@ public class JavaHttpClient implements IHttpClient {
         // standard connexion
         request = HttpRequest.post(urlStr);
       }
+      setHeaders(request);
       request.contentType(HttpRequest.CONTENT_TYPE_JSON).send(jsonBody.getBytes());
       execute(request);
     } catch (Exception e) {
@@ -96,9 +98,13 @@ public class JavaHttpClient implements IHttpClient {
         // standard connexion
         request = HttpRequest.post(urlStr);
       }
+      setHeaders(request);
       request.contentType(HttpRequest.CONTENT_TYPE_FORM).send(bodyUrlEncoded.getBytes());
       execute(request);
     } catch (Exception e) {
+      if (log.isDebugEnabled()) {
+        log.error("postUrlEncoded failed", e);
+      }
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
       }
@@ -110,8 +116,12 @@ public class JavaHttpClient implements IHttpClient {
     }
   }
 
+  private void setHeaders(HttpRequest request) {
+    request.header(HttpRequest.HEADER_USER_AGENT, ClientUtils.USER_AGENT);
+  }
+
   private void execute(HttpRequest request) throws HttpException {
-    if (!request.header(HttpRequest.HEADER_USER_AGENT, ClientUtils.USER_AGENT).ok()) {
+    if (!request.ok()) {
       throw new HttpException(
           new Exception(
               "httpRequest failed: statusCode="

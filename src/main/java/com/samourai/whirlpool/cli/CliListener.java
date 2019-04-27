@@ -28,7 +28,7 @@ public class CliListener implements WhirlpoolClientListener {
   }
 
   @Override
-  public void fail(MixFailReason reason) {
+  public void fail(MixFailReason reason, String notifiableError) {
     done = true;
 
     // override with custom code here: failure
