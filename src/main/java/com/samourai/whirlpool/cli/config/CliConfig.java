@@ -230,10 +230,11 @@ public class CliConfig {
     Map<String, String> configInfo = new LinkedHashMap<>();
     String feeX = server.getFeeData();
     String feeXMasked = mask(feeX, 6, 4);
+    String serverUrl = computeServerUrl();
     configInfo.put(
         "server",
         "url="
-            + server.getServerUrl()
+            + serverUrl
             + ", network="
             + server.getParams()
             + ", ssl="
@@ -276,7 +277,16 @@ public class CliConfig {
   }
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig() {
-    WhirlpoolWalletConfig config = new WhirlpoolWalletConfig(httpClient, stompClient, server);
+    String serverUrl = computeServerUrl();
+    System.out.println("#############");
+    System.out.println("#############");
+    System.out.println("#############");
+    System.err.println("#############CONFIGGGG TOR=" + tor + ", url=" + serverUrl);
+    System.err.println("#############");
+    System.err.println("#############");
+    System.err.println("#############");
+    WhirlpoolWalletConfig config =
+        new WhirlpoolWalletConfig(httpClient, stompClient, serverUrl, server);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }
@@ -294,5 +304,10 @@ public class CliConfig {
     }
     config.setMixsTarget(mix.getMixsTarget());
     return config;
+  }
+
+  private String computeServerUrl() {
+    String serverUrl = tor ? server.getServerOnionV2() : server.getServerUrl();
+    return serverUrl;
   }
 }

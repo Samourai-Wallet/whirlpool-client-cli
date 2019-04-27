@@ -16,7 +16,7 @@ You can setup whirlpool-client-cli in 2 ways:
 ```
 java -jar target/whirlpool-client-version-run.jar
 [--listen[=8899]] [--authenticate]
-[--server={MAIN,TEST}] [--tor] [--proxy=(socks|http)://host:port] [--mixs-target=]
+[--server={MAINNET,TESTNET}] [--tor] [--proxy=(socks|http)://host:port] [--mixs-target=]
 [--debug] [--debug-client] [--pushtx=auto|interactive|http://user:password@host:port] [--scode=] [--tx0-max-outputs=] {args...}
 ```
 

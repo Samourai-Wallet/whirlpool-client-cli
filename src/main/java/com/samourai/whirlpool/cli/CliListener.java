@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli;
 
+import com.samourai.whirlpool.client.mix.listener.MixFailReason;
 import com.samourai.whirlpool.client.mix.listener.MixStep;
 import com.samourai.whirlpool.client.mix.listener.MixSuccess;
 import com.samourai.whirlpool.client.whirlpool.listener.WhirlpoolClientListener;
@@ -27,7 +28,7 @@ public class CliListener implements WhirlpoolClientListener {
   }
 
   @Override
-  public void fail() {
+  public void fail(MixFailReason reason) {
     done = true;
 
     // override with custom code here: failure

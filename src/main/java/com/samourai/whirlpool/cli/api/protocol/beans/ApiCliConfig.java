@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.api.protocol.beans;
 
+import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfig.MixConfig;
@@ -164,8 +165,8 @@ public class ApiCliConfig {
       }
       if (autoAggregatePostmix != null) {
         if (autoAggregatePostmix) {
-          if (WhirlpoolServer.MAIN.equals(whirlpoolServer)) {
-            throw new NotifiableException("AutoAggregatePostmix cannot be enabled for MainNet");
+          if (!FormatsUtilGeneric.getInstance().isTestNet(whirlpoolServer.getParams())) {
+            throw new NotifiableException("AutoAggregatePostmix cannot be enabled for non-testnet");
           }
           if (!getAutoTx0()) {
             throw new NotifiableException("AutoAggregatePostmix cannot be enabled without AutoTx0");

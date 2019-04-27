@@ -103,8 +103,8 @@ public class CliPairingPayload {
   }
 
   public enum CliPairingNetwork {
-    mainnet(WhirlpoolServer.MAIN),
-    testnet(WhirlpoolServer.TEST);
+    mainnet(WhirlpoolServer.MAINNET),
+    testnet(WhirlpoolServer.TESTNET);
 
     private WhirlpoolServer whirlpoolServer;
 
