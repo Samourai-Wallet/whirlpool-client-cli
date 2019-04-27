@@ -12,8 +12,9 @@ public class ApiCliStateResponse {
   private String network;
   private String serverUrl;
   private String serverName;
+  private boolean tor;
 
-  public ApiCliStateResponse(CliState cliState, WhirlpoolServer server) {
+  public ApiCliStateResponse(CliState cliState, WhirlpoolServer server, boolean tor) {
     this.cliStatus = cliState.getCliStatus();
     this.cliMessage = cliState.getCliMessage();
     this.loggedIn = cliState.isLoggedIn();
@@ -21,6 +22,7 @@ public class ApiCliStateResponse {
     this.network = server.getParams().getPaymentProtocolId();
     this.serverUrl = server.getServerUrl();
     this.serverName = server.name();
+    this.tor = tor;
   }
 
   public CliStatus getCliStatus() {
@@ -45,5 +47,9 @@ public class ApiCliStateResponse {
 
   public String getServerName() {
     return serverName;
+  }
+
+  public boolean isTor() {
+    return tor;
   }
 }

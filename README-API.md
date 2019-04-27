@@ -154,7 +154,8 @@ Response:
     "cliMessage": "",
     "network": "test",
     "serverUrl": "",
-    "serverName": "TESTNET"
+    "serverName": "TESTNET",
+    "tor": true
 }
 ```
 

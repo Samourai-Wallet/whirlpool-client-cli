@@ -261,6 +261,9 @@ public class Application implements ApplicationRunner {
   }
 
   private static void setDebug(boolean isDebug, boolean isDebugClient) {
+    ((ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME))
+        .setLevel(ch.qos.logback.classic.Level.INFO);
+
     if (isDebug) {
       LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
       // Utils.setLoggerDebug("org.springframework.security");

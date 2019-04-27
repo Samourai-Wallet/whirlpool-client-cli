@@ -30,7 +30,8 @@ public class CliController extends AbstractRestController {
     checkHeaders(headers);
 
     ApiCliStateResponse response =
-        new ApiCliStateResponse(cliWalletService.getCliState(), cliConfig.getServer());
+        new ApiCliStateResponse(
+            cliWalletService.getCliState(), cliConfig.getServer(), cliConfig.getTor());
     return response;
   }
 

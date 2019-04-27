@@ -23,7 +23,7 @@ java -jar target/whirlpool-client-version-run.jar
 #### Optional arguments:
 - listen: enable API for remote commands & GUI. Authentication on startup is optional, but you can authenticate on startup with --authenticate
 - server: whirlpool server to connect to
-- tor: use TOR
+- tor: route all traffic to TOR
 - proxy: connect through SOCKS/HTTP proxy.
     Tor proxy: socks://localhost:9050
     Tor Browser: socks://localhost:9150

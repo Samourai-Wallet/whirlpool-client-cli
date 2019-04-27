@@ -56,7 +56,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     super(
         cliConfig
             .computeWhirlpoolWalletConfig()); // TODO won't honor --tor as config is not overriden
-                                              // yet
+    // yet
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.hdWalletFactory = hdWalletFactory;
