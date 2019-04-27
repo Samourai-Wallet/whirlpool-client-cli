@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 @Ignore
 public class ApplicationTest extends AbstractApplicationTest {
-  protected static final String SERVER = WhirlpoolServer.LOCAL_TEST.name();
+  protected static final String SERVER = WhirlpoolServer.LOCAL_TESTNET.name();
 
   @Before
   @Override
