@@ -3,7 +3,9 @@ package com.samourai.tor.client;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
+import org.silvertunnel_ng.netlib.adapter.java.JvmGlobalUtil;
 import org.silvertunnel_ng.netlib.api.NetFactory;
+import org.silvertunnel_ng.netlib.api.NetLayer;
 import org.silvertunnel_ng.netlib.api.NetLayerIDs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,12 @@ public class JavaTorClient {
     if (log.isDebugEnabled()) {
       log.debug("Connecting");
     }
+
+    // set TOR globally
+    JvmGlobalUtil.init();
+    NetLayer netLayer = NetFactory.getInstance().getNetLayerById(NetLayerIDs.TOR);
+    JvmGlobalUtil.setNetLayerAndNetAddressNameService(netLayer, true);
+
     adjustConnexions();
     waitSharedConnexionReady();
     waitPrivateConnexionReady(this.nbPrivateConnexions);

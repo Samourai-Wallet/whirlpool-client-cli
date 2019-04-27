@@ -1,6 +1,5 @@
 package com.samourai.stomp.client;
 
-import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
@@ -9,7 +8,6 @@ import com.samourai.whirlpool.client.utils.MessageErrorListener;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -177,9 +175,8 @@ public class JavaStompClient implements IStompClient {
     boolean isProxySocks =
         cliConfig.getCliProxy().isPresent()
             && CliProxyProtocol.SOCKS.equals(cliConfig.getCliProxy().get().getProtocol());
-    Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion(false);
-    if (isProxySocks || torConnexion.isPresent()) {
-      // proxy SOCKS or TOR => force XHR (for some reason Websocket transport is leaking real IP)
+    if (isProxySocks) {
+      // proxy SOCKS => force XHR (for some reason Websocket transport is leaking real IP)
       if (log.isDebugEnabled()) {
         log.debug("Using websocket transports: XHR");
       }

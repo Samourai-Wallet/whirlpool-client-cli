@@ -40,22 +40,19 @@ public class CliTorClientService {
 
   private Optional<JavaTorClient> getTorClient() {
     if (cliConfig.getTor()) {
-      if (log.isDebugEnabled()) {
-        log.debug("TOR is ENABLED.");
-      }
       if (!torClient.isPresent()) {
         if (log.isDebugEnabled()) {
-          log.debug("Instanciating JavaTorClient");
+          log.debug("Enabling TOR.");
         }
         // connect (1 shared connexion for all TOR traffic)
         torClient = Optional.of(new JavaTorClient(0));
         torClient.get().connect();
       }
     } else {
-      if (log.isDebugEnabled()) {
-        log.debug("TOR is DISABLED.");
-      }
       if (torClient.isPresent()) {
+        if (log.isDebugEnabled()) {
+          log.debug("Disabling TOR.");
+        }
         // disconnect
         torClient.get().disconnect();
         torClient = Optional.empty();
