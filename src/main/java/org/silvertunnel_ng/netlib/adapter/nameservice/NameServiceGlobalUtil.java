@@ -129,7 +129,7 @@ public class NameServiceGlobalUtil {
       return false;
     } catch (UnknownHostException var2) {
       try {
-        address = InetAddress.getAllByName(NopNetAddressNameService.CHECKER_NAME);
+        address = InetAddress.getAllByName(NopNetAddressNameService.CHECKER_NAME); // EDIT SAMOURAI
         if (address == null) {
           LOG.error("InetAddress.getAllByName() returned null as address (but this is wrong)");
           return false;

@@ -6,6 +6,7 @@ import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunCliInit;
 import com.samourai.whirlpool.cli.services.CliConfigService;
+import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -55,6 +56,7 @@ public class Application implements ApplicationRunner {
   @Autowired private PushTxService pushTxService;
   @Autowired private Bech32UtilGeneric bech32Util;
   @Autowired private WalletAggregateService walletAggregateService;
+  @Autowired private CliTorClientService cliTorClientService;
 
   public static void main(String... args) {
     // override configuration with local file
@@ -86,34 +88,8 @@ public class Application implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    setDebug(debug, debugClient); // run twice to fix incorrect log level
     log.info("------------ whirlpool-client-cli starting ------------");
-    log.info(
-        "Running whirlpool-client {} on java {}",
-        Arrays.toString(args.getSourceArgs()),
-        System.getProperty("java.version"));
-    if (log.isDebugEnabled()) {
-      for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
-        log.debug("config/initial: " + entry.getKey() + ": " + entry.getValue());
-      }
-    }
-
-    if (log.isDebugEnabled()) {
-      for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
-        log.debug("config/override: " + entry.getKey() + ": " + entry.getValue());
-      }
-      log.debug("config/initial: listen: " + (listenPort != null ? listenPort : "false"));
-    }
-
-    // setup proxy
-    Optional<CliProxy> cliProxyOptional = cliConfig.getCliProxy();
-    if (cliProxyOptional.isPresent()) {
-      CliProxy cliProxy = cliProxyOptional.get();
-      log.info("PROXY is ENABLED. Using: " + cliProxy);
-      CliUtils.useProxy(cliProxy);
-    } else {
-      log.info("PROXY is DISABLED.");
-    }
+    setup(args);
 
     if (env.acceptsProfiles(CliUtils.SPRING_PROFILE_TESTING)) {
       log.info("Running unit test...");
@@ -133,6 +109,40 @@ public class Application implements ApplicationRunner {
     }
 
     log.info("------------ whirlpool-client-cli ending ------------");
+  }
+
+  private void setup(ApplicationArguments args) {
+    setDebug(debug, debugClient); // run twice to fix incorrect log level
+
+    // log configuration
+    log.info(
+        "Running whirlpool-client {} on java {}",
+        Arrays.toString(args.getSourceArgs()),
+        System.getProperty("java.version"));
+    if (log.isDebugEnabled()) {
+      for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
+        log.debug("config/initial: " + entry.getKey() + ": " + entry.getValue());
+      }
+    }
+    if (log.isDebugEnabled()) {
+      for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
+        log.debug("config/override: " + entry.getKey() + ": " + entry.getValue());
+      }
+      log.debug("listen: " + (listenPort != null ? listenPort : "false"));
+    }
+
+    // setup TOR
+    cliTorClientService.init();
+
+    // setup proxy
+    Optional<CliProxy> cliProxyOptional = cliConfig.getCliProxy();
+    if (cliProxyOptional.isPresent()) {
+      CliProxy cliProxy = cliProxyOptional.get();
+      log.info("PROXY is ENABLED. Using: " + cliProxy);
+      CliUtils.useProxy(cliProxy);
+    } else {
+      log.info("PROXY is DISABLED.");
+    }
   }
 
   private void runCli() throws Exception {

@@ -11,6 +11,7 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.mix.listener.MixSuccess;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
@@ -60,17 +61,22 @@ public class CliWallet extends WhirlpoolWallet {
 
     // disconnect STOMP
     stompClient.disconnect();
-
-    // disconnect TOR
-    cliTorClientService.disconnect();
   }
 
   @Override
   public WhirlpoolClient mix(WhirlpoolUtxo whirlpoolUtxo, WhirlpoolClientListener notifyListener)
       throws NotifiableException {
-    // connect TOR
-    cliTorClientService.connect();
+    // get TOR ready before mixing
+    cliTorClientService.waitReady();
     return super.mix(whirlpoolUtxo, notifyListener);
+  }
+
+  @Override
+  public void onMixSuccess(MixSuccess mixSuccess, WhirlpoolUtxo whirlpoolUtxo) {
+    super.onMixSuccess(mixSuccess, whirlpoolUtxo);
+
+    // change TOR circuit
+    cliTorClientService.changeCircuit();
   }
 
   @Override

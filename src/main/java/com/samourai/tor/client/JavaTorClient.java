@@ -1,8 +1,6 @@
 package com.samourai.tor.client;
 
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.List;
 import org.silvertunnel_ng.netlib.adapter.java.JvmGlobalUtil;
 import org.silvertunnel_ng.netlib.api.NetFactory;
 import org.silvertunnel_ng.netlib.api.NetLayer;
@@ -15,201 +13,73 @@ public class JavaTorClient {
   private static final int SLEEP_WAIT_READY = 1000;
 
   private NetFactory sharedNetFactory;
-  private List<NetFactory> netFactories = new ArrayList<>();
-  private int nbPrivateConnexions;
+  private NetFactory registerOutputNetFactory;
 
-  public JavaTorClient(int nbPrivateConnexions) {
-    this.nbPrivateConnexions = nbPrivateConnexions;
-  }
+  public JavaTorClient() {}
 
   public void connect() {
     // start connecting
     if (log.isDebugEnabled()) {
       log.debug("Connecting");
     }
+    changeCircuit();
+  }
 
-    // set TOR globally
-    JvmGlobalUtil.init();
-    NetLayer netLayer = NetFactory.getInstance().getNetLayerById(NetLayerIDs.TOR);
-    JvmGlobalUtil.setNetLayerAndNetAddressNameService(netLayer, true);
+  public void waitReady() {
+    if (log.isDebugEnabled()) {
+      log.debug("waitReady");
+    }
+    waitReady(sharedNetFactory);
+    waitReady(registerOutputNetFactory);
+  }
 
-    adjustConnexions();
-    waitSharedConnexionReady();
-    waitPrivateConnexionReady(this.nbPrivateConnexions);
+  private void waitReady(NetFactory nf) {
+    sharedNetFactory.getNetLayerById(NetLayerIDs.TOR).waitUntilReady();
+  }
+
+  public void changeCircuit() {
+    if (log.isDebugEnabled()) {
+      log.debug("Changing TOR circuit");
+    }
+    NetFactory oldSharedNetFactory = sharedNetFactory;
+    NetFactory oldRegisterOutputNetFactory = registerOutputNetFactory;
+
+    sharedNetFactory = createNetFactory();
+    registerOutputNetFactory = createNetFactory();
+
+    // bind all traffic to sharedNetFactory
+    NetLayer netLayer = sharedNetFactory.getNetLayerById(NetLayerIDs.TOR);
+    JvmGlobalUtil.setNetLayerAndNetAddressNameService(netLayer, false);
+
+    // disconnect old factories
+    disconnect(oldSharedNetFactory);
+    disconnect(oldRegisterOutputNetFactory);
   }
 
   public void disconnect() {
     if (log.isDebugEnabled()) {
       log.debug("Disconnecting");
     }
-    if (sharedNetFactory != null) {
-      sharedNetFactory.clearRegisteredNetLayers();
-      sharedNetFactory = null;
-    }
 
-    netFactories.forEach(privateNetFactory -> privateNetFactory.clearRegisteredNetLayers());
-    netFactories.clear();
+    disconnect(sharedNetFactory);
+    disconnect(registerOutputNetFactory);
+
+    sharedNetFactory = null;
+    registerOutputNetFactory = null;
   }
 
-  public JavaTorConnexion getConnexion(boolean privateCircuit) {
-    NetFactory netFactory = getNetFactory(privateCircuit);
-    return new JavaTorConnexion(netFactory, privateCircuit);
-  }
-
-  private synchronized NetFactory getNetFactory(boolean privateCircuit) {
-    NetFactory netFactory = privateCircuit ? getNetFactoryReady() : getSharedNetFactory();
-    return netFactory;
-  }
-
-  private synchronized NetFactory getSharedNetFactory() {
-    if (sharedNetFactory == null) {
-      if (log.isDebugEnabled()) {
-        log.debug("Creating sharedNetFactory");
-      }
-      sharedNetFactory = createNetFactory();
-    }
-    return sharedNetFactory;
-  }
-
-  public NetFactory waitSharedConnexionReady() {
-    NetFactory sharedNetFactory = getSharedNetFactory();
-    int lastReadyPercent = -1;
-    while (!isReady(sharedNetFactory)) {
-      int readyPercent = getReadyPercent(sharedNetFactory);
-      if (readyPercent != lastReadyPercent) {
-        log.info("Connecting TOR... (" + readyPercent + "%)");
-      }
-      lastReadyPercent = readyPercent;
-    }
-    return sharedNetFactory;
-  }
-
-  private synchronized NetFactory getNetFactoryReady() {
-    if (log.isDebugEnabled()) {
-      log.debug("getNetFactoryReady");
-    }
-    // get first NetFactory ready
-    NetFactory netFactory = null;
-    double lastBestIndicator = -1;
-    while (true) {
-      double bestIndicator = 0;
-      for (NetFactory nf : netFactories) {
-        double indicator = nf.getNetLayerById(NetLayerIDs.TOR).getStatus().getReadyIndicator();
-        if (indicator == 1.0) {
-          netFactory = nf;
-          break;
-        }
-        if (indicator > bestIndicator) {
-          bestIndicator = indicator;
-        }
-      }
-      if (netFactory != null) {
-        break;
-      }
-      if (bestIndicator != lastBestIndicator) {
-        log.info("Connecting TOR... (" + (Math.round(bestIndicator) * 100) + "%)");
-        lastBestIndicator = bestIndicator;
-      }
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-      }
-    }
-
-    // remove
-    netFactories.remove(netFactory);
-    adjustConnexions();
-
-    return netFactory;
-  }
-
-  public void waitPrivateConnexionReady(int nbConnexions) {
-    if (nbConnexions == 0) {
-      return;
-    }
-    if (log.isDebugEnabled()) {
-      log.debug("waitPrivateConnexionReady(" + nbConnexions + ")");
-    }
-    double lastBestIndicator = -1;
-    while (true) {
-      int nbReady = 0;
-      double bestIndicator = 0;
-      for (NetFactory nf : netFactories) {
-        if (isReady(nf)) {
-          nbReady++;
-          if (nbReady == nbConnexions) {
-            return;
-          }
-        } else {
-          double indicator = getReadyPercent(nf);
-          if (indicator > bestIndicator) {
-            bestIndicator = indicator;
-            lastBestIndicator = bestIndicator;
-          }
-        }
-      }
-      if (bestIndicator != lastBestIndicator) {
-        log.info("Connecting TOR " + nbReady + "/" + nbConnexions + "... (" + bestIndicator + "%)");
-      }
-      try {
-        Thread.sleep(SLEEP_WAIT_READY);
-      } catch (InterruptedException e) {
-      }
+  private void disconnect(NetFactory nf) {
+    if (nf != null) {
+      nf.clearRegisteredNetLayers();
     }
   }
 
-  private boolean isReady(NetFactory nf) {
-    double indicator = nf.getNetLayerById(NetLayerIDs.TOR).getStatus().getReadyIndicator();
-    return indicator == 1.0;
-  }
-
-  private int getReadyPercent(NetFactory nf) {
-    double indicator = nf.getNetLayerById(NetLayerIDs.TOR).getStatus().getReadyIndicator();
-    return (int) Math.round(indicator) * 100;
-  }
-
-  private void adjustConnexions() {
-    int nbToAdd = nbPrivateConnexions - netFactories.size();
-    if (nbToAdd == 0) {
-      return;
-    }
-
-    if (nbToAdd > 0) {
-      // create missing connexions
-      for (int i = 0; i < nbToAdd; i++) {
-        if (log.isDebugEnabled()) {
-          log.debug("New private connexion: " + (i + 1) + "/" + nbToAdd);
-        }
-        netFactories.add(createNetFactory());
-      }
-    } else {
-      // remove exceeding connexions
-      int nbToClose = -nbToAdd;
-      for (int i = 0; i < nbToClose; i++) {
-        if (log.isDebugEnabled()) {
-          log.debug("Closing private connexion: " + (i + 1) + "/" + nbToClose);
-        }
-        getNetFactory(true).clearRegisteredNetLayers();
-      }
-    }
+  public JavaTorConnexion getConnexion(boolean isRegisterOutput) {
+    NetFactory netFactory = isRegisterOutput ? registerOutputNetFactory : sharedNetFactory;
+    return new JavaTorConnexion(netFactory, isRegisterOutput);
   }
 
   private NetFactory createNetFactory() {
-    if (log.isDebugEnabled()) {
-      log.debug("createNetFactory");
-    }
-    NetFactory netFactory = new NetFactory();
-    netFactory.getNetLayerById(NetLayerIDs.TOR); // start connecting
-    return netFactory;
-  }
-
-  protected synchronized void removeConnexion(NetFactory netFactory) {
-    this.netFactories.remove(netFactory);
-    adjustConnexions();
-  }
-
-  public void setNbPrivateConnexions(int nbPrivateConnexions) {
-    this.nbPrivateConnexions = nbPrivateConnexions;
-    adjustConnexions();
+    return new NetFactory();
   }
 }

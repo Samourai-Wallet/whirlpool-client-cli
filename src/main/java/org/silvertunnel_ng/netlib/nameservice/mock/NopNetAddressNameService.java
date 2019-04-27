@@ -11,7 +11,7 @@ import org.silvertunnel_ng.netlib.api.NetAddressNameService;
 import org.silvertunnel_ng.netlib.api.util.IpNetAddress;
 
 public class NopNetAddressNameService implements NetAddressNameService {
-  public static final String CHECKER_NAME = "samouraiwallet.com";
+  public static final String CHECKER_NAME = "samouraiwallet.com"; // EDIT SAMOURAI
   public static final IpNetAddress[] CHECKER_IP =
       new IpNetAddress[] {new IpNetAddress("193.29.187.225")};
   private static NopNetAddressNameService instance;

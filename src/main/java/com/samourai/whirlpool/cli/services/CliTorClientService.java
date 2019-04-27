@@ -5,6 +5,7 @@ import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
+import org.silvertunnel_ng.netlib.adapter.java.JvmGlobalUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,20 +23,55 @@ public class CliTorClientService {
     this.cliConfig = cliConfig;
   }
 
+  public void init() {
+    if (cliConfig.getTor()) {
+      if (log.isDebugEnabled()) {
+        log.debug("Initializing TOR");
+      }
+      // init Silvertunnel
+      JvmGlobalUtil.init();
+    }
+  }
+
   public void connect() {
     Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
-      // Tor enabled
       torClient.get().connect();
+    }
+  }
+
+  public void waitReady() {
+    Optional<JavaTorClient> torClient = getTorClient();
+    if (torClient.isPresent()) {
+      torClient.get().waitReady();
     }
   }
 
   public void disconnect() {
     Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
-      // Tor enabled
       torClient.get().disconnect();
     }
+  }
+
+  public void changeCircuit() {
+    Optional<JavaTorClient> torClient = getTorClient();
+    if (torClient.isPresent()) {
+      torClient.get().changeCircuit();
+    }
+  }
+
+  public Optional<JavaTorConnexion> getTorConnexion(boolean isRegisterOutput) {
+    if (cliConfig.getTor()) {
+      Optional<JavaTorClient> torClient = getTorClient();
+      if (torClient.isPresent()) {
+        // Tor enabled
+        JavaTorConnexion torConnexion = torClient.get().getConnexion(isRegisterOutput);
+        return Optional.of(torConnexion);
+      }
+    }
+    // TOR disabled
+    return Optional.empty();
   }
 
   private Optional<JavaTorClient> getTorClient() {
@@ -44,9 +80,9 @@ public class CliTorClientService {
         if (log.isDebugEnabled()) {
           log.debug("Enabling TOR.");
         }
-        // connect (1 shared connexion for all TOR traffic)
-        torClient = Optional.of(new JavaTorClient(0));
-        torClient.get().connect();
+        // connect
+        torClient = Optional.of(new JavaTorClient());
+        connect();
       }
     } else {
       if (torClient.isPresent()) {
@@ -54,27 +90,10 @@ public class CliTorClientService {
           log.debug("Disabling TOR.");
         }
         // disconnect
-        torClient.get().disconnect();
+        disconnect();
         torClient = Optional.empty();
       }
     }
     return torClient;
-  }
-
-  public Optional<JavaTorConnexion> getTorConnexion(boolean isRegisterOutput) {
-    if (useTor(isRegisterOutput)) {
-      // REGISTER_OUTPUT
-      Optional<JavaTorClient> torClient = getTorClient();
-      if (torClient.isPresent()) {
-        // Tor enabled
-        return Optional.of(torClient.get().getConnexion(false));
-      }
-    }
-    // TOR disabled
-    return Optional.empty();
-  }
-
-  private boolean useTor(boolean isRegisterOutput) {
-    return cliConfig.getTor();
   }
 }
