@@ -153,7 +153,8 @@ Response:
     "loggedIn": true,
     "cliMessage": "",
     "network": "test",
-    "serverUrl": ""
+    "serverUrl": "",
+    "serverName": "TESTNET"
 }
 ```
 

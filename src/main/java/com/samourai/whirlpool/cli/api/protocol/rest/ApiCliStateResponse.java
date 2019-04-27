@@ -11,6 +11,7 @@ public class ApiCliStateResponse {
 
   private String network;
   private String serverUrl;
+  private String serverName;
 
   public ApiCliStateResponse(CliState cliState, WhirlpoolServer server) {
     this.cliStatus = cliState.getCliStatus();
@@ -19,6 +20,7 @@ public class ApiCliStateResponse {
 
     this.network = server.getParams().getPaymentProtocolId();
     this.serverUrl = server.getServerUrl();
+    this.serverName = server.name();
   }
 
   public CliStatus getCliStatus() {
@@ -39,5 +41,9 @@ public class ApiCliStateResponse {
 
   public String getServerUrl() {
     return serverUrl;
+  }
+
+  public String getServerName() {
+    return serverName;
   }
 }
