@@ -4,6 +4,7 @@ import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
+import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.utils.MessageErrorListener;
 import java.util.Arrays;
 import java.util.List;
@@ -48,13 +49,14 @@ public class JavaStompClient implements IStompClient {
       MessageErrorListener<IStompMessage, Throwable> onConnectOnDisconnectListener) {
     this.stompClient = computeStompClient();
 
+    WebSocketHttpHeaders httpHeaders = computeHttpHeaders();
     StompHeaders stompHeadersObj = computeStompHeaders(stompHeaders);
     try {
       this.stompSession =
           stompClient // set stompSession twice, as we need it for getSessionId()
               .connect(
                   url,
-                  (WebSocketHttpHeaders) null,
+                  httpHeaders,
                   stompHeadersObj,
                   computeStompSessionHandler(onConnectOnDisconnectListener))
               .get();
@@ -193,6 +195,12 @@ public class JavaStompClient implements IStompClient {
 
     SockJsClient sockJsClient = new SockJsClient(webSocketTransports);
     return sockJsClient;
+  }
+
+  private WebSocketHttpHeaders computeHttpHeaders() {
+    WebSocketHttpHeaders httpHeaders = new WebSocketHttpHeaders();
+    httpHeaders.set("user-agent", ClientUtils.USER_AGENT); // prevent user-agent tracking
+    return httpHeaders;
   }
 
   private StompHeaders computeStompHeaders(Map<String, String> stompHeaders) {

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kevinsawicki.http.HttpRequest;
 import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
+import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class JavaHttpClient implements IHttpClient {
         // standard connexion
         request = HttpRequest.get(urlStr);
       }
-      checkResponseSuccess(request);
+      execute(request);
       T result = objectMapper.readValue(request.bytes(), entityClass);
       // keep sharedTorConnexion open
       return result;
@@ -68,7 +69,7 @@ public class JavaHttpClient implements IHttpClient {
         request = HttpRequest.post(urlStr);
       }
       request.contentType(HttpRequest.CONTENT_TYPE_JSON).send(jsonBody.getBytes());
-      checkResponseSuccess(request);
+      execute(request);
     } catch (Exception e) {
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
@@ -96,7 +97,7 @@ public class JavaHttpClient implements IHttpClient {
         request = HttpRequest.post(urlStr);
       }
       request.contentType(HttpRequest.CONTENT_TYPE_FORM).send(bodyUrlEncoded.getBytes());
-      checkResponseSuccess(request);
+      execute(request);
     } catch (Exception e) {
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
@@ -109,8 +110,8 @@ public class JavaHttpClient implements IHttpClient {
     }
   }
 
-  private void checkResponseSuccess(HttpRequest request) throws HttpException {
-    if (!request.ok()) {
+  private void execute(HttpRequest request) throws HttpException {
+    if (!request.header(HttpRequest.HEADER_USER_AGENT, ClientUtils.USER_AGENT).ok()) {
       throw new HttpException(
           new Exception(
               "httpRequest failed: statusCode="

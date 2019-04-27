@@ -112,14 +112,14 @@ public class CliUtils {
     String portStr = Integer.toString(cliProxy.getPort()); // important cast
     switch (cliProxy.getProtocol()) {
       case SOCKS:
-        System.getProperties().put("socksProxyHost", cliProxy.getHost());
-        System.getProperties().put("socksProxyPort", portStr);
+        System.setProperty("socksProxyHost", cliProxy.getHost());
+        System.setProperty("socksProxyPort", portStr);
         break;
       case HTTP:
-        System.getProperties().put("http.proxyHost", cliProxy.getHost());
-        System.getProperties().put("http.proxyPort", portStr);
-        System.getProperties().put("https.proxyHost", cliProxy.getHost());
-        System.getProperties().put("https.proxyPort", portStr);
+        System.setProperty("http.proxyHost", cliProxy.getHost());
+        System.setProperty("http.proxyPort", portStr);
+        System.setProperty("https.proxyHost", cliProxy.getHost());
+        System.setProperty("https.proxyPort", portStr);
         break;
     }
   }
