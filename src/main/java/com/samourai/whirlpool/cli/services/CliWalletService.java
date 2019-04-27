@@ -53,7 +53,10 @@ public class CliWalletService extends WhirlpoolWalletService {
       WalletAggregateService walletAggregateService,
       JavaStompClient stompClient,
       CliTorClientService cliTorClientService) {
-    super(cliConfig.computeWhirlpoolWalletConfig());
+    super(
+        cliConfig
+            .computeWhirlpoolWalletConfig()); // TODO won't honor --tor as config is not overriden
+                                              // yet
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.hdWalletFactory = hdWalletFactory;

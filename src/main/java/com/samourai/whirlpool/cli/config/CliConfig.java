@@ -278,13 +278,6 @@ public class CliConfig {
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig() {
     String serverUrl = computeServerUrl();
-    System.out.println("#############");
-    System.out.println("#############");
-    System.out.println("#############");
-    System.err.println("#############CONFIGGGG TOR=" + tor + ", url=" + serverUrl);
-    System.err.println("#############");
-    System.err.println("#############");
-    System.err.println("#############");
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(httpClient, stompClient, serverUrl, server);
     if (!Strings.isEmpty(scode)) {
@@ -307,7 +300,9 @@ public class CliConfig {
   }
 
   private String computeServerUrl() {
-    String serverUrl = tor ? server.getServerOnionV2() : server.getServerUrl();
+    // better clearnet over torV2 than flawed onionV2
+    // String serverUrl = tor ? server.getServerOnionV2() : server.getServerUrl();
+    String serverUrl = server.getServerUrl();
     return serverUrl;
   }
 }
