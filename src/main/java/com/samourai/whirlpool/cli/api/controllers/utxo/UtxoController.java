@@ -99,7 +99,7 @@ public class UtxoController extends AbstractRestController {
     WhirlpoolUtxo whirlpoolUtxo = findUtxo(utxoHash, utxoIndex);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
 
-    // start mix
+    // stop mix
     whirlpoolWallet.mixStop(whirlpoolUtxo);
   }
 }
