@@ -45,4 +45,10 @@ public class JavaTorConnexion {
       netFactory.clearRegisteredNetLayers();
     }
   }
+
+  public int getProgress() {
+    double indicator =
+        netFactory.getNetLayerById(NetLayerIDs.TOR).getStatus().getReadyIndicator() * 100;
+    return (int) Math.round(indicator);
+  }
 }

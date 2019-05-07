@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.services;
 
 import com.google.common.primitives.Bytes;
 import com.samourai.stomp.client.JavaStompClient;
+import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.hd.HD_Wallet;
@@ -21,6 +22,7 @@ import com.samourai.whirlpool.client.wallet.persist.FileWhirlpoolWalletPersistHa
 import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
+import java.util.Optional;
 import javax.crypto.AEADBadTagException;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.MnemonicException;
@@ -204,6 +206,9 @@ public class CliWalletService extends WhirlpoolWalletService {
     CliStatus cliStatus = cliConfigService.getCliStatus();
     String cliMessage = cliConfigService.getCliMessage();
     boolean loggedIn = hasSessionWallet();
-    return new CliState(cliStatus, cliMessage, loggedIn);
+
+    Optional<JavaTorConnexion> torConnexion = cliTorClientService.getTorConnexion(false);
+    Integer torProgress = torConnexion.isPresent() ? torConnexion.get().getProgress() : null;
+    return new CliState(cliStatus, cliMessage, loggedIn, torProgress);
   }
 }

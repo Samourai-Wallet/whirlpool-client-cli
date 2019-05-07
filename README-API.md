@@ -154,6 +154,7 @@ Response:
 {
     "cliStatus": "READY",
     "loggedIn": true,
+    "torProgress": 100,
     "cliMessage": "",
     "network": "test",
     "serverUrl": "",
