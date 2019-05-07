@@ -9,9 +9,11 @@ public class ApiWalletUtxosResponse {
   private ApiWallet postmix;
 
   public ApiWalletUtxosResponse(WhirlpoolWallet whirlpoolWallet) throws Exception {
-    this.deposit = new ApiWallet(whirlpoolWallet.getUtxosDeposit());
-    this.premix = new ApiWallet(whirlpoolWallet.getUtxosPremix());
-    this.postmix = new ApiWallet(whirlpoolWallet.getUtxosPostmix());
+    this.deposit =
+        new ApiWallet(whirlpoolWallet.getUtxosDeposit(), whirlpoolWallet.getZpubDeposit());
+    this.premix = new ApiWallet(whirlpoolWallet.getUtxosPremix(), whirlpoolWallet.getZpubPremix());
+    this.postmix =
+        new ApiWallet(whirlpoolWallet.getUtxosPostmix(), whirlpoolWallet.getZpubPostmix());
   }
 
   public ApiWallet getDeposit() {

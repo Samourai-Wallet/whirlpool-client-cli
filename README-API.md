@@ -89,15 +89,18 @@ Response:
 {
     deposit: {
         utxos: [(utxos detail)],
-        balance: 0
+        balance: 0,
+        zpub: ""
     },
     premix: {
         utxos: [(utxos detail)],
-        balance: 0
+        balance: 0,
+        zpub: ""
     },
     postmix: {
         utxos: [(utxos detail)],
-        balance: 0
+        balance: 0,
+        zpub: ""
     }
 }
 ```

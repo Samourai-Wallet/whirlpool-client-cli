@@ -8,8 +8,9 @@ import java.util.stream.Collectors;
 public class ApiWallet {
   private Collection<ApiUtxo> utxos;
   private long balance;
+  private String zpub;
 
-  public ApiWallet(Collection<WhirlpoolUtxo> whirlpoolUtxos) {
+  public ApiWallet(Collection<WhirlpoolUtxo> whirlpoolUtxos, String zpub) {
     this.utxos =
         whirlpoolUtxos
             .stream()
@@ -18,6 +19,7 @@ public class ApiWallet {
             .collect(Collectors.toList());
     this.balance =
         whirlpoolUtxos.stream().mapToLong(whirlpoolUtxo -> whirlpoolUtxo.getUtxo().value).sum();
+    this.zpub = zpub;
   }
 
   public Collection<ApiUtxo> getUtxos() {
@@ -26,5 +28,9 @@ public class ApiWallet {
 
   public long getBalance() {
     return balance;
+  }
+
+  public String getZpub() {
+    return zpub;
   }
 }
