@@ -35,7 +35,7 @@ public class CliListener implements WhirlpoolClientListener {
   }
 
   @Override
-  public void progress(MixStep step, String stepInfo, int stepNumber, int nbSteps) {
+  public void progress(MixStep step) {
 
     // override with custom code here: mix progress
   }
