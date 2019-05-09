@@ -7,8 +7,6 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Optional;
 import javax.validation.constraints.NotEmpty;
 import org.apache.logging.log4j.util.Strings;
@@ -137,7 +135,6 @@ public class CliConfig {
     @NotEmpty private boolean autoAggregatePostmix;
     @NotEmpty private Collection<String> poolIdsByPriority;
     @NotEmpty private int mixsTarget;
-    @NotEmpty private boolean disablePostmix;
 
     public int getClients() {
       return clients;
@@ -210,70 +207,36 @@ public class CliConfig {
     public void setMixsTarget(int mixsTarget) {
       this.mixsTarget = mixsTarget;
     }
-
-    public boolean isDisablePostmix() {
-      return disablePostmix;
-    }
-
-    public void setDisablePostmix(boolean disablePostmix) {
-      this.disablePostmix = disablePostmix;
-    }
   }
 
-  private String mask(String value, int start, int end) {
-    return value.substring(0, start)
-        + "..."
-        + value.substring(value.length() - end, value.length());
-  }
+  public static class FeeConfig {
+    @NotEmpty private int min;
+    @NotEmpty private int max;
+    @NotEmpty private int fallback;
 
-  public Map<String, String> getConfigInfo() {
-    Map<String, String> configInfo = new LinkedHashMap<>();
-    String feeX = server.getFeeData();
-    String feeXMasked = mask(feeX, 6, 4);
-    String serverUrl = computeServerUrl();
-    configInfo.put(
-        "server",
-        "url="
-            + serverUrl
-            + ", network="
-            + server.getParams()
-            + ", ssl="
-            + Boolean.toString(server.isSsl())
-            + ", feeX="
-            + feeXMasked);
-    configInfo.put("pushtx", pushtx);
-    configInfo.put("tor", Boolean.toString(tor));
-    configInfo.put("apiKey", !Strings.isEmpty(apiKey) ? mask(apiKey, 3, 3) : "null");
-    configInfo.put("seed", !Strings.isEmpty(seed) ? mask(seed, 3, 3) : "null");
-    configInfo.put("persistDelay", Integer.toString(persistDelay));
-    configInfo.put("proxy", !Strings.isEmpty(proxy) ? proxy : "null");
-    String poolIdsByPriorityStr = "null";
-    if (mix.getPoolIdsByPriority() != null && !mix.getPoolIdsByPriority().isEmpty()) {
-      poolIdsByPriorityStr = Strings.join(mix.getPoolIdsByPriority(), ',');
+    public int getMin() {
+      return min;
     }
-    configInfo.put(
-        "mix",
-        "clients="
-            + mix.getClients()
-            + ", clientDelay="
-            + mix.getClientDelay()
-            + ", tx0Delay="
-            + mix.getTx0Delay()
-            + ", tx0MaxOutputs="
-            + mix.getTx0MaxOutputs()
-            + ", autoTx0="
-            + mix.isAutoTx0()
-            + ", autoMix="
-            + mix.isAutoMix()
-            + ", autoAggregatePostmix="
-            + mix.isAutoAggregatePostmix()
-            + ", poolIdsByPriority="
-            + poolIdsByPriorityStr
-            + ", mixsTarget="
-            + mix.getMixsTarget()
-            + ", disablePostmix="
-            + mix.isDisablePostmix());
-    return configInfo;
+
+    public void setMin(int min) {
+      this.min = min;
+    }
+
+    public int getMax() {
+      return max;
+    }
+
+    public void setMax(int max) {
+      this.max = max;
+    }
+
+    public int getFallback() {
+      return fallback;
+    }
+
+    public void setFallback(int fallback) {
+      this.fallback = fallback;
+    }
   }
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig() {
@@ -296,6 +259,7 @@ public class CliConfig {
       config.setPoolIdsByPriority(mix.getPoolIdsByPriority());
     }
     config.setMixsTarget(mix.getMixsTarget());
+
     return config;
   }
 

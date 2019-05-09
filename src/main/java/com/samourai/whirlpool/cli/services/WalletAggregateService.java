@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.samourai.api.client.SamouraiApi;
+import com.samourai.api.client.SamouraiFeeTarget;
 import com.samourai.api.client.beans.UnspentResponse;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.client.Bip84Wallet;
@@ -12,7 +13,6 @@ import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
-import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
@@ -119,7 +119,7 @@ public class WalletAggregateService {
       spendFromAddresses.add(sourceWallet.getAddressAt(utxo));
     }
 
-    int feeSatPerByte = samouraiApi.fetchFees(WhirlpoolClientConfig.FEES_PRIORITY);
+    int feeSatPerByte = samouraiApi.fetchFees().get(SamouraiFeeTarget.BLOCKS_2);
 
     // tx
     Transaction txAggregate =

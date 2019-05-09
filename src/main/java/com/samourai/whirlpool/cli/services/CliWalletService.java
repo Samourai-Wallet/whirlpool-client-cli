@@ -22,8 +22,10 @@ import com.samourai.whirlpool.client.wallet.persist.FileWhirlpoolWalletPersistHa
 import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
+import java.util.Map;
 import java.util.Optional;
 import javax.crypto.AEADBadTagException;
+import org.apache.commons.lang3.StringUtils;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.MnemonicException;
 import org.slf4j.Logger;
@@ -210,5 +212,22 @@ public class CliWalletService extends WhirlpoolWalletService {
     Optional<JavaTorConnexion> torConnexion = cliTorClientService.getTorConnexion(false);
     Integer torProgress = torConnexion.isPresent() ? torConnexion.get().getProgress() : null;
     return new CliState(cliStatus, cliMessage, loggedIn, torProgress);
+  }
+
+  @Override
+  public Map<String, String> getConfigInfo() {
+    Map<String, String> configInfo = super.getConfigInfo();
+
+    configInfo.put("cli.tor", Boolean.toString(cliConfig.getTor()));
+
+    String apiKey = cliConfig.getApiKey();
+    configInfo.put(
+        "cli.apiKey", !StringUtils.isEmpty(apiKey) ? ClientUtils.maskString(apiKey, 3, 3) : "null");
+    configInfo.put(
+        "cli.proxy",
+        cliConfig.getCliProxy().isPresent() ? cliConfig.getCliProxy().get().toString() : "null");
+    configInfo.put(
+        "cli.autoAggregatePostmix", Boolean.toString(cliConfig.getMix().isAutoAggregatePostmix()));
+    return configInfo;
   }
 }

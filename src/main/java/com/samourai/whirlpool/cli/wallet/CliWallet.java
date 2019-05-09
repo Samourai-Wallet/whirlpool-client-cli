@@ -13,7 +13,6 @@ import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.mix.listener.MixSuccess;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.whirlpool.listener.WhirlpoolClientListener;
 import org.slf4j.Logger;
@@ -154,19 +153,6 @@ public class CliWallet extends WhirlpoolWallet {
   @Override
   public void notifyError(String message) {
     CliUtils.notifyError(message);
-  }
-
-  @Override
-  public void mixQueue(WhirlpoolUtxo whirlpoolUtxo) throws NotifiableException {
-    if (WhirlpoolAccount.POSTMIX.equals(whirlpoolUtxo.getAccount())
-        && cliConfig.getMix().isDisablePostmix()) {
-      whirlpoolUtxo.setMessage("Not queued: postmix mixing is disabled by configuration");
-      if (log.isDebugEnabled()) {
-        log.debug("Not queued: postmix mixing is disabled by configuration: " + whirlpoolUtxo);
-      }
-      return;
-    }
-    super.mixQueue(whirlpoolUtxo);
   }
 
   public void interactive() {

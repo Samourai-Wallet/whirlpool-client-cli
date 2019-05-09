@@ -120,15 +120,10 @@ public class Application implements ApplicationRunner {
         Arrays.toString(args.getSourceArgs()),
         System.getProperty("java.version"));
     if (log.isDebugEnabled()) {
-      for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
-        log.debug("config/initial: " + entry.getKey() + ": " + entry.getValue());
+      for (Map.Entry<String, String> entry : cliWalletService.getConfigInfo().entrySet()) {
+        log.debug("[config/" + entry.getKey() + "] " + entry.getValue());
       }
-    }
-    if (log.isDebugEnabled()) {
-      for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
-        log.debug("config/override: " + entry.getKey() + ": " + entry.getValue());
-      }
-      log.debug("listen: " + (listenPort != null ? listenPort : "false"));
+      log.debug("[config/listen] " + (listenPort != null ? listenPort : "false"));
     }
 
     // setup TOR
