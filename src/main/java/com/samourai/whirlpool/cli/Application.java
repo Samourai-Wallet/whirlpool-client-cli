@@ -283,9 +283,8 @@ public class Application implements ApplicationRunner {
         Level.ERROR.toString());
     LogbackUtils.setLogLevel(
         "org.silvertunnel_ng.netlib.layer.tor.directory.Directory", Level.ERROR.toString());
-    LogbackUtils.setLogLevel(
-        "org.springframework.boot.web.servlet.filter.OrderedRequestContextFilter",
-        Level.INFO.toString());
+    LogbackUtils.setLogLevel("org.springframework.web", Level.INFO.toString());
+    LogbackUtils.setLogLevel("org.apache.http.impl.conn", Level.INFO.toString());
 
     // LogbackUtils.setLogLevel("com", Level.DEBUG.toString());
     // LogbackUtils.setLogLevel("org", Level.DEBUG.toString());
