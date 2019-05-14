@@ -55,7 +55,7 @@ You need a wallet holding funds to mix.
 
 ```
 [--pool=] [--clients=1] [--client-delay=5] [--tx0-delay=20]
-[--auto-tx0] [--auto-mix] [--auto-aggregate-postmix]
+[--auto-tx0=poolId] [--auto-mix] [--auto-aggregate-postmix]
 ```
 
 Example:
@@ -66,7 +66,7 @@ java -jar target/whirlpool-client-version-run.jar
 - clients: number of simultaneous mixs
 - client-delay: delay (in seconds) between each connexion
 - tx0-delay: delay (in seconds) between each tx0 (from --auto-tx0)
-- auto-tx0: automatically run tx0 from deposit when premix wallet is empty
+- auto-tx0: automatically run tx0 from deposit for specified pool when premix wallet is empty
 - auto-mix: automatically mix utxos detected in premix wallet
 - auto-aggregate-postmix: enable automatically post-mix wallet agregation to refill premix when empty
 

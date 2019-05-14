@@ -13,6 +13,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 @ConfigurationProperties(prefix = "cli")
 @Configuration
@@ -130,7 +131,7 @@ public class CliConfig {
     @NotEmpty private int clientDelay;
     @NotEmpty private int tx0Delay;
     @NotEmpty private int tx0MaxOutputs;
-    private boolean autoTx0 = false;
+    private String autoTx0PoolId = null;
     @NotEmpty private boolean autoMix;
     @NotEmpty private boolean autoAggregatePostmix;
     @NotEmpty private int mixsTarget;
@@ -167,12 +168,12 @@ public class CliConfig {
       this.tx0MaxOutputs = tx0MaxOutputs;
     }
 
-    public boolean isAutoTx0() {
-      return autoTx0;
+    public String getAutoTx0PoolId() {
+      return autoTx0PoolId;
     }
 
-    public void setAutoTx0(boolean autoTx0) {
-      this.autoTx0 = autoTx0;
+    public void setAutoTx0PoolId(String autoTx0PoolId) {
+      this.autoTx0PoolId = autoTx0PoolId;
     }
 
     public boolean isAutoMix() {
@@ -243,7 +244,7 @@ public class CliConfig {
     config.setClientDelay(mix.getClientDelay());
     config.setTx0Delay(mix.getTx0Delay());
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs() > 0 ? mix.getTx0MaxOutputs() : null);
-    config.setAutoTx0(mix.isAutoTx0());
+    config.setAutoTx0PoolId(mix.getAutoTx0PoolId());
     config.setAutoMix(mix.isAutoMix());
     config.setMixsTarget(mix.getMixsTarget());
 
@@ -258,7 +259,7 @@ public class CliConfig {
   }
 
   public void checkValid() throws NotifiableException {
-    if (mix.isAutoAggregatePostmix() && !mix.isAutoTx0()) {
+    if (mix.isAutoAggregatePostmix() && StringUtils.isEmpty(mix.getAutoTx0PoolId())) {
       throw new NotifiableException("--auto-tx0 is required for --auto-aggregate-postmix");
     }
   }

@@ -67,9 +67,9 @@ public class ApplicationArgs {
       cliConfig.setScode(value);
     }
 
-    valueBool = optionalBoolean(ARG_AUTO_TX0);
-    if (valueBool != null) {
-      cliConfig.getMix().setAutoTx0(valueBool);
+    value = optionalOption(ARG_AUTO_TX0);
+    if (value != null) {
+      cliConfig.getMix().setAutoTx0PoolId(value);
     }
 
     valueBool = optionalBoolean(ARG_AUTO_MIX);
