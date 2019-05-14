@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.api.controllers.utxo;
 
 import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
+import com.samourai.whirlpool.cli.api.protocol.rest.ApiTx0CreateRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiTx0CreateResponse;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiUtxoConfigureRequest;
 import com.samourai.whirlpool.cli.services.CliWalletService;
@@ -9,6 +10,7 @@ import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
+import com.samourai.whirlpool.client.wallet.beans.Tx0FeeTarget;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -58,7 +60,8 @@ public class UtxoController extends AbstractRestController {
   public ApiTx0CreateResponse tx0(
       @RequestHeader HttpHeaders headers,
       @PathVariable("hash") String utxoHash,
-      @PathVariable("index") int utxoIndex)
+      @PathVariable("index") int utxoIndex,
+      @RequestBody ApiTx0CreateRequest payload)
       throws Exception {
     checkHeaders(headers);
 
@@ -67,7 +70,10 @@ public class UtxoController extends AbstractRestController {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
 
     // tx0
-    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxo);
+    Tx0FeeTarget feeTarget =
+        (payload != null && payload.feeTarget != null ? payload.feeTarget : Tx0FeeTarget.DEFAULT);
+
+    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxo, feeTarget);
     return new ApiTx0CreateResponse(tx0.getTx().getHashAsString() /*payload.mixsTarget*/);
   }
 

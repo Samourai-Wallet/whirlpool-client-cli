@@ -228,6 +228,7 @@ public class CliWalletService extends WhirlpoolWalletService {
         cliConfig.getCliProxy().isPresent() ? cliConfig.getCliProxy().get().toString() : "null");
     configInfo.put(
         "cli.autoAggregatePostmix", Boolean.toString(cliConfig.getMix().isAutoAggregatePostmix()));
+    configInfo.put("cli.autoTx0FeeTarget", cliConfig.getMix().getAutoTx0FeeTarget().name());
     return configInfo;
   }
 }

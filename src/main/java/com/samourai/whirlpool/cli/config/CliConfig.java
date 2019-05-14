@@ -6,6 +6,7 @@ import com.samourai.whirlpool.cli.services.JavaStompClientService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
+import com.samourai.whirlpool.client.wallet.beans.Tx0FeeTarget;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.util.Optional;
 import javax.validation.constraints.NotEmpty;
@@ -131,6 +132,7 @@ public class CliConfig {
     @NotEmpty private int clientDelay;
     @NotEmpty private int tx0Delay;
     @NotEmpty private int tx0MaxOutputs;
+    private Tx0FeeTarget autoTx0FeeTarget;
     private String autoTx0PoolId = null;
     @NotEmpty private boolean autoMix;
     @NotEmpty private boolean autoAggregatePostmix;
@@ -166,6 +168,14 @@ public class CliConfig {
 
     public void setTx0MaxOutputs(int tx0MaxOutputs) {
       this.tx0MaxOutputs = tx0MaxOutputs;
+    }
+
+    public Tx0FeeTarget getAutoTx0FeeTarget() {
+      return autoTx0FeeTarget;
+    }
+
+    public void setAutoTx0FeeTarget(Tx0FeeTarget autoTx0FeeTarget) {
+      this.autoTx0FeeTarget = autoTx0FeeTarget;
     }
 
     public String getAutoTx0PoolId() {
@@ -244,6 +254,9 @@ public class CliConfig {
     config.setClientDelay(mix.getClientDelay());
     config.setTx0Delay(mix.getTx0Delay());
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs() > 0 ? mix.getTx0MaxOutputs() : null);
+    if (mix.getAutoTx0FeeTarget() != null) {
+      config.setAutoTx0FeeTarget(mix.getAutoTx0FeeTarget());
+    }
     config.setAutoTx0PoolId(mix.getAutoTx0PoolId());
     config.setAutoMix(mix.isAutoMix());
     config.setMixsTarget(mix.getMixsTarget());

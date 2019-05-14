@@ -1,7 +1,8 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiPool;
-import com.samourai.whirlpool.client.tx0.Tx0Service;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
+import com.samourai.whirlpool.client.wallet.beans.Tx0FeeTarget;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -10,16 +11,20 @@ public class ApiPoolsResponse {
   private Collection<ApiPool> pools;
 
   public ApiPoolsResponse(
-      Collection<Pool> pools, int feeTx0, int feePremix, Tx0Service tx0Service) {
+      Collection<Pool> pools,
+      Tx0FeeTarget feeTarget,
+      int feePremix,
+      WhirlpoolWallet whirlpoolWallet) {
     this.pools =
         pools
             .stream()
-            .map(pool -> computeApiPool(pool, feeTx0, feePremix, tx0Service))
+            .map(pool -> computeApiPool(pool, feeTarget, feePremix, whirlpoolWallet))
             .collect(Collectors.toList());
   }
 
-  private ApiPool computeApiPool(Pool pool, int feeTx0, int feePremix, Tx0Service tx0Service) {
-    long tx0BalanceMin = tx0Service.computeSpendFromBalanceMin(pool, feeTx0, feePremix, 1);
+  private ApiPool computeApiPool(
+      Pool pool, Tx0FeeTarget feeTarget, int feePremix, WhirlpoolWallet whirlpoolWallet) {
+    long tx0BalanceMin = whirlpoolWallet.computeTx0SpendFromBalanceMin(pool, feeTarget, 1);
     return new ApiPool(pool, tx0BalanceMin);
   }
 

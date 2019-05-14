@@ -129,6 +129,8 @@ Response:
 ### Tx0 ```POST /rest/utxos/{hash}:{index}/tx0```
 Parameters:
 * hash, index: utxo to spend for tx0
+Payload:
+* feeTarget (optional): fee target for tx0
 
 Response:
 ```
