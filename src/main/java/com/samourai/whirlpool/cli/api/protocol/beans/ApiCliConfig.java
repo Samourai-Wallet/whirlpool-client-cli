@@ -30,7 +30,6 @@ public class ApiCliConfig {
   private static final String KEY_MIX_CLIENTS = "cli.mix.clients";
   private static final String KEY_MIX_CLIENT_DELAY = "cli.mix.clientDelay";
   private static final String KEY_MIX_TX0_MAX_OUTPUTS = "cli.mix.tx0MaxOutputs";
-  private static final String KEY_MIX_AUTO_TX0 = "cli.mix.autoTx0";
   private static final String KEY_MIX_AUTO_MIX = "cli.mix.autoMix";
   private static final String KEY_MIX_AUTO_AGGREGATE_POSTMIX = "cli.mix.autoAggregatePostmix";
   private static final String KEY_MIX_POOL_IDS_BY_PRIORITY = "cli.mix.poolIdsByPriority";
@@ -117,7 +116,6 @@ public class ApiCliConfig {
     private Integer clients;
     private Integer clientDelay;
     private Integer tx0MaxOutputs;
-    private Boolean autoTx0;
     private Boolean autoMix;
     private Boolean autoAggregatePostmix;
     private Collection<String> poolIdsByPriority;
@@ -129,7 +127,6 @@ public class ApiCliConfig {
       this.clients = mixConfig.getClients();
       this.clientDelay = mixConfig.getClientDelay();
       this.tx0MaxOutputs = mixConfig.getTx0MaxOutputs();
-      this.autoTx0 = mixConfig.isAutoTx0();
       this.autoMix = mixConfig.isAutoMix();
       this.autoAggregatePostmix = mixConfig.isAutoAggregatePostmix();
       this.poolIdsByPriority = new ArrayList<>();
@@ -157,9 +154,6 @@ public class ApiCliConfig {
         }
         props.put(KEY_MIX_TX0_MAX_OUTPUTS, Integer.toString(tx0MaxOutputs));
       }
-      if (autoTx0 != null) {
-        props.put(KEY_MIX_AUTO_TX0, Boolean.toString(autoTx0));
-      }
       if (autoMix != null) {
         props.put(KEY_MIX_AUTO_MIX, Boolean.toString(autoMix));
       }
@@ -167,9 +161,6 @@ public class ApiCliConfig {
         if (autoAggregatePostmix) {
           if (!FormatsUtilGeneric.getInstance().isTestNet(whirlpoolServer.getParams())) {
             throw new NotifiableException("AutoAggregatePostmix cannot be enabled for non-testnet");
-          }
-          if (!getAutoTx0()) {
-            throw new NotifiableException("AutoAggregatePostmix cannot be enabled without AutoTx0");
           }
         }
         props.put(KEY_MIX_AUTO_AGGREGATE_POSTMIX, Boolean.toString(autoAggregatePostmix));
@@ -209,14 +200,6 @@ public class ApiCliConfig {
 
     public void setTx0MaxOutputs(Integer tx0MaxOutputs) {
       this.tx0MaxOutputs = tx0MaxOutputs;
-    }
-
-    public Boolean getAutoTx0() {
-      return autoTx0;
-    }
-
-    public void setAutoTx0(Boolean autoTx0) {
-      this.autoTx0 = autoTx0;
     }
 
     public Boolean getAutoMix() {

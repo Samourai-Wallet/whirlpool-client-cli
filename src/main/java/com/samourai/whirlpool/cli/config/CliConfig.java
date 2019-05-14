@@ -4,6 +4,7 @@ import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.cli.services.JavaStompClientService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.util.Collection;
@@ -130,7 +131,7 @@ public class CliConfig {
     @NotEmpty private int clientDelay;
     @NotEmpty private int tx0Delay;
     @NotEmpty private int tx0MaxOutputs;
-    @NotEmpty private boolean autoTx0;
+    private boolean autoTx0 = false;
     @NotEmpty private boolean autoMix;
     @NotEmpty private boolean autoAggregatePostmix;
     @NotEmpty private Collection<String> poolIdsByPriority;
@@ -268,5 +269,11 @@ public class CliConfig {
     // String serverUrl = tor ? server.getServerOnionV2() : server.getServerUrl();
     String serverUrl = server.getServerUrl();
     return serverUrl;
+  }
+
+  public void checkValid() throws NotifiableException {
+    if (mix.isAutoAggregatePostmix() && !mix.isAutoTx0()) {
+      throw new NotifiableException("--auto-tx0 is required for --auto-aggregate-postmix");
+    }
   }
 }

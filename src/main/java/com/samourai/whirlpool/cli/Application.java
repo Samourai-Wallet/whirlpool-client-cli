@@ -96,6 +96,7 @@ public class Application implements ApplicationRunner {
       return;
     }
     try {
+      cliConfig.checkValid();
       runCli();
     } catch (NotifiableException e) {
       exitCode = 1;
