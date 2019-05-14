@@ -3,11 +3,7 @@ package com.samourai.whirlpool.cli;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.lang.invoke.MethodHandles;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -64,11 +60,6 @@ public class ApplicationArgs {
       if (whirlpoolServer.isPresent()) {
         cliConfig.setServer(whirlpoolServer.get());
       }
-    }
-
-    Collection<String> poolIdsBypriority = getPoolIdsByPriority();
-    if (!poolIdsBypriority.isEmpty()) {
-      cliConfig.getMix().setPoolIdsByPriority(poolIdsBypriority);
     }
 
     value = optionalOption(ARG_SCODE);
@@ -135,17 +126,6 @@ public class ApplicationArgs {
     if (valueInt != null) {
       cliConfig.getMix().setMixsTarget(valueInt);
     }
-  }
-
-  private Collection<String> getPoolIdsByPriority() {
-    List<String> poolIdsByPriority = new LinkedList<>();
-
-    String poolIdsStr = optionalOption(ARG_POOL_ID);
-    if (poolIdsStr != null && !poolIdsStr.isEmpty()) {
-      String[] poolIdsSplit = poolIdsStr.split(",");
-      poolIdsByPriority.addAll(Arrays.asList(poolIdsSplit));
-    }
-    return poolIdsByPriority;
   }
 
   private String getUtxo() {

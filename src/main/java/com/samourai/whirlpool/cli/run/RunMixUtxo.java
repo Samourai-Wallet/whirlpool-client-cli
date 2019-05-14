@@ -39,7 +39,7 @@ public class RunMixUtxo {
 
     // pools
     Collection<Pool> poolsByPreference =
-        cliWalletService.getSessionWallet().findPoolsByPreferenceForPremix(utxoBalance, false);
+        cliWalletService.getSessionWallet().findPoolsForPremix(utxoBalance, false);
     if (poolsByPreference.isEmpty()) {
       throw new NotifiableException("No pool for this utxo balance: " + utxoBalance);
     }

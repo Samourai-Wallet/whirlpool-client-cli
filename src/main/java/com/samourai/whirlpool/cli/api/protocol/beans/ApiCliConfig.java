@@ -7,8 +7,6 @@ import com.samourai.whirlpool.cli.config.CliConfig.MixConfig;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,7 +30,6 @@ public class ApiCliConfig {
   private static final String KEY_MIX_TX0_MAX_OUTPUTS = "cli.mix.tx0MaxOutputs";
   private static final String KEY_MIX_AUTO_MIX = "cli.mix.autoMix";
   private static final String KEY_MIX_AUTO_AGGREGATE_POSTMIX = "cli.mix.autoAggregatePostmix";
-  private static final String KEY_MIX_POOL_IDS_BY_PRIORITY = "cli.mix.poolIdsByPriority";
   private static final String KEY_MIX_MIXS_TARGET = "cli.mix.mixsTarget";
 
   public ApiCliConfig() {}
@@ -118,7 +115,6 @@ public class ApiCliConfig {
     private Integer tx0MaxOutputs;
     private Boolean autoMix;
     private Boolean autoAggregatePostmix;
-    private Collection<String> poolIdsByPriority;
     private Integer mixsTarget;
 
     public ApiMixConfig() {}
@@ -129,8 +125,6 @@ public class ApiCliConfig {
       this.tx0MaxOutputs = mixConfig.getTx0MaxOutputs();
       this.autoMix = mixConfig.isAutoMix();
       this.autoAggregatePostmix = mixConfig.isAutoAggregatePostmix();
-      this.poolIdsByPriority = new ArrayList<>();
-      this.poolIdsByPriority.addAll(mixConfig.getPoolIdsByPriority());
       this.mixsTarget = mixConfig.getMixsTarget();
     }
 
@@ -164,11 +158,6 @@ public class ApiCliConfig {
           }
         }
         props.put(KEY_MIX_AUTO_AGGREGATE_POSTMIX, Boolean.toString(autoAggregatePostmix));
-      }
-      if (poolIdsByPriority != null) {
-        // poolIdsByPriority[0] = '' => no pool preference
-        String poolIds = String.join(",", poolIdsByPriority);
-        props.put(KEY_MIX_POOL_IDS_BY_PRIORITY, poolIds);
       }
       if (mixsTarget != null) {
         if (mixsTarget < 1) {
@@ -216,14 +205,6 @@ public class ApiCliConfig {
 
     public void setAutoAggregatePostmix(Boolean autoAggregatePostmix) {
       this.autoAggregatePostmix = autoAggregatePostmix;
-    }
-
-    public Collection<String> getPoolIdsByPriority() {
-      return poolIdsByPriority;
-    }
-
-    public void setPoolIdsByPriority(Collection<String> poolIdsByPriority) {
-      this.poolIdsByPriority = poolIdsByPriority;
     }
 
     public Integer getMixsTarget() {

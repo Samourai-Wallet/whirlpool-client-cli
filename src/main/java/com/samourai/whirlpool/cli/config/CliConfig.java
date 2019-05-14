@@ -7,7 +7,6 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
-import java.util.Collection;
 import java.util.Optional;
 import javax.validation.constraints.NotEmpty;
 import org.apache.logging.log4j.util.Strings;
@@ -134,7 +133,6 @@ public class CliConfig {
     private boolean autoTx0 = false;
     @NotEmpty private boolean autoMix;
     @NotEmpty private boolean autoAggregatePostmix;
-    @NotEmpty private Collection<String> poolIdsByPriority;
     @NotEmpty private int mixsTarget;
 
     public int getClients() {
@@ -193,14 +191,6 @@ public class CliConfig {
       this.autoAggregatePostmix = autoAggregatePostmix;
     }
 
-    public Collection<String> getPoolIdsByPriority() {
-      return poolIdsByPriority;
-    }
-
-    public void setPoolIdsByPriority(Collection<String> poolIdsByPriority) {
-      this.poolIdsByPriority = poolIdsByPriority;
-    }
-
     public int getMixsTarget() {
       return mixsTarget;
     }
@@ -255,10 +245,6 @@ public class CliConfig {
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs() > 0 ? mix.getTx0MaxOutputs() : null);
     config.setAutoTx0(mix.isAutoTx0());
     config.setAutoMix(mix.isAutoMix());
-
-    if (mix.getPoolIdsByPriority() != null && !mix.getPoolIdsByPriority().isEmpty()) {
-      config.setPoolIdsByPriority(mix.getPoolIdsByPriority());
-    }
     config.setMixsTarget(mix.getMixsTarget());
 
     return config;

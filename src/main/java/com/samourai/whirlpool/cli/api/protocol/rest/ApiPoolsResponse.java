@@ -8,22 +8,11 @@ import java.util.stream.Collectors;
 
 public class ApiPoolsResponse {
   private Collection<ApiPool> pools;
-  private Collection<ApiPool> poolsAvailable;
 
   public ApiPoolsResponse(
-      Collection<Pool> pools,
-      Collection<Pool> poolsAvailable,
-      int feeTx0,
-      int feePremix,
-      Tx0Service tx0Service) {
+      Collection<Pool> pools, int feeTx0, int feePremix, Tx0Service tx0Service) {
     this.pools =
         pools
-            .stream()
-            .map(pool -> computeApiPool(pool, feeTx0, feePremix, tx0Service))
-            .collect(Collectors.toList());
-
-    this.poolsAvailable =
-        poolsAvailable
             .stream()
             .map(pool -> computeApiPool(pool, feeTx0, feePremix, tx0Service))
             .collect(Collectors.toList());
@@ -36,9 +25,5 @@ public class ApiPoolsResponse {
 
   public Collection<ApiPool> getPools() {
     return pools;
-  }
-
-  public Collection<ApiPool> getPoolsAvailable() {
-    return poolsAvailable;
   }
 }
