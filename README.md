@@ -72,21 +72,17 @@ java -jar target/whirlpool-client-version-run.jar
 
 ## Expert usage
 
-### Mix specific utxo
-You need a valid pre-mix utxo (output of a valid tx0) to mix.
+
+### Dump pairing payload of current wallet
 ```
---server={MAIN,TEST} --pool=
---utxo= --utxo-key= --utxo-balance=
+--dump-payload
 ```
 
 Example:
 ```
-java -jar target/whirlpool-client-version-run.jar --server=TEST --pool=0.1btc --utxo=5369dfb71b36ed2b91ca43f388b869e617558165e4f8306b80857d88bdd624f2-3 --utxo-key=cN27hV14EEjmwVowfzoeZ9hUGwJDxspuT7N4bQDz651LKmqMUdVs --utxo-balance=100001000
+java -jar target/whirlpool-client-version-run.jar --dump-payload
 ```
-- pool: id of the pool to join
-- utxo: (txid:ouput-index) pre-mix input to spend (obtained from a valid tx0)
-- utxo-key: ECKey for pre-mix input
-- utxo-balance: pre-mix input balance (in satoshis). Whole utxo-balance balance will be spent.
+
 
 ### Aggregate postmix / move funds
 Move all postmix funds back to premix wallet and consolidate to a single UTXO.

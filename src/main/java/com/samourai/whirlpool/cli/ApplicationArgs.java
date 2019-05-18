@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.util.Assert;
 
 /** Parsing command-line client arguments. */
 public class ApplicationArgs {
@@ -18,9 +17,6 @@ public class ApplicationArgs {
 
   private static final String ARG_DEBUG = "debug";
   private static final String ARG_DEBUG_CLIENT = "debug-client";
-  private static final String ARG_UTXO = "utxo";
-  private static final String ARG_UTXO_KEY = "utxo-key";
-  private static final String ARG_UTXO_BALANCE = "utxo-balance";
   private static final String ARG_SERVER = "server";
   private static final String ARG_LIST_POOLS = "list-pools";
   private static final String ARG_POOL_ID = "pool";
@@ -41,6 +37,7 @@ public class ApplicationArgs {
   private static final String ARG_INIT = "init";
   private static final String ARG_AUTHENTICATE = "authenticate";
   private static final String ARG_MIXS_TARGET = "mixs-target";
+  private static final String ARG_DUMP_PAYLOAD = "dump-payload";
   private static final String UTXO_SEPARATOR = "-";
 
   private ApplicationArguments args;
@@ -128,46 +125,6 @@ public class ApplicationArgs {
     }
   }
 
-  private String getUtxo() {
-    String utxo = requireOption(ARG_UTXO);
-    Assert.notNull(utxo, "utxo is null");
-    return utxo;
-  }
-
-  public boolean isUtxo() {
-    return args.containsOption(ARG_UTXO);
-  }
-
-  public String getUtxoHash() {
-    String utxo = getUtxo();
-    String utxoSplit[] = utxo.split(UTXO_SEPARATOR);
-    String utxoHash = utxoSplit[0];
-    return utxoHash;
-  }
-
-  public long getUtxoIdx() {
-    String utxo = getUtxo();
-    String utxoSplit[] = utxo.split(UTXO_SEPARATOR);
-    long utxoIdx = Long.parseLong(utxoSplit[1]);
-    return utxoIdx;
-  }
-
-  public String getUtxoKey() {
-    String utxoKey = requireOption(ARG_UTXO_KEY);
-    Assert.notNull(utxoKey, "utxoKey is null");
-    return utxoKey;
-  }
-
-  public long getUtxoBalance() {
-    long utxoBalance;
-    try {
-      utxoBalance = Integer.parseInt(requireOption(ARG_UTXO_BALANCE));
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Numeric value expected for option: " + ARG_UTXO_BALANCE);
-    }
-    return utxoBalance;
-  }
-
   public boolean isListPools() {
     Boolean listPools = optionalBoolean(ARG_LIST_POOLS);
     if (listPools == null) {
@@ -178,6 +135,10 @@ public class ApplicationArgs {
 
   public boolean isAggregatePostmix() {
     return args.containsOption(ARG_AGGREGATE_POSTMIX);
+  }
+
+  public boolean isDumpPayload() {
+    return args.containsOption(ARG_DUMP_PAYLOAD);
   }
 
   public String getAggregatePostmix() {

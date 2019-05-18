@@ -1,8 +1,9 @@
 package com.samourai.whirlpool.cli.services;
 
+import com.samourai.wallet.pairing.payload.PairingNetwork;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
-import com.samourai.whirlpool.cli.beans.CliPairingPayload;
 import com.samourai.whirlpool.cli.beans.CliStatus;
+import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -69,11 +70,15 @@ public class CliConfigService {
 
   public String initialize(String pairingPayloadStr) throws NotifiableException {
     // parse payload
-    CliPairingPayload pairingPayload = CliPairingPayload.parse(pairingPayloadStr);
+    WhirlpoolPairingPayload pairingPayload = WhirlpoolPairingPayload.parse(pairingPayloadStr);
 
     // initialize
     String encryptedMnemonic = pairingPayload.getPairing().getMnemonic();
-    WhirlpoolServer whirlpoolServer = pairingPayload.getPairing().getNetwork().getWhirlpoolServer();
+    PairingNetwork pairingNetwork = pairingPayload.getPairing().getNetwork();
+    WhirlpoolServer whirlpoolServer =
+        PairingNetwork.MAINNET.equals(pairingNetwork)
+            ? WhirlpoolServer.MAINNET
+            : WhirlpoolServer.TESTNET;
     return initialize(encryptedMnemonic, whirlpoolServer);
   }
 

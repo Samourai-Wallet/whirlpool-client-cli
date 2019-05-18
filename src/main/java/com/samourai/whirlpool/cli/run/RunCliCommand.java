@@ -45,15 +45,8 @@ public class RunCliCommand {
   public void run() throws Exception {
     NetworkParameters params = whirlpoolClientConfig.getNetworkParameters();
 
-    if (appArgs.isUtxo()) {
-      // go whirlpool with UTXO
-      String utxoHash = appArgs.getUtxoHash();
-      long utxoIdx = appArgs.getUtxoIdx();
-      String utxoKey = appArgs.getUtxoKey();
-      long utxoBalance = appArgs.getUtxoBalance();
-
-      new RunMixUtxo(whirlpoolClientConfig, cliWalletService, params)
-          .run(utxoHash, utxoIdx, utxoKey, utxoBalance);
+    if (appArgs.isDumpPayload()) {
+      new RunDumpPayload(cliWalletService).run();
     } else if (appArgs.isAggregatePostmix()) {
       CliWallet cliWallet = cliWalletService.getSessionWallet();
 
@@ -79,6 +72,6 @@ public class RunCliCommand {
   }
 
   public static boolean hasCommandToRun(ApplicationArgs appArgs) {
-    return appArgs.isUtxo() || appArgs.isAggregatePostmix() || appArgs.isListPools();
+    return appArgs.isDumpPayload() || appArgs.isAggregatePostmix() || appArgs.isListPools();
   }
 }

@@ -7,9 +7,14 @@ import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
+import com.samourai.wallet.pairing.payload.PairingNetwork;
+import com.samourai.wallet.pairing.payload.PairingPayload;
+import com.samourai.wallet.pairing.payload.PairingVersion;
 import com.samourai.wallet.util.CharSequenceX;
+import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.cli.beans.CliState;
 import com.samourai.whirlpool.cli.beans.CliStatus;
+import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.run.RunUpgradeCli;
@@ -39,6 +44,7 @@ public class CliWalletService extends WhirlpoolWalletService {
   private static final int CLI_VERSION = 3;
 
   private static final String INDEX_CLI_VERSION = "cliVersion";
+  private static final FormatsUtilGeneric formatUtils = FormatsUtilGeneric.getInstance();
 
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
@@ -230,5 +236,16 @@ public class CliWalletService extends WhirlpoolWalletService {
         "cli.autoAggregatePostmix", Boolean.toString(cliConfig.getMix().isAutoAggregatePostmix()));
     configInfo.put("cli.autoTx0FeeTarget", cliConfig.getMix().getAutoTx0FeeTarget().name());
     return configInfo;
+  }
+
+  public String computePairingPayload() {
+    PairingNetwork pairingNetwork =
+        formatUtils.isTestNet(cliConfig.getServer().getParams())
+            ? PairingNetwork.TESTNET
+            : PairingNetwork.MAINNET;
+    PairingPayload pairingPayload =
+        new WhirlpoolPairingPayload(PairingVersion.V1_0_0, pairingNetwork, cliConfig.getSeed());
+    String json = ClientUtils.toJsonString(pairingPayload);
+    return json;
   }
 }

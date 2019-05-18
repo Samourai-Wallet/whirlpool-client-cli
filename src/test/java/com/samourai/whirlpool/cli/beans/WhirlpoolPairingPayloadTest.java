@@ -1,11 +1,11 @@
 package com.samourai.whirlpool.cli.beans;
 
+import com.samourai.wallet.pairing.payload.PairingNetwork;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class CliPairingPayloadTest {
+public class WhirlpoolPairingPayloadTest {
 
   @Test
   public void parse_valid() throws Exception {
@@ -16,7 +16,7 @@ public class CliPairingPayloadTest {
         "{\"pairing\":{\"type\":\"whirlpool.gui\",\"version\":\"1.0.0\",\"network\":\"testnet\",\"mnemonic\":\"0qTfDpexBYZ7GM0/F1xCnXctAKLPNcd8+U+GYWNDq7jHxGtsbcfwSeHI0BoVMSm7KrdIgBiKhyUl0XCntfq9drU6nOrtmqo2x1dppnvrLjNI71go2ICospLOtRHiFUac\"}}";
     parse(
         payload,
-        WhirlpoolServer.TESTNET,
+        PairingNetwork.TESTNET,
         "0qTfDpexBYZ7GM0/F1xCnXctAKLPNcd8+U+GYWNDq7jHxGtsbcfwSeHI0BoVMSm7KrdIgBiKhyUl0XCntfq9drU6nOrtmqo2x1dppnvrLjNI71go2ICospLOtRHiFUac");
 
     // valid
@@ -24,7 +24,7 @@ public class CliPairingPayloadTest {
         "{\"pairing\":{\"type\":\"whirlpool.gui\",\"version\":\"1.0.0\",\"network\":\"testnet\",\"mnemonic\":\"BcXzXesuQjLKTgS54rzPBdyJ43IgWdvEXwNJo/ZE49hq8U5eLp/ge+4XQibNAeJS+Eng7AY19hiAIoR3vsTdsyCzGdfR0ZBjML4gpoebFT2LD0+eMrbKo/1dZueYHq4j\"}}";
     parse(
         payload,
-        WhirlpoolServer.TESTNET,
+        PairingNetwork.TESTNET,
         "BcXzXesuQjLKTgS54rzPBdyJ43IgWdvEXwNJo/ZE49hq8U5eLp/ge+4XQibNAeJS+Eng7AY19hiAIoR3vsTdsyCzGdfR0ZBjML4gpoebFT2LD0+eMrbKo/1dZueYHq4j");
 
     // valid
@@ -32,7 +32,7 @@ public class CliPairingPayloadTest {
         "{\"pairing\": {\"type\": \"whirlpool.gui\",\"version\": \"1.0.0\",\"network\": \"mainnet\",\"mnemonic\": \"rV2e6YUj33akmh6+k32mjVEE0Amm8XrLRDe4Qvi1WZ1PWAWXHxpuaHwbbXZzzzIlwLnLMNJ8fxtMQMAGR77xew==\"}}";
     parse(
         payload,
-        WhirlpoolServer.MAINNET,
+        PairingNetwork.MAINNET,
         "rV2e6YUj33akmh6+k32mjVEE0Amm8XrLRDe4Qvi1WZ1PWAWXHxpuaHwbbXZzzzIlwLnLMNJ8fxtMQMAGR77xew==");
   }
 
@@ -42,7 +42,7 @@ public class CliPairingPayloadTest {
     try {
       String payload =
           "{\"wrong\":{\"type\":\"whirlpool.gui\",\"version\":\"1.0.0\",\"network\":\"testnet\",\"mnemonic\":\"foo\"}}";
-      parse(payload, WhirlpoolServer.TESTNET, "foo");
+      parse(payload, PairingNetwork.TESTNET, "foo");
       Assert.assertTrue(false);
     } catch (NotifiableException e) {
       // ok
@@ -52,7 +52,7 @@ public class CliPairingPayloadTest {
     try {
       String payload =
           "{\"pairing\":{\"type\":\"foo\",\"version\":\"1.0.0\",\"network\":\"testnet\",\"mnemonic\":\"foo\"}}";
-      parse(payload, WhirlpoolServer.TESTNET, "foo");
+      parse(payload, PairingNetwork.TESTNET, "foo");
       Assert.assertTrue(false);
     } catch (NotifiableException e) {
       // ok
@@ -62,7 +62,7 @@ public class CliPairingPayloadTest {
     try {
       String payload =
           "{\"pairing\":{\"type\":\"whirlpool.gui\",\"version\":\"0.0.0\",\"network\":\"testnet\",\"mnemonic\":\"foo\"}}";
-      parse(payload, WhirlpoolServer.TESTNET, "foo");
+      parse(payload, PairingNetwork.TESTNET, "foo");
       Assert.assertTrue(false);
     } catch (NotifiableException e) {
       // ok
@@ -72,7 +72,7 @@ public class CliPairingPayloadTest {
     try {
       String payload =
           "{\"pairing\":{\"type\":\"whirlpool.gui\",\"version\":\"1.0.0\",\"network\":\"wrong\",\"mnemonic\":\"foo\"}}";
-      parse(payload, WhirlpoolServer.TESTNET, "foo");
+      parse(payload, PairingNetwork.TESTNET, "foo");
       Assert.assertTrue(false);
     } catch (NotifiableException e) {
       // ok
@@ -82,18 +82,17 @@ public class CliPairingPayloadTest {
     try {
       String payload =
           "{\"pairing\":{\"type\":\"whirlpool.gui\",\"version\":\"1.0.0\",\"network\":\"testnet\",\"mnemonic\":\"\"}}";
-      parse(payload, WhirlpoolServer.TESTNET, "foo");
+      parse(payload, PairingNetwork.TESTNET, "foo");
       Assert.assertTrue(false);
     } catch (NotifiableException e) {
       // ok
     }
   }
 
-  private void parse(String payload, WhirlpoolServer whirlpoolServer, String mnemonic)
+  private void parse(String payload, PairingNetwork pairingNetwork, String mnemonic)
       throws Exception {
-    CliPairingPayload pairingPayload = CliPairingPayload.parse(payload);
-    Assert.assertEquals(
-        whirlpoolServer, pairingPayload.getPairing().getNetwork().getWhirlpoolServer());
+    WhirlpoolPairingPayload pairingPayload = WhirlpoolPairingPayload.parse(payload);
+    Assert.assertEquals(pairingNetwork, pairingPayload.getPairing().getNetwork());
     Assert.assertEquals(mnemonic, pairingPayload.getPairing().getMnemonic());
   }
 }
