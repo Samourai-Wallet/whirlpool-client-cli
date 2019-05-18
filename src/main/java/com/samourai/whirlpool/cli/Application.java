@@ -279,6 +279,7 @@ public class Application implements ApplicationRunner {
     }
 
     // skip noisy logs
+    LogbackUtils.setLogLevel("org.bitcoinj", Level.ERROR.toString());
     LogbackUtils.setLogLevel(
         "org.silvertunnel_ng.netlib.layer.tor.directory.RouterParserCallable",
         Level.ERROR.toString());

@@ -19,7 +19,7 @@ public class RunDumpPayload {
     String payload = cliWalletService.computePairingPayload();
     log.info(CliUtils.LOG_SEPARATOR);
     log.info("⣿ DUMP-PAYLOAD");
-    log.info("⣿ Here is the pairing-payload for your current wallet.");
+    log.info("⣿ Pairing-payload of your current wallet:");
     log.info("⣿ " + payload);
     log.info(CliUtils.LOG_SEPARATOR);
   }
