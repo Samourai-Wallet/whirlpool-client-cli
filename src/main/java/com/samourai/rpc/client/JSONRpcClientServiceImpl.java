@@ -1,6 +1,6 @@
 package com.samourai.rpc.client;
 
-import com.samourai.whirlpool.client.wallet.pushTx.AbstractPushTxService;
+import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.Optional;
@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient;
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient;
 
-public class JSONRpcClientServiceImpl extends AbstractPushTxService implements RpcClientService {
+public class JSONRpcClientServiceImpl implements RpcClientService, PushTxService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private BitcoinJSONRPCClient rpcClient;
   private NetworkParameters params;

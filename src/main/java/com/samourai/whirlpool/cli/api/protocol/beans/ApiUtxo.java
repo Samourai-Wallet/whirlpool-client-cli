@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.api.protocol.beans;
 
-import com.samourai.api.client.beans.UnspentResponse.UnspentOutput;
+import com.samourai.wallet.api.backend.beans.UnspentResponse;
 import com.samourai.whirlpool.client.mix.listener.MixStep;
 import com.samourai.whirlpool.client.wallet.beans.MixableStatus;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
@@ -27,7 +27,7 @@ public class ApiUtxo {
   private Long lastActivityElapsed;
 
   public ApiUtxo(WhirlpoolUtxo whirlpoolUtxo) {
-    UnspentOutput utxo = whirlpoolUtxo.getUtxo();
+    UnspentResponse.UnspentOutput utxo = whirlpoolUtxo.getUtxo();
     this.hash = utxo.tx_hash;
     this.index = utxo.tx_output_n;
     this.value = utxo.value;

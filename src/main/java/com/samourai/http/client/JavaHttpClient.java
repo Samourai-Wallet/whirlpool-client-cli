@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kevinsawicki.http.HttpRequest;
 import com.samourai.tor.client.JavaTorConnexion;
+import com.samourai.wallet.api.backend.beans.HttpException;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.lang.invoke.MethodHandles;
@@ -26,7 +27,7 @@ public class JavaHttpClient implements IHttpClient {
   }
 
   @Override
-  public <T> T parseJson(String urlStr, Class<T> entityClass) throws HttpException {
+  public <T> T getJson(String urlStr, Class<T> responseType) throws HttpException {
     Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion(false);
     try {
       HttpRequest request;
@@ -40,7 +41,7 @@ public class JavaHttpClient implements IHttpClient {
       }
       setHeaders(request);
       execute(request);
-      T result = objectMapper.readValue(request.bytes(), entityClass);
+      T result = objectMapper.readValue(request.bytes(), responseType);
       // keep sharedTorConnexion open
       return result;
     } catch (Exception e) {
@@ -56,7 +57,8 @@ public class JavaHttpClient implements IHttpClient {
   }
 
   @Override
-  public void postJsonOverTor(String urlStr, Object bodyObj) throws HttpException {
+  public <T> T postJsonOverTor(String urlStr, Class<T> responseType, Object bodyObj)
+      throws HttpException {
     Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion(true);
     try {
       String jsonBody = objectMapper.writeValueAsString(bodyObj);
@@ -72,6 +74,8 @@ public class JavaHttpClient implements IHttpClient {
       setHeaders(request);
       request.contentType(HttpRequest.CONTENT_TYPE_JSON).send(jsonBody.getBytes());
       execute(request);
+      T result = objectMapper.readValue(request.bytes(), responseType);
+      return result;
     } catch (Exception e) {
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
@@ -85,7 +89,8 @@ public class JavaHttpClient implements IHttpClient {
   }
 
   @Override
-  public void postUrlEncoded(String urlStr, Map<String, String> body) throws HttpException {
+  public <T> T postUrlEncoded(String urlStr, Class<T> responseType, Map<String, String> body)
+      throws HttpException {
     Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion(false);
     String bodyUrlEncoded = HttpRequest.append("", body).substring(1); // remove starting '?'
     try {
@@ -101,6 +106,8 @@ public class JavaHttpClient implements IHttpClient {
       setHeaders(request);
       request.contentType(HttpRequest.CONTENT_TYPE_FORM).send(bodyUrlEncoded.getBytes());
       execute(request);
+      T result = objectMapper.readValue(request.bytes(), responseType);
+      return result;
     } catch (Exception e) {
       if (log.isDebugEnabled()) {
         log.error("postUrlEncoded failed", e);

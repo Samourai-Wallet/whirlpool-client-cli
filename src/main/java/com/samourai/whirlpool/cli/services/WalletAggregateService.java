@@ -1,8 +1,8 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.samourai.api.client.SamouraiApi;
-import com.samourai.api.client.SamouraiFeeTarget;
-import com.samourai.api.client.beans.UnspentResponse;
+import com.samourai.wallet.api.backend.SamouraiFeeTarget;
+import com.samourai.wallet.api.backend.beans.UnspentResponse;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.client.Bip84Wallet;
 import com.samourai.wallet.hd.HD_Address;
@@ -131,7 +131,8 @@ public class WalletAggregateService {
 
     // broadcast
     log.info(" • Broadcasting TxAggregate...");
-    pushTxService.pushTx(txAggregate);
+    String txHex = ClientUtils.getTxHex(txAggregate);
+    pushTxService.pushTx(txHex);
   }
 
   public boolean consolidateWallet(CliWallet cliWallet) throws Exception {

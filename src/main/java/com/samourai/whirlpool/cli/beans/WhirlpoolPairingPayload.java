@@ -1,9 +1,9 @@
 package com.samourai.whirlpool.cli.beans;
 
-import com.samourai.wallet.pairing.payload.PairingNetwork;
-import com.samourai.wallet.pairing.payload.PairingPayload;
-import com.samourai.wallet.pairing.payload.PairingType;
-import com.samourai.wallet.pairing.payload.PairingVersion;
+import com.samourai.wallet.api.pairing.PairingNetwork;
+import com.samourai.wallet.api.pairing.PairingPayload;
+import com.samourai.wallet.api.pairing.PairingType;
+import com.samourai.wallet.api.pairing.PairingVersion;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.lang.invoke.MethodHandles;

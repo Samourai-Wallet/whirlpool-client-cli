@@ -3,7 +3,6 @@ package com.samourai.whirlpool.cli.services;
 import com.samourai.rpc.client.JSONRpcClientServiceImpl;
 import com.samourai.rpc.client.RpcClientService;
 import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.client.wallet.pushTx.AbstractPushTxService;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 // PushTxService wrapper for watching for cliConfig changes
 @Service
-public class CliPushTxService extends AbstractPushTxService {
+public class CliPushTxService implements PushTxService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private CliConfig cliConfig;
   private SamouraiApiService samouraiApiService;

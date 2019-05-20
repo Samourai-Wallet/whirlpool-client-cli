@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.services;
 
-import com.samourai.wallet.pairing.payload.PairingNetwork;
+import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
