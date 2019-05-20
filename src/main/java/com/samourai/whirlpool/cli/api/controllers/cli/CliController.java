@@ -11,6 +11,7 @@ import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,7 +38,8 @@ public class CliController extends AbstractRestController {
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI_INIT, method = RequestMethod.POST)
   public ApiCliInitResponse init(
-      @RequestHeader HttpHeaders headers, @RequestBody ApiCliInitRequest payload) throws Exception {
+      @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiCliInitRequest payload)
+      throws Exception {
     checkHeaders(headers);
 
     // security: check not already initialized
@@ -55,7 +57,7 @@ public class CliController extends AbstractRestController {
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI_LOGIN, method = RequestMethod.POST)
   public ApiCliStateResponse login(
-      @RequestHeader HttpHeaders headers, @RequestBody ApiCliLoginRequest payload)
+      @RequestHeader HttpHeaders headers, @Valid @RequestBody ApiCliLoginRequest payload)
       throws Exception {
     checkHeaders(headers);
 

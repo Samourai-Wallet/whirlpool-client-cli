@@ -1,7 +1,9 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
+import javax.validation.constraints.NotEmpty;
+
 public class ApiCliLoginRequest {
-  public String seedPassphrase;
+  @NotEmpty public String seedPassphrase;
 
   public ApiCliLoginRequest() {}
 }

@@ -1,9 +1,10 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
+import javax.validation.constraints.NotNull;
 
 public class ApiCliConfigRequest {
-  private ApiCliConfig config;
+  @NotNull private ApiCliConfig config;
 
   public ApiCliConfigRequest() {}
 

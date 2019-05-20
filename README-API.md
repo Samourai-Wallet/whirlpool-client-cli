@@ -130,7 +130,9 @@ Response:
 Parameters:
 * hash, index: utxo to spend for tx0
 Payload:
-* feeTarget (optional): fee target for tx0
+* feeTarget (mandatory): fee target for tx0
+* poolId (optional): override utxo's poolId
+* mixsTarget (optional): override utxo's mixsTarget
 
 Response:
 ```

@@ -1,9 +1,9 @@
 package com.samourai.whirlpool.cli.api.protocol.rest;
 
-public class ApiTx0CreateResponse {
+public class ApiTx0Response {
   private String txid;
 
-  public ApiTx0CreateResponse(String txid) {
+  public ApiTx0Response(String txid) {
     this.txid = txid;
   }
 
