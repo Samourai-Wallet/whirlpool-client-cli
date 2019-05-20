@@ -62,7 +62,8 @@ public class CliWalletService extends WhirlpoolWalletService {
       HD_WalletFactoryJava hdWalletFactory,
       WalletAggregateService walletAggregateService,
       JavaStompClient stompClient,
-      CliTorClientService cliTorClientService) {
+      CliTorClientService cliTorClientService)
+      throws NotifiableException {
     super(
         cliConfig
             .computeWhirlpoolWalletConfig()); // TODO won't honor --tor as config is not overriden
@@ -233,8 +234,7 @@ public class CliWalletService extends WhirlpoolWalletService {
         "cli.proxy",
         cliConfig.getCliProxy().isPresent() ? cliConfig.getCliProxy().get().toString() : "null");
     configInfo.put(
-        "cli.autoAggregatePostmix", Boolean.toString(cliConfig.getMix().isAutoAggregatePostmix()));
-    configInfo.put("cli.autoTx0FeeTarget", cliConfig.getMix().getAutoTx0FeeTarget().name());
+        "cli.autoAggregatePostmix", Boolean.toString(cliConfig.isMainAutoAggregatePostmix()));
     return configInfo;
   }
 

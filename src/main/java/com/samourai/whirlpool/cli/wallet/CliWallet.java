@@ -81,7 +81,7 @@ public class CliWallet extends WhirlpoolWallet {
   @Override
   public synchronized void onEmptyWalletException(EmptyWalletException e) {
     try {
-      if (cliConfig.getMix().isAutoAggregatePostmix()) {
+      if (cliConfig.isMainAutoAggregatePostmix()) {
         // run autoAggregatePostmix
         autoRefill(e);
       } else {

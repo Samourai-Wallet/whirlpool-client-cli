@@ -1,12 +1,12 @@
 package com.samourai.whirlpool.cli.config;
 
+import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.cli.services.JavaStompClientService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
-import com.samourai.whirlpool.client.wallet.beans.Tx0FeeTarget;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.util.Optional;
 import javax.validation.constraints.NotEmpty;
@@ -132,10 +132,7 @@ public class CliConfig {
     @NotEmpty private int clientDelay;
     @NotEmpty private int tx0Delay;
     @NotEmpty private int tx0MaxOutputs;
-    private Tx0FeeTarget autoTx0FeeTarget;
-    private String autoTx0PoolId = null;
     @NotEmpty private boolean autoMix;
-    @NotEmpty private boolean autoAggregatePostmix;
     @NotEmpty private int mixsTarget;
 
     public int getClients() {
@@ -170,36 +167,12 @@ public class CliConfig {
       this.tx0MaxOutputs = tx0MaxOutputs;
     }
 
-    public Tx0FeeTarget getAutoTx0FeeTarget() {
-      return autoTx0FeeTarget;
-    }
-
-    public void setAutoTx0FeeTarget(Tx0FeeTarget autoTx0FeeTarget) {
-      this.autoTx0FeeTarget = autoTx0FeeTarget;
-    }
-
-    public String getAutoTx0PoolId() {
-      return autoTx0PoolId;
-    }
-
-    public void setAutoTx0PoolId(String autoTx0PoolId) {
-      this.autoTx0PoolId = autoTx0PoolId;
-    }
-
     public boolean isAutoMix() {
       return autoMix;
     }
 
     public void setAutoMix(boolean autoMix) {
       this.autoMix = autoMix;
-    }
-
-    public boolean isAutoAggregatePostmix() {
-      return autoAggregatePostmix;
-    }
-
-    public void setAutoAggregatePostmix(boolean autoAggregatePostmix) {
-      this.autoAggregatePostmix = autoAggregatePostmix;
     }
 
     public int getMixsTarget() {
@@ -241,7 +214,23 @@ public class CliConfig {
     }
   }
 
-  public WhirlpoolWalletConfig computeWhirlpoolWalletConfig() {
+  public String getMainAutoTx0PoolId() {
+    return ApplicationArgs.getMainAutoTx0();
+  }
+
+  public boolean isMainAutoAggregatePostmix() {
+    return ApplicationArgs.isMainAutoAggregatePostmix();
+  }
+
+  public WhirlpoolWalletConfig computeWhirlpoolWalletConfig() throws NotifiableException {
+    String autoTx0PoolId = getMainAutoTx0PoolId();
+    boolean autoAggregatePostmix = isMainAutoAggregatePostmix();
+
+    // check valid
+    if (autoAggregatePostmix && StringUtils.isEmpty(autoTx0PoolId)) {
+      throw new NotifiableException("--auto-tx0 is required for --auto-aggregate-postmix");
+    }
+
     String serverUrl = computeServerUrl();
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(httpClient, stompClient, serverUrl, server);
@@ -254,10 +243,7 @@ public class CliConfig {
     config.setClientDelay(mix.getClientDelay());
     config.setTx0Delay(mix.getTx0Delay());
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs() > 0 ? mix.getTx0MaxOutputs() : null);
-    if (mix.getAutoTx0FeeTarget() != null) {
-      config.setAutoTx0FeeTarget(mix.getAutoTx0FeeTarget());
-    }
-    config.setAutoTx0PoolId(mix.getAutoTx0PoolId());
+    config.setAutoTx0PoolId(autoTx0PoolId);
     config.setAutoMix(mix.isAutoMix());
     config.setMixsTarget(mix.getMixsTarget());
 
@@ -269,11 +255,5 @@ public class CliConfig {
     // String serverUrl = tor ? server.getServerOnionV2() : server.getServerUrl();
     String serverUrl = server.getServerUrl();
     return serverUrl;
-  }
-
-  public void checkValid() throws NotifiableException {
-    if (mix.isAutoAggregatePostmix() && StringUtils.isEmpty(mix.getAutoTx0PoolId())) {
-      throw new NotifiableException("--auto-tx0 is required for --auto-aggregate-postmix");
-    }
   }
 }

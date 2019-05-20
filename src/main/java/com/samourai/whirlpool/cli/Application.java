@@ -64,8 +64,10 @@ public class Application implements ApplicationRunner {
         "spring.config.location",
         "classpath:application.properties,./" + CliConfigService.CLI_CONFIG_FILENAME);
 
+    ApplicationArgs.setMainArgs(args);
+
     // start REST api if --listen
-    listenPort = ApplicationArgs.getMainListen(args);
+    listenPort = ApplicationArgs.getMainListen();
     WebApplicationType wat =
         listenPort != null ? WebApplicationType.SERVLET : WebApplicationType.NONE;
     if (listenPort != null) {
@@ -73,8 +75,8 @@ public class Application implements ApplicationRunner {
     }
 
     // enable debug logs with --debug
-    debug = ApplicationArgs.isMainDebug(args);
-    debugClient = ApplicationArgs.isMainDebugClient(args);
+    debug = ApplicationArgs.isMainDebug();
+    debugClient = ApplicationArgs.isMainDebugClient();
     setDebug(debug, debugClient);
 
     // run
@@ -96,7 +98,6 @@ public class Application implements ApplicationRunner {
       return;
     }
     try {
-      cliConfig.checkValid();
       runCli();
     } catch (NotifiableException e) {
       exitCode = 1;

@@ -40,6 +40,7 @@ public class ApplicationArgs {
   private static final String ARG_DUMP_PAYLOAD = "dump-payload";
   private static final String UTXO_SEPARATOR = "-";
 
+  private static String[] mainArgs;
   private ApplicationArguments args;
 
   public ApplicationArgs(ApplicationArguments args) {
@@ -64,19 +65,9 @@ public class ApplicationArgs {
       cliConfig.setScode(value);
     }
 
-    value = optionalOption(ARG_AUTO_TX0);
-    if (value != null) {
-      cliConfig.getMix().setAutoTx0PoolId(value);
-    }
-
     valueBool = optionalBoolean(ARG_AUTO_MIX);
     if (valueBool != null) {
       cliConfig.getMix().setAutoMix(valueBool);
-    }
-
-    valueBool = optionalBoolean(ARG_AUTO_AGGREGATE_POSTMIX);
-    if (valueBool != null) {
-      cliConfig.getMix().setAutoAggregatePostmix(valueBool);
     }
 
     value = optionalOption(ARG_PUSHTX);
@@ -133,10 +124,6 @@ public class ApplicationArgs {
     return listPools;
   }
 
-  public boolean isAggregatePostmix() {
-    return args.containsOption(ARG_AGGREGATE_POSTMIX);
-  }
-
   public boolean isDumpPayload() {
     return args.containsOption(ARG_DUMP_PAYLOAD);
   }
@@ -153,16 +140,25 @@ public class ApplicationArgs {
     return args.containsOption(ARG_AUTHENTICATE);
   }
 
-  public static Integer getMainListen(String[] mainArgs) {
-    return mainInteger(mainArgs, ARG_LISTEN, null, LISTEN_DEFAULT_PORT);
+  public static Integer getMainListen() {
+    return mainInteger(ARG_LISTEN, null, LISTEN_DEFAULT_PORT);
   }
 
-  public static boolean isMainDebug(String[] mainArgs) {
-    return Boolean.parseBoolean(mainArg(mainArgs, ARG_DEBUG, "false", "true"));
+  public static boolean isMainDebug() {
+    return mainBoolean(ARG_DEBUG);
   }
 
-  public static boolean isMainDebugClient(String[] mainArgs) {
-    return Boolean.parseBoolean(mainArg(mainArgs, ARG_DEBUG_CLIENT, "false", "true"));
+  public static boolean isMainDebugClient() {
+    return mainBoolean(ARG_DEBUG_CLIENT);
+  }
+
+  public static boolean isMainAutoAggregatePostmix() {
+    return mainBoolean(ARG_AGGREGATE_POSTMIX);
+  }
+
+  public static String getMainAutoTx0() {
+    // null when disabled
+    return mainArg(ARG_AUTO_TX0, null, "true");
   }
 
   private String requireOption(String name, String defaultValue) {
@@ -204,10 +200,7 @@ public class ApplicationArgs {
   }
 
   private static String mainArg(
-      String[] mainArgs,
-      String name,
-      String defaultValueWhenNotPresent,
-      String defaultValueWhenPresent) {
+      String name, String defaultValueWhenNotPresent, String defaultValueWhenPresent) {
     Optional<String> argFound =
         Stream.of(mainArgs).filter(s -> s.startsWith("--" + name)).findFirst();
 
@@ -224,14 +217,14 @@ public class ApplicationArgs {
     return argSplit[1];
   }
 
+  private static Boolean mainBoolean(String name) {
+    return Boolean.parseBoolean(mainArg(name, "false", "true"));
+  }
+
   private static Integer mainInteger(
-      String[] mainArgs,
-      String name,
-      Integer defaultValueWhenNotPresent,
-      Integer defaultValueWhenPresent) {
+      String name, Integer defaultValueWhenNotPresent, Integer defaultValueWhenPresent) {
     String str =
         mainArg(
-            mainArgs,
             name,
             defaultValueWhenNotPresent != null
                 ? Integer.toString(defaultValueWhenNotPresent)
@@ -241,5 +234,9 @@ public class ApplicationArgs {
       return null;
     }
     return Integer.parseInt(str);
+  }
+
+  public static void setMainArgs(String[] mainArgs) {
+    ApplicationArgs.mainArgs = mainArgs;
   }
 }

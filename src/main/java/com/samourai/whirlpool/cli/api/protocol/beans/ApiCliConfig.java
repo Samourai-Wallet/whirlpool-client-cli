@@ -1,6 +1,5 @@
 package com.samourai.whirlpool.cli.api.protocol.beans;
 
-import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfig.MixConfig;
@@ -29,7 +28,6 @@ public class ApiCliConfig {
   private static final String KEY_MIX_CLIENT_DELAY = "cli.mix.clientDelay";
   private static final String KEY_MIX_TX0_MAX_OUTPUTS = "cli.mix.tx0MaxOutputs";
   private static final String KEY_MIX_AUTO_MIX = "cli.mix.autoMix";
-  private static final String KEY_MIX_AUTO_AGGREGATE_POSTMIX = "cli.mix.autoAggregatePostmix";
   private static final String KEY_MIX_MIXS_TARGET = "cli.mix.mixsTarget";
 
   public ApiCliConfig() {}
@@ -114,7 +112,6 @@ public class ApiCliConfig {
     private Integer clientDelay;
     private Integer tx0MaxOutputs;
     private Boolean autoMix;
-    private Boolean autoAggregatePostmix;
     private Integer mixsTarget;
 
     public ApiMixConfig() {}
@@ -124,7 +121,6 @@ public class ApiCliConfig {
       this.clientDelay = mixConfig.getClientDelay();
       this.tx0MaxOutputs = mixConfig.getTx0MaxOutputs();
       this.autoMix = mixConfig.isAutoMix();
-      this.autoAggregatePostmix = mixConfig.isAutoAggregatePostmix();
       this.mixsTarget = mixConfig.getMixsTarget();
     }
 
@@ -150,14 +146,6 @@ public class ApiCliConfig {
       }
       if (autoMix != null) {
         props.put(KEY_MIX_AUTO_MIX, Boolean.toString(autoMix));
-      }
-      if (autoAggregatePostmix != null) {
-        if (autoAggregatePostmix) {
-          if (!FormatsUtilGeneric.getInstance().isTestNet(whirlpoolServer.getParams())) {
-            throw new NotifiableException("AutoAggregatePostmix cannot be enabled for non-testnet");
-          }
-        }
-        props.put(KEY_MIX_AUTO_AGGREGATE_POSTMIX, Boolean.toString(autoAggregatePostmix));
       }
       if (mixsTarget != null) {
         if (mixsTarget < 1) {
@@ -197,14 +185,6 @@ public class ApiCliConfig {
 
     public void setAutoMix(Boolean autoMix) {
       this.autoMix = autoMix;
-    }
-
-    public Boolean getAutoAggregatePostmix() {
-      return autoAggregatePostmix;
-    }
-
-    public void setAutoAggregatePostmix(Boolean autoAggregatePostmix) {
-      this.autoAggregatePostmix = autoAggregatePostmix;
     }
 
     public Integer getMixsTarget() {

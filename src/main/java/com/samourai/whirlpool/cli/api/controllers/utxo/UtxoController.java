@@ -10,7 +10,6 @@ import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
-import com.samourai.whirlpool.client.wallet.beans.Tx0FeeTarget;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -70,10 +69,7 @@ public class UtxoController extends AbstractRestController {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
 
     // tx0
-    Tx0FeeTarget feeTarget =
-        (payload != null && payload.feeTarget != null ? payload.feeTarget : Tx0FeeTarget.DEFAULT);
-
-    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxo, feeTarget);
+    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxo, payload.feeTarget);
     return new ApiTx0CreateResponse(tx0.getTx().getHashAsString() /*payload.mixsTarget*/);
   }
 

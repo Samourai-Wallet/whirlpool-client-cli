@@ -47,7 +47,7 @@ public class RunCliCommand {
 
     if (appArgs.isDumpPayload()) {
       new RunDumpPayload(cliWalletService).run();
-    } else if (appArgs.isAggregatePostmix()) {
+    } else if (ApplicationArgs.isMainAutoAggregatePostmix()) {
       CliWallet cliWallet = cliWalletService.getSessionWallet();
 
       // go aggregate and consolidate
@@ -72,6 +72,6 @@ public class RunCliCommand {
   }
 
   public static boolean hasCommandToRun(ApplicationArgs appArgs) {
-    return appArgs.isDumpPayload() || appArgs.isAggregatePostmix() || appArgs.isListPools();
+    return appArgs.isDumpPayload() || appArgs.isMainAutoAggregatePostmix() || appArgs.isListPools();
   }
 }
