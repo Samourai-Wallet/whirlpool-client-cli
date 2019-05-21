@@ -1,5 +1,7 @@
 package com.samourai.whirlpool.cli;
 
+import com.samourai.http.client.IHttpClient;
+import com.samourai.stomp.client.IStompClient;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
@@ -11,12 +13,9 @@ import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
-import com.samourai.whirlpool.client.WhirlpoolClient;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
-import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientConfig;
-import com.samourai.whirlpool.client.whirlpool.WhirlpoolClientImpl;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Map;
@@ -57,6 +56,8 @@ public class Application implements ApplicationRunner {
   @Autowired private Bech32UtilGeneric bech32Util;
   @Autowired private WalletAggregateService walletAggregateService;
   @Autowired private CliTorClientService cliTorClientService;
+  @Autowired private IHttpClient httpClient;
+  @Autowired private IStompClient stompClient;
 
   public static void main(String... args) {
     // override configuration with local file
@@ -114,18 +115,25 @@ public class Application implements ApplicationRunner {
   }
 
   private void setup(ApplicationArguments args) {
+    // log configuration
     setDebug(debug, debugClient); // run twice to fix incorrect log level
 
-    // log configuration
+    // properties were just set on CliConfig => override CliConfig with cli args
+    if (log.isDebugEnabled()) {
+      log.debug("Overriding cliConfigFile with CLI args");
+    }
+    appArgs.override(cliConfig);
+
     log.info(
         "Running whirlpool-client {} on java {}",
         Arrays.toString(args.getSourceArgs()),
         System.getProperty("java.version"));
     if (log.isDebugEnabled()) {
-      for (Map.Entry<String, String> entry : cliWalletService.getConfigInfo().entrySet()) {
-        log.debug("[config/" + entry.getKey() + "] " + entry.getValue());
-      }
       log.debug("[config/listen] " + (listenPort != null ? listenPort : "false"));
+      log.debug("[config/debug] debug=" + debug + ", debugClient=" + debugClient);
+      for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
+        log.debug("[cliConfig/" + entry.getKey() + "] " + entry.getValue());
+      }
     }
 
     // setup TOR
@@ -158,11 +166,6 @@ public class Application implements ApplicationRunner {
       throw new NotifiableException("Unable to connect to pushTxService");
     }
 
-    // check whirlpool connectivity
-    if (!cliWalletService.testConnectivity()) {
-      throw new NotifiableException("Unable to connect to Whirlpool server");
-    }
-
     // check cli initialized
     if (cliConfigService.isCliStatusNotInitialized()) {
       // not initialized
@@ -182,7 +185,7 @@ public class Application implements ApplicationRunner {
 
     if (!appArgs.isAuthenticate()
         && listenPort != null
-        && !RunCliCommand.hasCommandToRun(appArgs)) {
+        && !RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
       // no passphrase but listening => keep listening
       log.info(CliUtils.LOG_SEPARATOR);
       log.info("⣿ AUTHENTICATION REQUIRED");
@@ -208,21 +211,9 @@ public class Application implements ApplicationRunner {
       log.info("⣿ Whirlpool is starting...");
       log.info(CliUtils.LOG_SEPARATOR);
 
-      if (RunCliCommand.hasCommandToRun(appArgs)) {
-        // WhirlpoolClient instanciation
-        WhirlpoolClientConfig whirlpoolClientConfig = cliConfig.computeWhirlpoolWalletConfig();
-        WhirlpoolClient whirlpoolClient = WhirlpoolClientImpl.newClient(whirlpoolClientConfig);
-
+      if (RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
         // execute specific command
-        new RunCliCommand(
-                appArgs,
-                whirlpoolClient,
-                whirlpoolClientConfig,
-                cliWalletService,
-                bech32Util,
-                walletAggregateService,
-                cliConfigService)
-            .run();
+        new RunCliCommand(appArgs, cliWalletService, walletAggregateService, cliConfig).run();
       } else {
         // start wallet
         cliWallet.start();

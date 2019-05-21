@@ -2,7 +2,7 @@ package com.samourai.whirlpool.cli.api.protocol.beans;
 
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.config.CliConfig.MixConfig;
+import com.samourai.whirlpool.cli.config.CliConfigFile;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.lang.invoke.MethodHandles;
@@ -116,7 +116,7 @@ public class ApiCliConfig {
 
     public ApiMixConfig() {}
 
-    public ApiMixConfig(MixConfig mixConfig) {
+    public ApiMixConfig(CliConfigFile.MixConfig mixConfig) {
       this.clients = mixConfig.getClients();
       this.clientDelay = mixConfig.getClientDelay();
       this.tx0MaxOutputs = mixConfig.getTx0MaxOutputs();

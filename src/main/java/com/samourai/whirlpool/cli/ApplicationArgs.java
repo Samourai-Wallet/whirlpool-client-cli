@@ -6,11 +6,15 @@ import java.lang.invoke.MethodHandles;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.stereotype.Service;
 
 /** Parsing command-line client arguments. */
+@Service
 public class ApplicationArgs {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final int LISTEN_DEFAULT_PORT = 8899;
@@ -19,7 +23,6 @@ public class ApplicationArgs {
   private static final String ARG_DEBUG_CLIENT = "debug-client";
   private static final String ARG_SERVER = "server";
   private static final String ARG_LIST_POOLS = "list-pools";
-  private static final String ARG_POOL_ID = "pool";
   private static final String ARG_SCODE = "scode";
   private static final String ARG_CLIENTS = "clients";
   private static final String ARG_CLIENT_DELAY = "client-delay";
@@ -38,7 +41,6 @@ public class ApplicationArgs {
   private static final String ARG_AUTHENTICATE = "authenticate";
   private static final String ARG_MIXS_TARGET = "mixs-target";
   private static final String ARG_DUMP_PAYLOAD = "dump-payload";
-  private static final String UTXO_SEPARATOR = "-";
 
   private static String[] mainArgs;
   private ApplicationArguments args;
@@ -53,10 +55,12 @@ public class ApplicationArgs {
     Integer valueInt;
 
     value = optionalOption(ARG_SERVER);
-    if (value != null) {
+    if (!Strings.isEmpty(value)) {
       java8.util.Optional<WhirlpoolServer> whirlpoolServer = WhirlpoolServer.find(value);
       if (whirlpoolServer.isPresent()) {
         cliConfig.setServer(whirlpoolServer.get());
+      } else {
+        log.error("Invalid server: " + value);
       }
     }
 
@@ -105,6 +109,16 @@ public class ApplicationArgs {
       cliConfig.getMix().setTx0MaxOutputs(valueInt);
     }
 
+    valueBool = optionalBoolean(ARG_AUTO_AGGREGATE_POSTMIX);
+    if (valueBool != null) {
+      cliConfig.setAutoAggregatePostmix(valueBool);
+    }
+
+    value = optionalOption(ARG_AUTO_TX0);
+    if (value != null) {
+      cliConfig.setAutoTx0PoolId(value);
+    }
+
     value = optionalOption(ARG_API_KEY);
     if (value != null) {
       cliConfig.setApiKey(value);
@@ -132,6 +146,10 @@ public class ApplicationArgs {
     return optionalOption(ARG_AGGREGATE_POSTMIX);
   }
 
+  public boolean isAggregatePostmix() {
+    return !StringUtils.isEmpty(getAggregatePostmix());
+  }
+
   public boolean isInit() {
     return args.containsOption(ARG_INIT);
   }
@@ -150,15 +168,6 @@ public class ApplicationArgs {
 
   public static boolean isMainDebugClient() {
     return mainBoolean(ARG_DEBUG_CLIENT);
-  }
-
-  public static boolean isMainAutoAggregatePostmix() {
-    return mainBoolean(ARG_AGGREGATE_POSTMIX);
-  }
-
-  public static String getMainAutoTx0() {
-    // null when disabled
-    return mainArg(ARG_AUTO_TX0, null, "true");
   }
 
   private String requireOption(String name, String defaultValue) {
