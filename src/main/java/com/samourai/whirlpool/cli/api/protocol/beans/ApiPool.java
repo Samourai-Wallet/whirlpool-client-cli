@@ -8,6 +8,7 @@ public class ApiPool {
   private long denomination;
   private long feeValue;
   private long mustMixBalanceMin;
+  private long mustMixBalanceCap;
   private long mustMixBalanceMax;
   private int minAnonymitySet;
   private int nbRegistered;
@@ -24,6 +25,7 @@ public class ApiPool {
     this.denomination = pool.getDenomination();
     this.feeValue = pool.getFeeValue();
     this.mustMixBalanceMin = pool.getMustMixBalanceMin();
+    this.mustMixBalanceCap = pool.getMustMixBalanceCap();
     this.mustMixBalanceMax = pool.getMustMixBalanceMax();
     this.minAnonymitySet = pool.getMinAnonymitySet();
     this.nbRegistered = pool.getNbRegistered();
@@ -48,6 +50,10 @@ public class ApiPool {
 
   public long getMustMixBalanceMin() {
     return mustMixBalanceMin;
+  }
+
+  public long getMustMixBalanceCap() {
+    return mustMixBalanceCap;
   }
 
   public long getMustMixBalanceMax() {

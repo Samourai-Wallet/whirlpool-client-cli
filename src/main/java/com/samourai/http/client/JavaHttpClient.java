@@ -41,7 +41,10 @@ public class JavaHttpClient implements IHttpClient {
       }
       setHeaders(request);
       execute(request);
-      T result = objectMapper.readValue(request.bytes(), responseType);
+      T result = null;
+      if (responseType != null) {
+        result = objectMapper.readValue(request.bytes(), responseType);
+      }
       // keep sharedTorConnexion open
       return result;
     } catch (Exception e) {
@@ -74,7 +77,10 @@ public class JavaHttpClient implements IHttpClient {
       setHeaders(request);
       request.contentType(HttpRequest.CONTENT_TYPE_JSON).send(jsonBody.getBytes());
       execute(request);
-      T result = objectMapper.readValue(request.bytes(), responseType);
+      T result = null;
+      if (responseType != null) {
+        result = objectMapper.readValue(request.bytes(), responseType);
+      }
       return result;
     } catch (Exception e) {
       if (!(e instanceof HttpException)) {
@@ -106,7 +112,10 @@ public class JavaHttpClient implements IHttpClient {
       setHeaders(request);
       request.contentType(HttpRequest.CONTENT_TYPE_FORM).send(bodyUrlEncoded.getBytes());
       execute(request);
-      T result = objectMapper.readValue(request.bytes(), responseType);
+      T result = null;
+      if (responseType != null) {
+        result = objectMapper.readValue(request.bytes(), responseType);
+      }
       return result;
     } catch (Exception e) {
       if (log.isDebugEnabled()) {
