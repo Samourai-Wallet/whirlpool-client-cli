@@ -48,6 +48,9 @@ public class JavaHttpClient implements IHttpClient {
       // keep sharedTorConnexion open
       return result;
     } catch (Exception e) {
+      if (log.isDebugEnabled()) {
+        log.error("getJson failed: " + urlStr, e);
+      }
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
       }
@@ -83,6 +86,9 @@ public class JavaHttpClient implements IHttpClient {
       }
       return result;
     } catch (Exception e) {
+      if (log.isDebugEnabled()) {
+        log.error("postJsonOverTor failed: " + urlStr, e);
+      }
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
       }
@@ -119,7 +125,7 @@ public class JavaHttpClient implements IHttpClient {
       return result;
     } catch (Exception e) {
       if (log.isDebugEnabled()) {
-        log.error("postUrlEncoded failed", e);
+        log.error("postUrlEncoded failed: " + urlStr, e);
       }
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);

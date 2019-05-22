@@ -4,6 +4,7 @@ import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
+import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
@@ -23,6 +24,7 @@ public class CliWallet extends WhirlpoolWallet {
   private static final int CLI_STATUS_DELAY = 5000;
 
   private CliConfig cliConfig;
+  private CliConfigService cliConfigService;
   private WalletAggregateService walletAggregateService;
   private CliStatusOrchestrator cliStatusOrchestrator;
   private JavaStompClient stompClient;
@@ -31,12 +33,14 @@ public class CliWallet extends WhirlpoolWallet {
   public CliWallet(
       WhirlpoolWallet whirlpoolWallet,
       CliConfig cliConfig,
+      CliConfigService cliConfigService,
       WalletAggregateService walletAggregateService,
       JavaStompClient stompClient,
       CliTorClientService cliTorClientService,
       CliWalletService cliWalletService) {
     super(whirlpoolWallet);
     this.cliConfig = cliConfig;
+    this.cliConfigService = cliConfigService;
     this.walletAggregateService = walletAggregateService;
     this.stompClient = stompClient;
     this.cliTorClientService = cliTorClientService;
@@ -48,6 +52,10 @@ public class CliWallet extends WhirlpoolWallet {
 
   @Override
   public void start() {
+    if (!cliConfigService.isCliStatusReady()) {
+      log.warn("Cannot start wallet: cliStatus is not ready");
+      return;
+    }
     // start wallet
     super.start();
     this.cliStatusOrchestrator.start();

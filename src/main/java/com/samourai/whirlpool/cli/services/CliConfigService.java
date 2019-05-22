@@ -5,8 +5,10 @@ import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.cli.run.RunUpgradeCli;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,9 +29,13 @@ import org.springframework.util.DefaultPropertiesPersister;
 @Service
 public class CliConfigService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private static final int CLI_VERSION = 1;
   public static final String CLI_CONFIG_FILENAME = "whirlpool-cli-config.properties";
   private static final String KEY_APIKEY = "cli.apiKey";
   private static final String KEY_SEED = "cli.seed";
+  private static final String KEY_SEED_APPEND_PASSPHRASE = "cli.seedAppendPassphrase";
+  private static final String KEY_VERSION = "cli.version";
 
   private CliConfig cliConfig;
   private CliStatus cliStatus;
@@ -74,15 +80,18 @@ public class CliConfigService {
 
     // initialize
     String encryptedMnemonic = pairingPayload.getPairing().getMnemonic();
+    boolean appendPassphrase = pairingPayload.getPairing().getPassphrase();
     PairingNetwork pairingNetwork = pairingPayload.getPairing().getNetwork();
     WhirlpoolServer whirlpoolServer =
         PairingNetwork.MAINNET.equals(pairingNetwork)
             ? WhirlpoolServer.MAINNET
             : WhirlpoolServer.TESTNET;
-    return initialize(encryptedMnemonic, whirlpoolServer);
+
+    return initialize(encryptedMnemonic, appendPassphrase, whirlpoolServer);
   }
 
-  private synchronized String initialize(String encryptedMnemonic, WhirlpoolServer whirlpoolServer)
+  public synchronized String initialize(
+      String encryptedMnemonic, boolean appendPassphrase, WhirlpoolServer whirlpoolServer)
       throws NotifiableException {
     if (whirlpoolServer == null) {
       throw new NotifiableException("Invalid server");
@@ -96,8 +105,10 @@ public class CliConfigService {
 
     // save configuration file
     Properties props = new Properties();
+    props.put(KEY_VERSION, Integer.toString(CLI_VERSION));
     props.put(KEY_APIKEY, apiKey);
     props.put(KEY_SEED, encryptedMnemonic);
+    props.put(KEY_SEED_APPEND_PASSPHRASE, Boolean.toString(appendPassphrase));
     props.put(ApiCliConfig.KEY_SERVER, whirlpoolServer.name());
     try {
       save(props);
@@ -114,6 +125,7 @@ public class CliConfigService {
   public Properties loadEntries() throws Exception {
     Resource resource = new FileSystemResource(getConfigurationFile());
     Properties props = PropertiesLoaderUtils.loadProperties(resource);
+    System.out.println("#####ENTRIES=" + props);
     return props;
   }
 
@@ -122,16 +134,19 @@ public class CliConfigService {
 
     apiCliConfig.toProperties(props);
 
-    // log
-    for (Entry<Object, Object> entry : props.entrySet()) {
-      log.info("set " + entry.getKey() + ": " + entry.getValue());
-    }
-
     // save
     save(props);
 
     // restart needed
     this.setCliStatusNotReady("CLI restart required. Configuration updated.");
+  }
+
+  private synchronized void setVersionCurrent() throws Exception {
+    Properties props = loadEntries();
+    props.put(KEY_VERSION, Integer.toString(CLI_VERSION));
+
+    // save
+    save(props);
   }
 
   public synchronized void resetConfiguration() throws Exception {
@@ -157,6 +172,19 @@ public class CliConfigService {
       throw new IllegalArgumentException("Configuration to save is empty");
     }
 
+    // log
+    for (Entry<Object, Object> entry : props.entrySet()) {
+      if (log.isDebugEnabled()) {
+        log.debug("set " + entry.getKey() + ": " + entry.getValue());
+      } else {
+        log.info(
+            "set "
+                + entry.getKey()
+                + ": "
+                + ClientUtils.maskString(String.valueOf(entry.getValue())));
+      }
+    }
+
     File f = getConfigurationFile();
     if (!f.exists()) {
       f.createNewFile();
@@ -168,6 +196,33 @@ public class CliConfigService {
   }
 
   private File getConfigurationFile() {
+    System.out.println("####################" + new File(CLI_CONFIG_FILENAME).getAbsolutePath());
     return new File(CLI_CONFIG_FILENAME);
+  }
+
+  public boolean checkUpgrade() throws Exception {
+    boolean shouldRestart = false;
+    int lastVersion = cliConfig.getVersion();
+
+    if (lastVersion < CliConfigService.CLI_VERSION) {
+      // older version => run upgrade
+      if (log.isDebugEnabled()) {
+        log.debug(" • Upgrading cli wallet: " + lastVersion + " -> " + CLI_VERSION);
+      }
+      new RunUpgradeCli(cliConfig, this).run(lastVersion);
+
+      // set version
+      setVersionCurrent();
+
+      // stop wallet & restart needed
+      this.setCliStatusNotReady("Upgrade success. Please restart.");
+      shouldRestart = true;
+    } else {
+      // up to date
+      if (log.isDebugEnabled()) {
+        log.debug("cli wallet is up to date: " + CLI_VERSION);
+      }
+    }
+    return shouldRestart;
   }
 }

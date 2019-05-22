@@ -20,12 +20,14 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "cli")
 @Configuration
 public abstract class CliConfigFile {
+  private int version; // 0 for versions < 1
   private WhirlpoolServer server;
   private String scode;
   @NotEmpty private String pushtx;
   @NotEmpty private boolean tor;
   @NotEmpty private String apiKey;
   @NotEmpty private String seed;
+  @NotEmpty private boolean seedAppendPassphrase;
   @NotEmpty private int persistDelay;
   @NotEmpty private String proxy;
   private Optional<CliProxy> _cliProxy;
@@ -40,15 +42,25 @@ public abstract class CliConfigFile {
   }
 
   public CliConfigFile(CliConfigFile copy) {
+    this.version = copy.version;
     this.server = copy.server;
     this.scode = copy.scode;
     this.pushtx = copy.pushtx;
     this.tor = copy.tor;
     this.apiKey = copy.apiKey;
     this.seed = copy.seed;
+    this.seedAppendPassphrase = copy.seedAppendPassphrase;
     this.persistDelay = copy.persistDelay;
     this.proxy = copy.proxy;
     this.mix = new MixConfig(copy.mix);
+  }
+
+  public int getVersion() {
+    return version;
+  }
+
+  public void setVersion(int version) {
+    this.version = version;
   }
 
   public WhirlpoolServer getServer() {
@@ -109,6 +121,14 @@ public abstract class CliConfigFile {
 
   public void setSeed(String seed) {
     this.seed = seed;
+  }
+
+  public boolean isSeedAppendPassphrase() {
+    return seedAppendPassphrase;
+  }
+
+  public void setSeedAppendPassphrase(boolean seedAppendPassphrase) {
+    this.seedAppendPassphrase = seedAppendPassphrase;
   }
 
   public int getPersistDelay() {
@@ -255,12 +275,12 @@ public abstract class CliConfigFile {
     Map<String, String> configInfo = new HashMap<>();
     configInfo.put("cli/server", server.name());
     configInfo.put("cli/scode", scode);
-    configInfo.put("cli/pushtx", ClientUtils.maskString(pushtx, 3, 3));
+    configInfo.put("cli/pushtx", ClientUtils.maskString(pushtx));
     configInfo.put("cli/tor", Boolean.toString(tor));
-    configInfo.put("cli/apiKey", ClientUtils.maskString(apiKey, 3, 3));
-    configInfo.put("cli/seedEncrypted", ClientUtils.maskString(seed, 3, 3));
+    configInfo.put("cli/apiKey", ClientUtils.maskString(apiKey));
+    configInfo.put("cli/seedEncrypted", ClientUtils.maskString(seed));
     configInfo.put("cli/persistDelay", Integer.toString(persistDelay));
-    configInfo.put("cli/proxy", proxy != null ? ClientUtils.maskString(proxy, 3, 3) : "null");
+    configInfo.put("cli/proxy", proxy != null ? ClientUtils.maskString(proxy) : "null");
     configInfo.putAll(mix.getConfigInfo());
     return configInfo;
   }

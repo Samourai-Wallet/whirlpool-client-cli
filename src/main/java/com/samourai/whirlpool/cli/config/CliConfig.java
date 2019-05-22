@@ -55,13 +55,14 @@ public class CliConfig extends CliConfigFile {
   public Map<String, String> getConfigInfo() {
     Map<String, String> configInfo = super.getConfigInfo();
 
+    configInfo.put("cli/version", Integer.toString(getVersion()));
     configInfo.put("cli/tor", Boolean.toString(getTor()));
 
     String apiKey = getApiKey();
     configInfo.put(
         "cli/apiKey",
         !org.apache.commons.lang3.StringUtils.isEmpty(apiKey)
-            ? ClientUtils.maskString(apiKey, 3, 3)
+            ? ClientUtils.maskString(apiKey)
             : "null");
     configInfo.put(
         "cli/proxy", getCliProxy().isPresent() ? getCliProxy().get().toString() : "null");

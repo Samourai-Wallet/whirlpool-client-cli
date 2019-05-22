@@ -7,7 +7,6 @@ import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
 import com.samourai.wallet.api.pairing.PairingVersion;
-import com.samourai.wallet.client.indexHandler.IIndexHandler;
 import com.samourai.wallet.crypto.AESUtil;
 import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
@@ -18,7 +17,6 @@ import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
-import com.samourai.whirlpool.cli.run.RunUpgradeCli;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -35,6 +33,7 @@ import java.util.Optional;
 import javax.crypto.AEADBadTagException;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.MnemonicException;
+import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -42,8 +41,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class CliWalletService extends WhirlpoolWalletService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  private static final int CLI_VERSION = 3;
 
   private static final String INDEX_CLI_VERSION = "cliVersion";
   private static final FormatsUtilGeneric formatUtils = FormatsUtilGeneric.getInstance();
@@ -91,19 +88,23 @@ public class CliWalletService extends WhirlpoolWalletService {
       seedWords = decryptSeedWords(cliConfig.getSeed(), seedPassphrase);
     } catch (Exception e) {
       log.error("decryptSeedWords failed, invalid passphrase?");
-      if (log.isDebugEnabled() && !(e instanceof AEADBadTagException)) {
+      if (log.isDebugEnabled()
+          && !(e instanceof AEADBadTagException)
+          && !(e instanceof InvalidCipherTextException)) {
         log.debug("", e);
       }
-      throw new NotifiableException("Seed decrypt failed, invalid passphrase?");
+      throw new NotifiableException("Decryption failed, invalid passphrase?");
     }
 
-    // identifier
     String walletIdentifier;
     HD_Wallet bip84w;
     try {
       // init wallet from seed
       byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
-      bip84w = hdWalletFactory.getBIP84(seed, seedPassphrase, params);
+      String walletPassphrase = cliConfig.isSeedAppendPassphrase() ? seedPassphrase : "";
+      bip84w = hdWalletFactory.getBIP84(seed, walletPassphrase, params);
+
+      // identifier
       walletIdentifier = computeWalletIdentifier(seed, seedPassphrase, params);
     } catch (MnemonicException e) {
       throw new NotifiableException("Mnemonic failed, invalid passphrase?");
@@ -117,6 +118,12 @@ public class CliWalletService extends WhirlpoolWalletService {
       }
     }
 
+    // check upgrade
+    boolean shouldRestart = cliConfigService.checkUpgrade();
+    if (shouldRestart) {
+      throw new NotifiableException("Upgrade success. Please restart.");
+    }
+
     // open wallet
     WhirlpoolWalletPersistHandler persistHandler = computePersistHandler(walletIdentifier);
     WhirlpoolWalletConfig whirlpoolWalletConfig =
@@ -126,13 +133,11 @@ public class CliWalletService extends WhirlpoolWalletService {
         new CliWallet(
             whirlpoolWallet,
             cliConfig,
+            cliConfigService,
             walletAggregateService,
             stompClient,
             cliTorClientService,
             this);
-
-    // check upgrade wallet
-    checkUpgradeWallet(whirlpoolWallet);
 
     return sessionWallet;
   }
@@ -206,31 +211,6 @@ public class CliWalletService extends WhirlpoolWalletService {
     return f;
   }
 
-  private void checkUpgradeWallet(WhirlpoolWallet whirlpoolWallet) throws Exception {
-    IIndexHandler cliVersionHandler =
-        whirlpoolWallet
-            .getConfig()
-            .getPersistHandler()
-            .getIndexHandler(INDEX_CLI_VERSION, CLI_VERSION);
-    int lastVersion = cliVersionHandler.get();
-
-    if (lastVersion == CLI_VERSION) {
-      // up to date
-      if (log.isDebugEnabled()) {
-        log.debug("cli wallet is up to date: " + CLI_VERSION);
-      }
-      return;
-    }
-
-    if (log.isDebugEnabled()) {
-      log.debug(" • Upgrading cli wallet: " + lastVersion + " -> " + CLI_VERSION);
-    }
-    new RunUpgradeCli(this).run(lastVersion);
-
-    // set new version
-    cliVersionHandler.set(CLI_VERSION);
-  }
-
   public CliState getCliState() {
     CliStatus cliStatus = cliConfigService.getCliStatus();
     String cliMessage = cliConfigService.getCliMessage();
@@ -247,7 +227,11 @@ public class CliWalletService extends WhirlpoolWalletService {
             ? PairingNetwork.TESTNET
             : PairingNetwork.MAINNET;
     PairingPayload pairingPayload =
-        new WhirlpoolPairingPayload(PairingVersion.V1_0_0, pairingNetwork, cliConfig.getSeed());
+        new WhirlpoolPairingPayload(
+            PairingVersion.V2_0_0,
+            pairingNetwork,
+            cliConfig.getSeed(),
+            cliConfig.isSeedAppendPassphrase());
     String json = ClientUtils.toJsonString(pairingPayload);
     return json;
   }
