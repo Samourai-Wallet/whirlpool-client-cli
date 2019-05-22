@@ -174,15 +174,11 @@ public class CliConfigService {
 
     // log
     for (Entry<Object, Object> entry : props.entrySet()) {
-      if (log.isDebugEnabled()) {
-        log.debug("set " + entry.getKey() + ": " + entry.getValue());
-      } else {
-        log.info(
-            "set "
-                + entry.getKey()
-                + ": "
-                + ClientUtils.maskString(String.valueOf(entry.getValue())));
-      }
+      log.info(
+          "set "
+              + entry.getKey()
+              + ": "
+              + ClientUtils.maskString(String.valueOf(entry.getValue())));
     }
 
     File f = getConfigurationFile();
