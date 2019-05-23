@@ -183,6 +183,14 @@ public class Application implements ApplicationRunner {
       return;
     }
 
+    // check upgrade
+    boolean shouldRestart = cliConfigService.checkUpgrade();
+    if (shouldRestart) {
+      log.warn("⣿ UPGRADE SUCCESS");
+      log.warn("⣿ Please restart CLI.");
+      return;
+    }
+
     if (!appArgs.isAuthenticate()
         && listenPort != null
         && !RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {

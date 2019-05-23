@@ -93,6 +93,9 @@ public class CliConfigService {
   public synchronized String initialize(
       String encryptedMnemonic, boolean appendPassphrase, WhirlpoolServer whirlpoolServer)
       throws NotifiableException {
+    if (log.isDebugEnabled()) {
+      log.debug(" • initialize");
+    }
     if (whirlpoolServer == null) {
       throw new NotifiableException("Invalid server");
     }
@@ -122,10 +125,9 @@ public class CliConfigService {
     return apiKey;
   }
 
-  public Properties loadEntries() throws Exception {
+  private Properties loadEntries() throws Exception {
     Resource resource = new FileSystemResource(getConfigurationFile());
     Properties props = PropertiesLoaderUtils.loadProperties(resource);
-    System.out.println("#####ENTRIES=" + props);
     return props;
   }
 
@@ -141,7 +143,7 @@ public class CliConfigService {
     this.setCliStatusNotReady("CLI restart required. Configuration updated.");
   }
 
-  private synchronized void setVersionCurrent() throws Exception {
+  public synchronized void setVersionCurrent() throws Exception {
     Properties props = loadEntries();
     props.put(KEY_VERSION, Integer.toString(CLI_VERSION));
 
@@ -192,7 +194,6 @@ public class CliConfigService {
   }
 
   private File getConfigurationFile() {
-    System.out.println("####################" + new File(CLI_CONFIG_FILENAME).getAbsolutePath());
     return new File(CLI_CONFIG_FILENAME);
   }
 

@@ -118,12 +118,6 @@ public class CliWalletService extends WhirlpoolWalletService {
       }
     }
 
-    // check upgrade
-    boolean shouldRestart = cliConfigService.checkUpgrade();
-    if (shouldRestart) {
-      throw new NotifiableException("Upgrade success. Please restart.");
-    }
-
     // open wallet
     WhirlpoolWalletPersistHandler persistHandler = computePersistHandler(walletIdentifier);
     WhirlpoolWalletConfig whirlpoolWalletConfig =
