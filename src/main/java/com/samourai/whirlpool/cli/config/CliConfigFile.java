@@ -10,6 +10,7 @@ import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.validation.constraints.NotEmpty;
@@ -29,6 +30,7 @@ public abstract class CliConfigFile {
   @NotEmpty private String seed;
   @NotEmpty private boolean seedAppendPassphrase;
   @NotEmpty private int persistDelay;
+  @NotEmpty private int refreshPoolsDelay;
   @NotEmpty private String proxy;
   private Optional<CliProxy> _cliProxy;
   @NotEmpty private MixConfig mix;
@@ -51,6 +53,7 @@ public abstract class CliConfigFile {
     this.seed = copy.seed;
     this.seedAppendPassphrase = copy.seedAppendPassphrase;
     this.persistDelay = copy.persistDelay;
+    this.refreshPoolsDelay = copy.refreshPoolsDelay;
     this.proxy = copy.proxy;
     this.mix = new MixConfig(copy.mix);
   }
@@ -137,6 +140,14 @@ public abstract class CliConfigFile {
 
   public void setPersistDelay(int persistDelay) {
     this.persistDelay = persistDelay;
+  }
+
+  public int getRefreshPoolsDelay() {
+    return refreshPoolsDelay;
+  }
+
+  public void setRefreshPoolsDelay(int refreshPoolsDelay) {
+    this.refreshPoolsDelay = refreshPoolsDelay;
   }
 
   public String getProxy() {
@@ -253,6 +264,7 @@ public abstract class CliConfigFile {
       config.setScode(scode);
     }
     config.setPersistDelay(persistDelay);
+    config.setRefreshPoolsDelay(refreshPoolsDelay);
 
     config.setMaxClients(mix.getClients());
     config.setClientDelay(mix.getClientDelay());
@@ -272,7 +284,7 @@ public abstract class CliConfigFile {
   }
 
   public Map<String, String> getConfigInfo() {
-    Map<String, String> configInfo = new HashMap<>();
+    Map<String, String> configInfo = new LinkedHashMap<>();
     configInfo.put("cli/server", server.name());
     configInfo.put("cli/scode", scode);
     configInfo.put("cli/pushtx", ClientUtils.maskString(pushtx));
@@ -280,6 +292,7 @@ public abstract class CliConfigFile {
     configInfo.put("cli/apiKey", ClientUtils.maskString(apiKey));
     configInfo.put("cli/seedEncrypted", ClientUtils.maskString(seed));
     configInfo.put("cli/persistDelay", Integer.toString(persistDelay));
+    configInfo.put("cli/refreshPoolsDelay", Integer.toString(refreshPoolsDelay));
     configInfo.put("cli/proxy", proxy != null ? ClientUtils.maskString(proxy) : "null");
     configInfo.putAll(mix.getConfigInfo());
     return configInfo;
