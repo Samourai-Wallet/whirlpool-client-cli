@@ -1,7 +1,6 @@
 package com.samourai.stomp.client;
 
-import com.samourai.tor.client.JavaTorConnexion;
-import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
+import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -9,7 +8,14 @@ import com.samourai.whirlpool.client.utils.MessageErrorListener;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpProxy;
+import org.eclipse.jetty.client.ProxyConfiguration;
+import org.eclipse.jetty.client.Socks4Proxy;
+import org.eclipse.jetty.http.HttpField;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
@@ -19,10 +25,9 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.WebSocketHttpHeaders;
-import org.springframework.web.socket.client.WebSocketClient;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
-import org.springframework.web.socket.sockjs.client.RestTemplateXhrTransport;
+import org.springframework.web.socket.sockjs.client.JettyXhrTransport;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
@@ -47,11 +52,11 @@ public class JavaStompClient implements IStompClient {
       String url,
       Map<String, String> stompHeaders,
       MessageErrorListener<IStompMessage, Throwable> onConnectOnDisconnectListener) {
-    this.stompClient = computeStompClient();
 
     WebSocketHttpHeaders httpHeaders = computeHttpHeaders();
     StompHeaders stompHeadersObj = computeStompHeaders(stompHeaders);
     try {
+      this.stompClient = computeStompClient();
       this.stompSession =
           stompClient // set stompSession twice, as we need it for getSessionId()
               .connect(
@@ -155,14 +160,14 @@ public class JavaStompClient implements IStompClient {
     };
   }
 
-  private WebSocketStompClient computeStompClient() {
+  private WebSocketStompClient computeStompClient() throws Exception {
     // enable heartbeat (mandatory to detect client disconnect)
     ThreadPoolTaskScheduler te = new ThreadPoolTaskScheduler();
     te.setPoolSize(1);
     te.setThreadNamePrefix("wss-heartbeat-thread-");
     te.initialize();
 
-    WebSocketClient webSocketClient = computeWebSocketClient();
+    SockJsClient webSocketClient = computeWebSocketClient();
     WebSocketStompClient stompClient = new WebSocketStompClient(webSocketClient);
     stompClient.setMessageConverter(new MappingJackson2MessageConverter());
     stompClient.setTaskScheduler(te);
@@ -170,30 +175,45 @@ public class JavaStompClient implements IStompClient {
     return stompClient;
   }
 
-  private WebSocketClient computeWebSocketClient() {
-    StandardWebSocketClient client = new StandardWebSocketClient();
+  private SockJsClient computeWebSocketClient() throws Exception {
+    // we use jetty for proxy SOCKS support
+    HttpClient jettyHttpClient = new HttpClient(new SslContextFactory());
 
-    List<Transport> webSocketTransports;
-    boolean isProxySocks =
-        cliConfig.getCliProxy().isPresent()
-            && CliProxyProtocol.SOCKS.equals(cliConfig.getCliProxy().get().getProtocol());
-    Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion(false);
-    if (isProxySocks || torConnexion.isPresent()) {
-      // proxy SOCKS or TOR => force XHR (for some reason Websocket transport is leaking real IP)
+    // prevent user-agent tracking
+    jettyHttpClient.setUserAgentField(new HttpField(HttpHeader.USER_AGENT, ClientUtils.USER_AGENT));
+
+    // proxy
+    if (cliConfig.getCliProxy().isPresent()) {
+      CliProxy cliProxy = cliConfig.getCliProxy().get();
       if (log.isDebugEnabled()) {
-        log.debug("Using websocket transports: XHR");
+        log.debug("Using websocket proxy: " + cliProxy);
       }
-      webSocketTransports = Arrays.asList(new RestTemplateXhrTransport());
-    } else {
-      // no proxy or HTTP proxy => websocket + XHR fallback
-      if (log.isDebugEnabled()) {
-        log.debug("Using websocket transports: Websocket, XHR");
+
+      ProxyConfiguration.Proxy jettyProxy = null;
+      switch (cliProxy.getProtocol()) {
+        case SOCKS:
+          jettyProxy = new Socks4Proxy(cliProxy.getHost(), cliProxy.getPort());
+          break;
+
+        case HTTP:
+          jettyProxy = new HttpProxy(cliProxy.getHost(), cliProxy.getPort());
+          break;
       }
-      webSocketTransports =
-          Arrays.asList(new WebSocketTransport(client), new RestTemplateXhrTransport());
+      jettyHttpClient.getProxyConfiguration().getProxies().add(jettyProxy);
     }
 
+    if (log.isDebugEnabled()) {
+      log.debug("Using websocket transports: Websocket, XHR");
+    }
+    JettyWebSocketClient jettyWebSocketClient =
+        new JettyWebSocketClient(new WebSocketClient(jettyHttpClient));
+    List<Transport> webSocketTransports =
+        Arrays.asList(
+            new WebSocketTransport(jettyWebSocketClient), new JettyXhrTransport(jettyHttpClient));
+
     SockJsClient sockJsClient = new SockJsClient(webSocketTransports);
+    jettyHttpClient.start();
+    jettyWebSocketClient.start();
     return sockJsClient;
   }
 
