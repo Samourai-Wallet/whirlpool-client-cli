@@ -2,8 +2,8 @@
 
 whirlpool-client-cli exposes a REST API when started with --listen[=8899].
 Required headers:
-* API_VERSION
-* API_KEY
+* apiVersion (see [CliApi.java](src/main/java/com/samourai/whirlpool/cli/api/protocol/CliApi.java))
+* apiKey (see `cli.apiKey` in your whirlpool-cli-config.properties)
 
 ## Pools
 
@@ -129,10 +129,19 @@ Response:
 ### Tx0 ```POST /rest/utxos/{hash}:{index}/tx0```
 Parameters:
 * hash, index: utxo to spend for tx0
+
 Payload:
 * feeTarget (mandatory): fee target for tx0
 * poolId (optional): override utxo's poolId
 * mixsTarget (optional): override utxo's mixsTarget
+```
+{
+    feeTarget: "BLOCKS_4",
+    poolId: "0.01btc",
+    mixsTarget: 3
+}
+```
+
 
 Response:
 ```
