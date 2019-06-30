@@ -3,9 +3,9 @@ package com.samourai.whirlpool.cli.services;
 import com.samourai.tor.client.JavaTorClient;
 import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
 import java.util.Optional;
-import org.silvertunnel_ng.netlib.adapter.java.JvmGlobalUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,16 +23,6 @@ public class CliTorClientService {
     this.cliConfig = cliConfig;
   }
 
-  public void init() {
-    if (cliConfig.getTor()) {
-      if (log.isDebugEnabled()) {
-        log.debug("Initializing TOR");
-      }
-      // init Silvertunnel
-      JvmGlobalUtil.init();
-    }
-  }
-
   public void connect() {
     Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
@@ -40,24 +30,31 @@ public class CliTorClientService {
     }
   }
 
-  public void waitReady() {
+  public void waitReady() throws NotifiableException {
     Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
       torClient.get().waitReady();
     }
   }
 
-  public void disconnect() {
+  private void disconnect() {
     Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
       torClient.get().disconnect();
     }
   }
 
-  public void changeCircuit() {
+  public void shutdown() {
     Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
-      torClient.get().changeCircuit();
+      torClient.get().shutdown();
+    }
+  }
+
+  public void changeIdentity() {
+    Optional<JavaTorClient> torClient = getTorClient();
+    if (torClient.isPresent()) {
+      torClient.get().changeIdentity();
     }
   }
 
@@ -74,22 +71,39 @@ public class CliTorClientService {
     return Optional.empty();
   }
 
+  public Optional<Integer> getProgress() {
+    Optional<JavaTorClient> torClient = getTorClient();
+    if (!torClient.isPresent()) {
+      return Optional.empty();
+    }
+
+    // average progress of the two connexions
+    int progressShared = torClient.get().getConnexion(false).getProgress();
+    int progressRegOut = torClient.get().getConnexion(true).getProgress();
+    int progress = (progressShared + progressRegOut) / 2;
+    return Optional.of(progress);
+  }
+
   private Optional<JavaTorClient> getTorClient() {
     if (cliConfig.getTor()) {
       if (!torClient.isPresent()) {
         if (log.isDebugEnabled()) {
           log.debug("Enabling TOR.");
         }
-        // connect
-        torClient = Optional.of(new JavaTorClient());
-        connect();
+        // instanciate TorClient
+        try {
+          torClient = Optional.of(new JavaTorClient(cliConfig));
+        } catch (Exception e) {
+          log.error("", e);
+          torClient = Optional.empty();
+        }
       }
     } else {
       if (torClient.isPresent()) {
         if (log.isDebugEnabled()) {
           log.debug("Disabling TOR.");
         }
-        // disconnect
+        // disconnect and clear TorClient
         disconnect();
         torClient = Optional.empty();
       }

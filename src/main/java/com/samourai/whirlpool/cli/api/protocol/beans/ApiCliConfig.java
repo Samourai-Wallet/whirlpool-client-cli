@@ -63,7 +63,7 @@ public class ApiCliConfig {
     }
 
     if (mix != null) {
-      mix.toProperties(props, whirlpoolServer);
+      mix.toProperties(props);
     }
   }
 
@@ -124,8 +124,7 @@ public class ApiCliConfig {
       this.mixsTarget = mixConfig.getMixsTarget();
     }
 
-    public void toProperties(Properties props, WhirlpoolServer whirlpoolServer)
-        throws NotifiableException {
+    public void toProperties(Properties props) throws NotifiableException {
       if (clients != null) {
         if (clients < 1) {
           throw new NotifiableException("mix.clients should be > 0");

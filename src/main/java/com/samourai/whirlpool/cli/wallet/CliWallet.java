@@ -1,6 +1,5 @@
 package com.samourai.whirlpool.cli.wallet;
 
-import com.samourai.stomp.client.JavaStompClient;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
@@ -27,7 +26,6 @@ public class CliWallet extends WhirlpoolWallet {
   private CliConfigService cliConfigService;
   private WalletAggregateService walletAggregateService;
   private CliStatusOrchestrator cliStatusOrchestrator;
-  private JavaStompClient stompClient;
   private CliTorClientService cliTorClientService;
 
   public CliWallet(
@@ -35,14 +33,12 @@ public class CliWallet extends WhirlpoolWallet {
       CliConfig cliConfig,
       CliConfigService cliConfigService,
       WalletAggregateService walletAggregateService,
-      JavaStompClient stompClient,
       CliTorClientService cliTorClientService,
       CliWalletService cliWalletService) {
     super(whirlpoolWallet);
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.walletAggregateService = walletAggregateService;
-    this.stompClient = stompClient;
     this.cliTorClientService = cliTorClientService;
 
     // log status
@@ -65,9 +61,6 @@ public class CliWallet extends WhirlpoolWallet {
   public void stop() {
     super.stop();
     this.cliStatusOrchestrator.stop();
-
-    // disconnect STOMP
-    stompClient.disconnect();
   }
 
   @Override
@@ -82,8 +75,8 @@ public class CliWallet extends WhirlpoolWallet {
   public void onMixSuccess(MixSuccess mixSuccess, WhirlpoolUtxo whirlpoolUtxo) {
     super.onMixSuccess(mixSuccess, whirlpoolUtxo);
 
-    // change TOR circuit
-    cliTorClientService.changeCircuit();
+    // change TOR identity
+    cliTorClientService.changeIdentity();
   }
 
   @Override

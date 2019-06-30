@@ -1,59 +1,90 @@
 package com.samourai.tor.client;
 
+import com.msopentech.thali.toronionproxy.TorConfig;
+import com.msopentech.thali.toronionproxy.TorSettings;
+import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.client.exception.NotifiableException;
+import java.io.File;
 import java.lang.invoke.MethodHandles;
-import org.silvertunnel_ng.netlib.adapter.java.JvmGlobalUtil;
-import org.silvertunnel_ng.netlib.api.NetFactory;
-import org.silvertunnel_ng.netlib.api.NetLayer;
-import org.silvertunnel_ng.netlib.api.NetLayerIDs;
+import java.nio.file.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JavaTorClient {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static final int SLEEP_WAIT_READY = 1000;
+  private static final String TOR_DIR_SHARED = "whirlpoolTorShared";
+  private static final String TOR_DIR_REG_OUT = "whirlpoolTorRegOut";
 
-  private NetFactory sharedNetFactory;
-  private NetFactory registerOutputNetFactory;
+  private CliConfig cliConfig;
+  private TorOnionProxyInstance torInstanceShared;
+  private TorOnionProxyInstance torInstanceRegOut;
+  private boolean started = false;
 
-  public JavaTorClient() {}
+  private TorConfig computeTorConfig(String dirName) throws Exception {
+    File dir = Files.createTempDirectory(dirName).toFile();
+    dir.deleteOnExit();
+    TorConfig torConfig = new TorConfig.Builder(dir, dir).homeDir(dir).build();
+    return torConfig;
+  }
+
+  public JavaTorClient(CliConfig cliConfig) throws Exception {
+    this.cliConfig = cliConfig;
+
+    // setup TOR instances
+    this.torInstanceShared =
+        new TorOnionProxyInstance(
+            computeTorConfig(TOR_DIR_SHARED), computeTorSettings(0), "shared");
+
+    // run second instance on different ports
+    this.torInstanceRegOut =
+        new TorOnionProxyInstance(
+            computeTorConfig(TOR_DIR_REG_OUT), computeTorSettings(1), "regOut");
+  }
 
   public void connect() {
-    // start connecting
+    if (started) {
+      log.warn("connect: already started");
+      return;
+    }
     if (log.isDebugEnabled()) {
       log.debug("Connecting");
     }
-    changeCircuit();
+
+    torInstanceShared.start();
+    torInstanceRegOut.start();
+    started = true;
   }
 
-  public void waitReady() {
+  public void waitReady() throws NotifiableException {
+    if (!started) {
+      connect();
+    }
     if (log.isDebugEnabled()) {
       log.debug("waitReady");
     }
-    waitReady(sharedNetFactory);
-    waitReady(registerOutputNetFactory);
+    torInstanceShared.waitReady();
+    torInstanceRegOut.waitReady();
+    log.info(
+        "TOR is ready: shared="
+            + torInstanceShared.getTorProxy()
+            + ", regOut="
+            + torInstanceRegOut.getTorProxy());
   }
 
-  private void waitReady(NetFactory nf) {
-    sharedNetFactory.getNetLayerById(NetLayerIDs.TOR).waitUntilReady();
-  }
+  public void changeIdentity() {
+    if (!started) {
+      if (log.isDebugEnabled()) {
+        log.debug("Changing TOR identity -> connect");
+      }
+      connect();
+    } else {
+      if (log.isDebugEnabled()) {
+        log.debug("Changing TOR identity");
+      }
 
-  public void changeCircuit() {
-    if (log.isDebugEnabled()) {
-      log.debug("Changing TOR circuit");
+      torInstanceShared.changeIdentity();
+      torInstanceRegOut.changeIdentity();
     }
-    NetFactory oldSharedNetFactory = sharedNetFactory;
-    NetFactory oldRegisterOutputNetFactory = registerOutputNetFactory;
-
-    sharedNetFactory = createNetFactory();
-    registerOutputNetFactory = createNetFactory();
-
-    // bind all traffic to sharedNetFactory
-    NetLayer netLayer = sharedNetFactory.getNetLayerById(NetLayerIDs.TOR);
-    JvmGlobalUtil.setNetLayerAndNetAddressNameService(netLayer, false);
-
-    // disconnect old factories
-    disconnect(oldSharedNetFactory);
-    disconnect(oldRegisterOutputNetFactory);
   }
 
   public void disconnect() {
@@ -61,25 +92,26 @@ public class JavaTorClient {
       log.debug("Disconnecting");
     }
 
-    disconnect(sharedNetFactory);
-    disconnect(registerOutputNetFactory);
-
-    sharedNetFactory = null;
-    registerOutputNetFactory = null;
+    started = false;
+    torInstanceShared.stop();
+    torInstanceRegOut.stop();
   }
 
-  private void disconnect(NetFactory nf) {
-    if (nf != null) {
-      nf.clearRegisteredNetLayers();
-    }
+  public void shutdown() {
+    started = false;
+    torInstanceShared.clear();
+    torInstanceRegOut.clear();
+    torInstanceShared = null;
+    torInstanceRegOut = null;
   }
 
   public JavaTorConnexion getConnexion(boolean isRegisterOutput) {
-    NetFactory netFactory = isRegisterOutput ? registerOutputNetFactory : sharedNetFactory;
-    return new JavaTorConnexion(netFactory, isRegisterOutput);
+    TorOnionProxyInstance torInstance = isRegisterOutput ? torInstanceRegOut : torInstanceShared;
+    return torInstance;
   }
 
-  private NetFactory createNetFactory() {
-    return new NetFactory();
+  private TorSettings computeTorSettings(int portOffset) {
+    TorSettings torSettings = new JavaTorSettings(cliConfig.getCliProxy(), portOffset);
+    return torSettings;
   }
 }

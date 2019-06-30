@@ -1,8 +1,7 @@
 package com.samourai.whirlpool.cli.config;
 
 import com.samourai.http.client.IHttpClient;
-import com.samourai.stomp.client.IStompClient;
-import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.stomp.client.IStompClientService;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
@@ -19,18 +18,19 @@ public class CliConfig extends CliConfigFile {
     super();
   }
 
+  @Override
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClient httpClient,
-      IStompClient stompClient,
-      WhirlpoolWalletPersistHandler persistHandler)
-      throws NotifiableException {
+      IStompClientService stompClientService,
+      WhirlpoolWalletPersistHandler persistHandler) {
+
     // check valid
     if (autoAggregatePostmix && StringUtils.isEmpty(autoTx0PoolId)) {
-      throw new NotifiableException("--auto-tx0 is required for --auto-aggregate-postmix");
+      throw new RuntimeException("--auto-tx0 is required for --auto-aggregate-postmix");
     }
 
     WhirlpoolWalletConfig config =
-        super.computeWhirlpoolWalletConfig(httpClient, stompClient, persistHandler);
+        super.computeWhirlpoolWalletConfig(httpClient, stompClientService, persistHandler);
     config.setAutoTx0PoolId(autoTx0PoolId);
     return config;
   }

@@ -2,8 +2,6 @@ package com.samourai.whirlpool.cli.services;
 
 import com.google.common.primitives.Bytes;
 import com.samourai.http.client.JavaHttpClient;
-import com.samourai.stomp.client.JavaStompClient;
-import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
 import com.samourai.wallet.api.pairing.PairingVersion;
@@ -29,7 +27,6 @@ import com.samourai.whirlpool.client.whirlpool.beans.Pools;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
-import java.util.Optional;
 import javax.crypto.AEADBadTagException;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.MnemonicException;
@@ -50,7 +47,7 @@ public class CliWalletService extends WhirlpoolWalletService {
   private HD_WalletFactoryJava hdWalletFactory;
   private WalletAggregateService walletAggregateService;
   private JavaHttpClient httpClient;
-  private JavaStompClient stompClient;
+  private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
 
   // available when wallet is opened
@@ -62,7 +59,7 @@ public class CliWalletService extends WhirlpoolWalletService {
       HD_WalletFactoryJava hdWalletFactory,
       WalletAggregateService walletAggregateService,
       JavaHttpClient httpClient,
-      JavaStompClient stompClient,
+      JavaStompClientService stompClientService,
       CliTorClientService cliTorClientService) {
     super();
     this.cliConfig = cliConfig;
@@ -70,7 +67,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     this.hdWalletFactory = hdWalletFactory;
     this.walletAggregateService = walletAggregateService;
     this.httpClient = httpClient;
-    this.stompClient = stompClient;
+    this.stompClientService = stompClientService;
     this.cliTorClientService = cliTorClientService;
   }
 
@@ -121,7 +118,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     // open wallet
     WhirlpoolWalletPersistHandler persistHandler = computePersistHandler(walletIdentifier);
     WhirlpoolWalletConfig whirlpoolWalletConfig =
-        cliConfig.computeWhirlpoolWalletConfig(httpClient, stompClient, persistHandler);
+        cliConfig.computeWhirlpoolWalletConfig(httpClient, stompClientService, persistHandler);
     WhirlpoolWallet whirlpoolWallet = openWallet(whirlpoolWalletConfig, bip84w);
     this.sessionWallet =
         new CliWallet(
@@ -129,7 +126,6 @@ public class CliWalletService extends WhirlpoolWalletService {
             cliConfig,
             cliConfigService,
             walletAggregateService,
-            stompClient,
             cliTorClientService,
             this);
 
@@ -210,8 +206,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     String cliMessage = cliConfigService.getCliMessage();
     boolean loggedIn = hasSessionWallet();
 
-    Optional<JavaTorConnexion> torConnexion = cliTorClientService.getTorConnexion(false);
-    Integer torProgress = torConnexion.isPresent() ? torConnexion.get().getProgress() : null;
+    Integer torProgress = cliTorClientService.getProgress().orElse(null);
     return new CliState(cliStatus, cliMessage, loggedIn, torProgress);
   }
 
@@ -232,7 +227,7 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   public Pools listPools(CliConfig cliConfig) throws Exception {
     WhirlpoolWalletConfig config =
-        cliConfig.computeWhirlpoolWalletConfig(httpClient, stompClient, null);
+        cliConfig.computeWhirlpoolWalletConfig(httpClient, stompClientService, null);
     return config.newClient().fetchPools();
   }
 }

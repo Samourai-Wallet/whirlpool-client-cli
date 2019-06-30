@@ -51,38 +51,29 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.silvertunnel-ng</groupId>
-            <artifactId>netlib</artifactId>
-            <version>0.0.5</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.directory.studio</groupId>
-                    <artifactId>org.apache.httpcomponents.httpcore</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient-android</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.8</version>
         </dependency>
         <dependency>
-            <groupId>com.github.kevinsawicki</groupId>
-            <artifactId>http-request</artifactId>
-            <version>6.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.jetty.websocket</groupId>
             <artifactId>websocket-client</artifactId>
             <version>9.4.19.v20190610</version>
+        </dependency>
+        <dependency>
+            <groupId>com.msopentech.thali</groupId>
+            <artifactId>java</artifactId>
+            <version>0.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.msopentech.thali</groupId>
+            <artifactId>universal</artifactId>
+            <version>0.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>net.freehaven.tor.control</groupId>
+            <artifactId>jtorctl</artifactId>
+            <version>0.2</version>
         </dependency>
         <!-- test -->
         <dependency>
@@ -169,6 +160,11 @@
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
+        </repository>
+        <!-- repo for jtorctl -->
+        <repository>
+            <id>spring-plugins</id>
+            <url>http://repo.spring.io/plugins-release/</url>
         </repository>
     </repositories>
     <scm>

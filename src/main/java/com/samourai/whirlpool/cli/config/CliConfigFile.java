@@ -1,10 +1,9 @@
 package com.samourai.whirlpool.cli.config;
 
 import com.samourai.http.client.IHttpClient;
-import com.samourai.stomp.client.IStompClient;
+import com.samourai.stomp.client.IStompClientService;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
@@ -156,7 +155,7 @@ public abstract class CliConfigFile {
 
   public Optional<CliProxy> getCliProxy() {
     if (_cliProxy == null) {
-      _cliProxy = Optional.ofNullable(CliUtils.computeProxyOrNull(proxy));
+      _cliProxy = CliUtils.computeProxy(proxy);
     }
     return _cliProxy;
   }
@@ -254,12 +253,12 @@ public abstract class CliConfigFile {
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClient httpClient,
-      IStompClient stompClient,
-      WhirlpoolWalletPersistHandler persistHandler)
-      throws NotifiableException {
+      IStompClientService stompClientService,
+      WhirlpoolWalletPersistHandler persistHandler) {
     String serverUrl = computeServerUrl();
     WhirlpoolWalletConfig config =
-        new WhirlpoolWalletConfig(httpClient, stompClient, persistHandler, serverUrl, server);
+        new WhirlpoolWalletConfig(
+            httpClient, stompClientService, persistHandler, serverUrl, server);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }

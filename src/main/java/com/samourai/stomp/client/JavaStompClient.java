@@ -1,20 +1,15 @@
 package com.samourai.stomp.client;
 
-import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
+import com.samourai.whirlpool.cli.utils.CliUtils;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.utils.MessageErrorListener;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpProxy;
-import org.eclipse.jetty.client.ProxyConfiguration;
-import org.eclipse.jetty.client.Socks4Proxy;
-import org.eclipse.jetty.http.HttpField;
-import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,11 +106,6 @@ public class JavaStompClient implements IStompClient {
     }
   }
 
-  @Override
-  public IStompClient copyForNewClient() {
-    return new JavaStompClient(torClientService, cliConfig);
-  }
-
   private StompSessionHandlerAdapter computeStompSessionHandler(
       final MessageErrorListener<IStompMessage, Throwable> onConnectOnDisconnectListener) {
     return new StompSessionHandlerAdapter() {
@@ -175,32 +165,12 @@ public class JavaStompClient implements IStompClient {
     return stompClient;
   }
 
+  private HttpClient computeHttpClient() throws NotifiableException {
+    return CliUtils.computeHttpClient(false, torClientService, cliConfig.getCliProxy());
+  }
+
   private SockJsClient computeWebSocketClient() throws Exception {
-    // we use jetty for proxy SOCKS support
-    HttpClient jettyHttpClient = new HttpClient(new SslContextFactory());
-
-    // prevent user-agent tracking
-    jettyHttpClient.setUserAgentField(new HttpField(HttpHeader.USER_AGENT, ClientUtils.USER_AGENT));
-
-    // proxy
-    if (cliConfig.getCliProxy().isPresent()) {
-      CliProxy cliProxy = cliConfig.getCliProxy().get();
-      if (log.isDebugEnabled()) {
-        log.debug("Using websocket proxy: " + cliProxy);
-      }
-
-      ProxyConfiguration.Proxy jettyProxy = null;
-      switch (cliProxy.getProtocol()) {
-        case SOCKS:
-          jettyProxy = new Socks4Proxy(cliProxy.getHost(), cliProxy.getPort());
-          break;
-
-        case HTTP:
-          jettyProxy = new HttpProxy(cliProxy.getHost(), cliProxy.getPort());
-          break;
-      }
-      jettyHttpClient.getProxyConfiguration().getProxies().add(jettyProxy);
-    }
+    HttpClient jettyHttpClient = computeHttpClient();
 
     if (log.isDebugEnabled()) {
       log.debug("Using websocket transports: Websocket, XHR");
@@ -219,7 +189,7 @@ public class JavaStompClient implements IStompClient {
 
   private WebSocketHttpHeaders computeHttpHeaders() {
     WebSocketHttpHeaders httpHeaders = new WebSocketHttpHeaders();
-    httpHeaders.set("user-agent", ClientUtils.USER_AGENT); // prevent user-agent tracking
+    httpHeaders.set("user-agent", ClientUtils.USER_AGENT + "!!"); // prevent user-agent tracking
     return httpHeaders;
   }
 

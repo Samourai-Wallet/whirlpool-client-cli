@@ -1,54 +1,11 @@
 package com.samourai.tor.client;
 
-import java.net.URL;
-import java.net.URLStreamHandler;
-import org.silvertunnel_ng.netlib.adapter.url.NetlibURLStreamHandlerFactory;
-import org.silvertunnel_ng.netlib.api.NetFactory;
-import org.silvertunnel_ng.netlib.api.NetLayer;
-import org.silvertunnel_ng.netlib.api.NetLayerIDs;
+import com.samourai.whirlpool.cli.beans.CliProxy;
+import com.samourai.whirlpool.client.exception.NotifiableException;
 
-public class JavaTorConnexion {
-  private NetFactory netFactory;
-  private boolean privateCircuit;
-  private NetlibURLStreamHandlerFactory urlFactory;
+public interface JavaTorConnexion {
 
-  public JavaTorConnexion(NetFactory netFactory, boolean privateCircuit) {
-    this.netFactory = netFactory;
-    this.privateCircuit = privateCircuit;
-  }
+  CliProxy getTorProxy() throws NotifiableException;
 
-  public URL getUrl(String urlStr) throws Exception {
-    NetlibURLStreamHandlerFactory streamHandlerFactory = computeStreamHandlerFactory(netFactory);
-    String protocol = urlStr.split("://")[0];
-    URLStreamHandler handler = streamHandlerFactory.createURLStreamHandler(protocol);
-    URL url = new URL(null, urlStr, handler);
-    return url;
-  }
-
-  private NetlibURLStreamHandlerFactory computeStreamHandlerFactory(NetFactory netFactory) {
-    if (urlFactory == null) {
-      NetLayer netLayer = netFactory.getNetLayerById(NetLayerIDs.TOR);
-      netLayer.waitUntilReady(); // wait connected
-
-      urlFactory = new NetlibURLStreamHandlerFactory(false);
-      urlFactory.setNetLayerForHttpHttpsFtp(netLayer);
-    }
-    return urlFactory;
-  }
-
-  public void close() {
-    close(false);
-  }
-
-  public void close(boolean closeShared) {
-    if (privateCircuit || closeShared) {
-      netFactory.clearRegisteredNetLayers();
-    }
-  }
-
-  public int getProgress() {
-    double indicator =
-        netFactory.getNetLayerById(NetLayerIDs.TOR).getStatus().getReadyIndicator() * 100;
-    return (int) Math.round(indicator);
-  }
+  int getProgress();
 }

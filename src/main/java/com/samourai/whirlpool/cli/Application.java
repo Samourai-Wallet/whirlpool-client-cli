@@ -1,10 +1,10 @@
 package com.samourai.whirlpool.cli;
 
 import com.samourai.http.client.IHttpClient;
-import com.samourai.stomp.client.IStompClient;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
 import com.samourai.whirlpool.cli.run.RunCliInit;
 import com.samourai.whirlpool.cli.services.CliConfigService;
@@ -52,12 +52,13 @@ public class Application implements ApplicationRunner {
   @Autowired private CliConfig cliConfig;
   @Autowired private CliConfigService cliConfigService;
   @Autowired private CliWalletService cliWalletService;
+  private static CliWalletService cliWalletServiceStatic;
   @Autowired private PushTxService pushTxService;
   @Autowired private Bech32UtilGeneric bech32Util;
   @Autowired private WalletAggregateService walletAggregateService;
   @Autowired private CliTorClientService cliTorClientService;
+  private static CliTorClientService cliTorClientServiceStatic;
   @Autowired private IHttpClient httpClient;
-  @Autowired private IStompClient stompClient;
 
   public static void main(String... args) {
     // override configuration with local file
@@ -84,6 +85,8 @@ public class Application implements ApplicationRunner {
     applicationContext =
         new SpringApplicationBuilder(Application.class).logStartupInfo(debug).web(wat).run(args);
 
+    shutdown();
+
     // exit with exitCode
     applicationContext.close();
     System.exit(exitCode);
@@ -91,6 +94,10 @@ public class Application implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
+    // set static references from autowire
+    cliWalletServiceStatic = cliWalletService;
+    cliTorClientServiceStatic = cliTorClientService;
+
     log.info("------------ whirlpool-client-cli starting ------------");
     setup(args);
 
@@ -136,9 +143,6 @@ public class Application implements ApplicationRunner {
       }
     }
 
-    // setup TOR
-    cliTorClientService.init();
-
     // setup proxy
     Optional<CliProxy> cliProxyOptional = cliConfig.getCliProxy();
     if (cliProxyOptional.isPresent()) {
@@ -151,6 +155,9 @@ public class Application implements ApplicationRunner {
   }
 
   private void runCli() throws Exception {
+    // connect TOR
+    cliTorClientService.connect();
+
     // initialize bitcoinj context
     NetworkParameters params = cliConfig.getServer().getParams();
     new Context(params);
@@ -213,27 +220,20 @@ public class Application implements ApplicationRunner {
         cliWalletService.hasSessionWallet()
             ? cliWalletService.getSessionWallet()
             : cliWalletService.openWallet(seedPassphrase);
-    try {
-      log.info(CliUtils.LOG_SEPARATOR);
-      log.info("⣿ AUTHENTICATION SUCCESS");
-      log.info("⣿ Whirlpool is starting...");
-      log.info(CliUtils.LOG_SEPARATOR);
+    log.info(CliUtils.LOG_SEPARATOR);
+    log.info("⣿ AUTHENTICATION SUCCESS");
+    log.info("⣿ Whirlpool is starting...");
+    log.info(CliUtils.LOG_SEPARATOR);
 
-      if (RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
-        // execute specific command
-        new RunCliCommand(appArgs, cliWalletService, walletAggregateService, cliConfig).run();
-      } else {
-        // start wallet
-        cliWallet.start();
+    if (RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
+      // execute specific command
+      new RunCliCommand(appArgs, cliWalletService, walletAggregateService, cliConfig).run();
+    } else {
+      // start wallet
+      cliWallet.start();
 
-        // keep cli running
-        cliWallet.interactive();
-      }
-    } finally {
-      // stop cliWallet
-      if (cliWallet != null && cliWallet.isStarted()) {
-        cliWallet.stop();
-      }
+      // keep cli running
+      cliWallet.interactive();
     }
   }
 
@@ -254,6 +254,28 @@ public class Application implements ApplicationRunner {
     log.info("⣿ Whirlpool wallet is CLOSED.");
     log.info("⣿ • Please type your seed passphrase to authenticate and start mixing.");
     return CliUtils.readUserInputRequired("Seed passphrase?", true);
+  }
+
+  private static void shutdown() {
+    if (log.isDebugEnabled()) {
+      log.debug("shutdown");
+    }
+    try {
+      CliWallet cliWallet =
+          cliWalletServiceStatic != null && cliWalletServiceStatic.hasSessionWallet()
+              ? cliWalletServiceStatic.getSessionWallet()
+              : null;
+      // stop cliWallet
+      if (cliWallet != null && cliWallet.isStarted()) {
+        cliWallet.stop();
+      }
+    } catch (NoSessionWalletException e) {
+    }
+
+    // disconnect TOR
+    if (cliTorClientServiceStatic != null) {
+      cliTorClientServiceStatic.shutdown();
+    }
   }
 
   private static void setDebug(boolean isDebug, boolean isDebugClient) {
@@ -280,11 +302,8 @@ public class Application implements ApplicationRunner {
 
     // skip noisy logs
     LogbackUtils.setLogLevel("org.bitcoinj", Level.ERROR.toString());
-    LogbackUtils.setLogLevel(
-        "org.silvertunnel_ng.netlib.layer.tor.directory.RouterParserCallable",
-        Level.ERROR.toString());
-    LogbackUtils.setLogLevel(
-        "org.silvertunnel_ng.netlib.layer.tor.directory.Directory", Level.ERROR.toString());
+    LogbackUtils.setLogLevel("com.msopentech.thali.toronionproxy", Level.ERROR.toString());
+    LogbackUtils.setLogLevel("com.msopentech.thali.java.toronionproxy", Level.ERROR.toString());
     LogbackUtils.setLogLevel("org.springframework.web", Level.INFO.toString());
     LogbackUtils.setLogLevel("org.apache.http.impl.conn", Level.INFO.toString());
 

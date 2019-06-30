@@ -1,14 +1,23 @@
 package com.samourai.whirlpool.cli.utils;
 
+import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
+import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.io.Console;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.ProxyConfiguration;
+import org.eclipse.jetty.http.HttpField;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,9 +86,9 @@ public class CliUtils {
     log.error("⣿ ERROR ⣿ " + message);
   }
 
-  public static CliProxy computeProxyOrNull(final String proxy) {
+  public static Optional<CliProxy> computeProxy(final String proxy) {
     if (StringUtils.isEmpty(proxy)) {
-      return null;
+      return Optional.empty();
     }
     String[] splitProtocol = proxy.split("://");
     if (splitProtocol.length != 2) {
@@ -102,7 +111,7 @@ public class CliUtils {
       if (StringUtils.isEmpty(host)) {
         throw new IllegalArgumentException("Invalid proxy host: " + proxy);
       }
-      return new CliProxy(proxyProtocol, host, port);
+      return Optional.of(new CliProxy(proxyProtocol, host, port));
     } catch (Exception e) {
       throw new IllegalArgumentException("Invalid proxy: " + proxy);
     }
@@ -122,5 +131,37 @@ public class CliUtils {
         System.setProperty("https.proxyPort", portStr);
         break;
     }
+  }
+
+  public static HttpClient computeHttpClient(
+      boolean isRegisterOutput,
+      CliTorClientService torClientService,
+      Optional<CliProxy> cliProxyDefault)
+      throws NotifiableException {
+    // use torConnexion when available, otherwise cliProxyDefault
+    Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion(isRegisterOutput);
+    Optional<CliProxy> cliProxyOptional =
+        torConnexion.isPresent() ? Optional.of(torConnexion.get().getTorProxy()) : cliProxyDefault;
+    return computeHttpClient(cliProxyOptional);
+  }
+
+  protected static HttpClient computeHttpClient(Optional<CliProxy> cliProxyOptional) {
+    // we use jetty for proxy SOCKS support
+    HttpClient jettyHttpClient = new HttpClient(new SslContextFactory());
+
+    // prevent user-agent tracking
+    jettyHttpClient.setUserAgentField(
+        new HttpField(HttpHeader.USER_AGENT, ClientUtils.USER_AGENT + "!!"));
+
+    // proxy
+    if (cliProxyOptional.isPresent()) {
+      CliProxy cliProxy = cliProxyOptional.get();
+      if (log.isDebugEnabled()) {
+        log.debug("Using proxy: " + cliProxy);
+      }
+      ProxyConfiguration.Proxy jettyProxy = cliProxy.computeJettyProxy();
+      jettyHttpClient.getProxyConfiguration().getProxies().add(jettyProxy);
+    }
+    return jettyHttpClient;
   }
 }
