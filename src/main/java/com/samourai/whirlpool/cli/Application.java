@@ -302,8 +302,8 @@ public class Application implements ApplicationRunner {
 
     // skip noisy logs
     LogbackUtils.setLogLevel("org.bitcoinj", Level.ERROR.toString());
-    LogbackUtils.setLogLevel("com.msopentech.thali.toronionproxy", Level.ERROR.toString());
-    LogbackUtils.setLogLevel("com.msopentech.thali.java.toronionproxy", Level.ERROR.toString());
+    LogbackUtils.setLogLevel("com.msopentech.thali.toronionproxy", Level.WARN.toString());
+    LogbackUtils.setLogLevel("com.msopentech.thali.java.toronionproxy", Level.WARN.toString());
     LogbackUtils.setLogLevel("org.springframework.web", Level.INFO.toString());
     LogbackUtils.setLogLevel("org.apache.http.impl.conn", Level.INFO.toString());
 

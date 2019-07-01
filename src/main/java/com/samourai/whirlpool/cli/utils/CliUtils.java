@@ -150,8 +150,7 @@ public class CliUtils {
     HttpClient jettyHttpClient = new HttpClient(new SslContextFactory());
 
     // prevent user-agent tracking
-    jettyHttpClient.setUserAgentField(
-        new HttpField(HttpHeader.USER_AGENT, ClientUtils.USER_AGENT + "!!"));
+    jettyHttpClient.setUserAgentField(new HttpField(HttpHeader.USER_AGENT, ClientUtils.USER_AGENT));
 
     // proxy
     if (cliProxyOptional.isPresent()) {

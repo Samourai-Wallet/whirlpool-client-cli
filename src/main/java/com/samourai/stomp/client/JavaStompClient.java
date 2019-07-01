@@ -189,7 +189,7 @@ public class JavaStompClient implements IStompClient {
 
   private WebSocketHttpHeaders computeHttpHeaders() {
     WebSocketHttpHeaders httpHeaders = new WebSocketHttpHeaders();
-    httpHeaders.set("user-agent", ClientUtils.USER_AGENT + "!!"); // prevent user-agent tracking
+    httpHeaders.set("user-agent", ClientUtils.USER_AGENT); // prevent user-agent tracking
     return httpHeaders;
   }
 

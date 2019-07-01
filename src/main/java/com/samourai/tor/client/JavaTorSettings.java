@@ -36,7 +36,8 @@ public class JavaTorSettings extends DefaultSettings {
 
   @Override
   public String transPort() {
-    return Integer.toString(9040 + portOffset);
+    // not available on mac
+    return "0";
   }
 
   @Override
