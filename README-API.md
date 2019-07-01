@@ -207,9 +207,11 @@ Response:
 ### initialize: ```POST /rest/cli/init```
 Payload:
 * pairingPayload: pairing payload from Samourai Wallet
+* tor: enable TOR
 ```
 {
-    pairingPayload: "..."
+    pairingPayload: "...",
+    tor: true
 }
 ```
 
