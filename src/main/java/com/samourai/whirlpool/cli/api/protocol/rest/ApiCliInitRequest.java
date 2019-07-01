@@ -4,6 +4,7 @@ import javax.validation.constraints.NotEmpty;
 
 public class ApiCliInitRequest {
   @NotEmpty public String pairingPayload;
+  public boolean tor;
 
   public ApiCliInitRequest() {}
 }

@@ -74,7 +74,7 @@ public class CliConfigService {
     return CliStatus.NOT_INITIALIZED.equals(cliStatus);
   }
 
-  public String initialize(String pairingPayloadStr) throws NotifiableException {
+  public String initialize(String pairingPayloadStr, boolean tor) throws NotifiableException {
     // parse payload
     WhirlpoolPairingPayload pairingPayload = WhirlpoolPairingPayload.parse(pairingPayloadStr);
 
@@ -87,11 +87,14 @@ public class CliConfigService {
             ? WhirlpoolServer.MAINNET
             : WhirlpoolServer.TESTNET;
 
-    return initialize(encryptedMnemonic, appendPassphrase, whirlpoolServer);
+    return initialize(encryptedMnemonic, appendPassphrase, whirlpoolServer, tor);
   }
 
   public synchronized String initialize(
-      String encryptedMnemonic, boolean appendPassphrase, WhirlpoolServer whirlpoolServer)
+      String encryptedMnemonic,
+      boolean appendPassphrase,
+      WhirlpoolServer whirlpoolServer,
+      boolean tor)
       throws NotifiableException {
     if (log.isDebugEnabled()) {
       log.debug(" • initialize");
@@ -113,6 +116,7 @@ public class CliConfigService {
     props.put(KEY_SEED, encryptedMnemonic);
     props.put(KEY_SEED_APPEND_PASSPHRASE, Boolean.toString(appendPassphrase));
     props.put(ApiCliConfig.KEY_SERVER, whirlpoolServer.name());
+    props.put(ApiCliConfig.KEY_TOR, Boolean.toString(tor));
     try {
       save(props);
     } catch (Exception e) {
@@ -175,12 +179,14 @@ public class CliConfigService {
     }
 
     // log
-    for (Entry<Object, Object> entry : props.entrySet()) {
-      log.info(
-          "set "
-              + entry.getKey()
-              + ": "
-              + ClientUtils.maskString(String.valueOf(entry.getValue())));
+    if (log.isDebugEnabled()) {
+      for (Entry<Object, Object> entry : props.entrySet()) {
+        log.debug(
+            "set "
+                + entry.getKey()
+                + ": "
+                + ClientUtils.maskString(String.valueOf(entry.getValue())));
+      }
     }
 
     File f = getConfigurationFile();

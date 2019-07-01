@@ -49,7 +49,8 @@ public class CliController extends AbstractRestController {
 
     // init
     String pairingPayload = payload.pairingPayload;
-    String apiKey = cliConfigService.initialize(pairingPayload);
+    boolean tor = payload.tor;
+    String apiKey = cliConfigService.initialize(pairingPayload, tor);
 
     ApiCliInitResponse response = new ApiCliInitResponse(apiKey);
     return response;

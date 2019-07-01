@@ -12,6 +12,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.ProxyConfiguration;
@@ -39,6 +40,16 @@ public class CliUtils {
     } else {
       throw new NotifiableException("⣿ ACTION REQUIRED ⣿ " + message);
     }
+  }
+
+  public static String readUserInputRequired(
+      String message, boolean secret, String[] allowedValues) {
+    message = "⣿ INPUT REQUIRED ⣿ " + message;
+    String input;
+    do {
+      input = readUserInput(message, secret, true);
+    } while (input == null || !ArrayUtils.contains(allowedValues, input));
+    return input;
   }
 
   public static String readUserInputRequired(String message, boolean secret) {
