@@ -97,6 +97,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     }
     startThread = null;
     progress = 0;
+
     try {
       onionProxyManager.stop();
     } catch (Exception e) {
@@ -110,10 +111,11 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     if (log.isDebugEnabled()) {
       log.debug("clearing TOR");
     }
-    startThread = null;
-    progress = 0;
-
-    stop();
+    new Thread(
+            () -> {
+              stop();
+            })
+        .start();
     /*try {
       onionProxyManager.killTorProcess();
     } catch (Exception e) {

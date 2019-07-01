@@ -47,9 +47,6 @@ public class RunCliInit {
 
     // init
     String apiKey = cliConfigService.initialize(pairingPayload, tor);
-    log.info("⣿ - pairing with SamouraiWallet... done");
-    log.info("⣿ - configuring TOR... " + (tor ? "ENABLED" : "DISABLED"));
-    log.info("⣿ ");
 
     log.info(CliUtils.LOG_SEPARATOR);
     log.info("⣿ API KEY GENERATED");
