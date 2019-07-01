@@ -88,6 +88,12 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
       }
       progress = 100;
     }
+    if (!ready && progress == 100) {
+      if (log.isDebugEnabled()) {
+        log.debug("TOR disconnected!");
+      }
+      progress = PROGRESS_CONNECTING;
+    }
     return ready;
   }
 
@@ -135,6 +141,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
 
   @Override
   public int getProgress() {
+    checkReady(); // update progress
     return progress;
   }
 
