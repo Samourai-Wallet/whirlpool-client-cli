@@ -1,12 +1,13 @@
 package com.samourai.whirlpool.cli.utils;
 
 import com.samourai.whirlpool.cli.beans.Encrypted;
-import java.lang.invoke.MethodHandles;
+import org.bouncycastle.util.encoders.Base64;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spongycastle.util.encoders.Base64;
+
+import java.lang.invoke.MethodHandles;
 
 public class EncryptUtilsTest {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
