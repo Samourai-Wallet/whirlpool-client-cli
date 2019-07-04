@@ -9,9 +9,7 @@ import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.io.Console;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.UUID;
+import java.util.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.client.HttpClient;
@@ -159,6 +157,7 @@ public class CliUtils {
   protected static HttpClient computeHttpClient(Optional<CliProxy> cliProxyOptional) {
     // we use jetty for proxy SOCKS support
     HttpClient jettyHttpClient = new HttpClient(new SslContextFactory());
+    // jettyHttpClient.setSocketAddressResolver(new MySocketAddressResolver());
 
     // prevent user-agent tracking
     jettyHttpClient.setUserAgentField(new HttpField(HttpHeader.USER_AGENT, ClientUtils.USER_AGENT));
@@ -173,5 +172,32 @@ public class CliUtils {
       jettyHttpClient.getProxyConfiguration().getProxies().add(jettyProxy);
     }
     return jettyHttpClient;
+  }
+
+  public static List<String> exec(String cmd) throws Exception {
+    List<String> lines = new ArrayList<>();
+    Process proc = null;
+    Scanner scanner = null;
+    try {
+      proc = Runtime.getRuntime().exec(cmd);
+
+      scanner = new Scanner(proc.getInputStream());
+      while (scanner.hasNextLine()) {
+        lines.add(scanner.nextLine());
+      }
+
+      int exit = proc.waitFor();
+      if (exit != 0) {
+        throw new RuntimeException("exec [" + cmd + "] returned error code: " + exit);
+      }
+    } finally {
+      if (proc != null) {
+        proc.destroy();
+      }
+      if (scanner != null) {
+        scanner.close();
+      }
+    }
+    return lines;
   }
 }

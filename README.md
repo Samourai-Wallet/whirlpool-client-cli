@@ -102,6 +102,13 @@ Local configuration can be overriden with:
 --api-key=
 ```
 
+### Expert configuration
+```
+cli.torConfig.executable = /path/to/bin/tor
+```
+- Use `auto` to use embedded tor when your system is supported, or detecting a local TOR install.
+- Use custom path to `tor` binary to use your own tor install.
+
 ### API
 whirlpool-client-cli can be managed with a REST API. See [README-API.md](README-API.md)
 

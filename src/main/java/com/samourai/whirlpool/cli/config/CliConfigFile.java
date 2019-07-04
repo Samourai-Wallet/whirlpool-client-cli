@@ -25,6 +25,7 @@ public abstract class CliConfigFile {
   private String scode;
   @NotEmpty private String pushtx;
   @NotEmpty private boolean tor;
+  @NotEmpty private TorConfig torConfig;
   @NotEmpty private String apiKey;
   @NotEmpty private String seed;
   @NotEmpty private boolean seedAppendPassphrase;
@@ -48,6 +49,7 @@ public abstract class CliConfigFile {
     this.scode = copy.scode;
     this.pushtx = copy.pushtx;
     this.tor = copy.tor;
+    this.torConfig = new TorConfig(copy.torConfig);
     this.apiKey = copy.apiKey;
     this.seed = copy.seed;
     this.seedAppendPassphrase = copy.seedAppendPassphrase;
@@ -107,6 +109,14 @@ public abstract class CliConfigFile {
 
   public void setTor(boolean tor) {
     this.tor = tor;
+  }
+
+  public TorConfig getTorConfig() {
+    return torConfig;
+  }
+
+  public void setTorConfig(TorConfig torConfig) {
+    this.torConfig = torConfig;
   }
 
   public String getApiKey() {
@@ -251,6 +261,35 @@ public abstract class CliConfigFile {
     }
   }
 
+  public static class TorConfig {
+    public static final String EXECUTABLE_AUTO = "auto";
+    @NotEmpty private String executable;
+
+    public TorConfig() {}
+
+    public TorConfig(TorConfig copy) {
+      this.executable = copy.executable;
+    }
+
+    public String getExecutable() {
+      return executable;
+    }
+
+    public void setExecutable(String executable) {
+      this.executable = executable;
+    }
+
+    public boolean isExecutableAuto() {
+      return EXECUTABLE_AUTO.equals(this.executable);
+    }
+
+    public Map<String, String> getConfigInfo() {
+      Map<String, String> configInfo = new HashMap<>();
+      configInfo.put("cli/tor/executable", executable);
+      return configInfo;
+    }
+  }
+
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClient httpClient,
       IStompClientService stompClientService,
@@ -288,6 +327,7 @@ public abstract class CliConfigFile {
     configInfo.put("cli/scode", scode);
     configInfo.put("cli/pushtx", ClientUtils.maskString(pushtx));
     configInfo.put("cli/tor", Boolean.toString(tor));
+    configInfo.putAll(torConfig.getConfigInfo());
     configInfo.put("cli/apiKey", ClientUtils.maskString(apiKey));
     configInfo.put("cli/seedEncrypted", ClientUtils.maskString(seed));
     configInfo.put("cli/persistDelay", Integer.toString(persistDelay));

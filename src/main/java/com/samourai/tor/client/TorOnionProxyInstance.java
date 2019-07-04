@@ -1,8 +1,8 @@
 package com.samourai.tor.client;
 
 import com.msopentech.thali.java.toronionproxy.JavaOnionProxyContext;
-import com.msopentech.thali.java.toronionproxy.JavaTorInstaller;
 import com.msopentech.thali.toronionproxy.*;
+import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -20,14 +20,15 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
   private CliProxy torProxy = null;
   private int progress;
 
-  public TorOnionProxyInstance(TorConfig torConfig, TorSettings torSettings, String logPrefix)
+  public TorOnionProxyInstance(
+      TorConfig torConfig, TorSettings torSettings, String logPrefix, boolean useExecutableFromZip)
       throws Exception {
     this.log = ClientUtils.prefixLogger(log, logPrefix);
     if (log.isDebugEnabled()) {
       log.debug("new TorOnionProxyInstance: " + torConfig + " ; " + torSettings);
     }
     // setup TOR
-    TorInstaller torInstaller = new JavaTorInstaller(torConfig);
+    TorInstaller torInstaller = new WhirlpoolTorInstaller(torConfig, useExecutableFromZip);
 
     JavaOnionProxyContext context = new JavaOnionProxyContext(torConfig, torInstaller, torSettings);
     onionProxyManager = new OnionProxyManager(context);
