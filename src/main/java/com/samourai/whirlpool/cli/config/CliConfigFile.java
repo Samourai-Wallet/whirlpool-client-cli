@@ -263,6 +263,7 @@ public abstract class CliConfigFile {
 
   public static class TorConfig {
     public static final String EXECUTABLE_AUTO = "auto";
+    public static final String EXECUTABLE_LOCAL = "local";
     @NotEmpty private String executable;
 
     public TorConfig() {}
@@ -281,6 +282,10 @@ public abstract class CliConfigFile {
 
     public boolean isExecutableAuto() {
       return EXECUTABLE_AUTO.equals(this.executable);
+    }
+
+    public boolean isExecutableLocal() {
+      return EXECUTABLE_LOCAL.equals(this.executable);
     }
 
     public Map<String, String> getConfigInfo() {

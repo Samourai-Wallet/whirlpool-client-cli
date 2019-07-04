@@ -63,12 +63,11 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
   }
 
   protected void setupTorExecutable() throws IOException {
-    LOG.info(
-            "Installing tor executable: " + this.config.getTorExecutableFile().getAbsolutePath());
+    LOG.info("Installing tor executable: " + this.config.getTorExecutableFile().getAbsolutePath());
     File torParent = this.config.getTorExecutableFile().getParentFile();
     FileUtilities.extractContentFromZip(
-            torParent.exists() ? torParent : this.config.getTorExecutableFile(),
-            this.getAssetOrResourceByName(getPathToTorExecutable() + "tor.zip"));
+        torParent.exists() ? torParent : this.config.getTorExecutableFile(),
+        this.getAssetOrResourceByName(getPathToTorExecutable() + "tor.zip"));
     FileUtilities.setPerms(this.config.getTorExecutableFile());
   }
 

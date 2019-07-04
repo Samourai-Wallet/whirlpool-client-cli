@@ -106,7 +106,8 @@ Local configuration can be overriden with:
 ```
 cli.torConfig.executable = /path/to/bin/tor
 ```
-- Use `auto` to use embedded tor when your system is supported, or detecting a local TOR install.
+- Use `auto` to use embedded tor, or detecting a local TOR install when your system is not supported.
+- Use `local` to detect a local tor install.
 - Use custom path to `tor` binary to use your own tor install.
 
 ### API

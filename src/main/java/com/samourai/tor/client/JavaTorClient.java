@@ -34,7 +34,8 @@ public class JavaTorClient {
 
     if (torExecutable.isPresent()) {
       if (log.isDebugEnabled()) {
-        log.debug("Using existing Tor executable: " + torExecutable.get().getAbsolutePath());
+        log.debug(
+            "configuring tor for external executable: " + torExecutable.get().getAbsolutePath());
       }
       // use existing local TOR instead of embedded one
       torConfigBuilder.torExecutable(torExecutable.get());
@@ -70,14 +71,14 @@ public class JavaTorClient {
   private File getTorExecutablePath(String path) throws NotifiableException {
     File file = new File(path);
     if (!file.exists()) {
-      throw new NotifiableException("torConfig.executable is invalid: file not found: " + path);
+      throw new NotifiableException("cli.torConfig.executable is invalid: file not found: " + path);
     }
     if (!file.isFile() || !file.canExecute()) {
       throw new NotifiableException(
-          "torConfig.executable is invalid: file not executable: " + path);
+          "cli.torConfig.executable is invalid: file not executable: " + path);
     }
     if (log.isDebugEnabled()) {
-      log.debug("torConfig.executable is valid: " + path);
+      log.debug("cli.torConfig.executable is valid: " + path);
     }
     return file;
   }
@@ -180,35 +181,37 @@ public class JavaTorClient {
   }
 
   private Optional<File> computeTorExecutable() throws NotifiableException {
-    boolean osUnsupported = OsData.OsType.UNSUPPORTED.equals(OsData.getOsType());
     boolean torExecutableAuto = cliConfig.getTorConfig().isExecutableAuto();
+    boolean torExecutableLocal = cliConfig.getTorConfig().isExecutableLocal();
 
-    Optional<File> torExecutable;
-    if (torExecutableAuto) {
-      if (!osUnsupported) {
-        // use embedded TOR
-        if (log.isDebugEnabled()) {
-          log.debug("Using tor executable: embedded");
-        }
-        torExecutable = Optional.empty();
-      } else {
-        // search for local TOR executable
-        if (log.isDebugEnabled()) {
-          log.debug("Using tor executable: OS not supported, looking for existing local install");
-        }
-        torExecutable = findTorExecutableLocal();
-        if (!torExecutable.isPresent()) {
-          throw new NotifiableException(
-              "No local TOR executable found on your system, please install TOR.");
-        }
-      }
-    } else {
+    if (!torExecutableAuto && !torExecutableLocal) {
       // use specified path for TOR executable
       String executablePath = cliConfig.getTorConfig().getExecutable();
       if (log.isDebugEnabled()) {
         log.debug("Using tor executable: " + executablePath);
       }
-      torExecutable = Optional.of(getTorExecutablePath(executablePath));
+      return Optional.of(getTorExecutablePath(executablePath));
+    }
+
+    boolean osUnsupported = OsData.OsType.UNSUPPORTED.equals(OsData.getOsType());
+    if (torExecutableAuto && !osUnsupported) {
+      // use embedded TOR
+      if (log.isDebugEnabled()) {
+        log.debug("Using tor executable: embedded");
+      }
+      return Optional.empty();
+    }
+
+    // search for local TOR executable
+    if (log.isDebugEnabled()) {
+      log.debug("Using tor executable: OS not supported, looking for existing local install");
+    }
+    Optional<File> torExecutable = findTorExecutableLocal();
+
+    // no TOR executable found
+    if (!torExecutable.isPresent()) {
+      throw new NotifiableException(
+          "No local TOR executable found on your system, please install TOR.");
     }
     return torExecutable;
   }
