@@ -166,10 +166,14 @@ public class CliUtils {
     if (cliProxyOptional.isPresent()) {
       CliProxy cliProxy = cliProxyOptional.get();
       if (log.isDebugEnabled()) {
-        log.debug("httpClient.proxy=" + cliProxy);
+        log.debug("+httpClient: proxy=" + cliProxy);
       }
       ProxyConfiguration.Proxy jettyProxy = cliProxy.computeJettyProxy();
       jettyHttpClient.getProxyConfiguration().getProxies().add(jettyProxy);
+    } else {
+      if (log.isDebugEnabled()) {
+        log.debug("+httpClient: no proxy");
+      }
     }
     return jettyHttpClient;
   }

@@ -25,25 +25,31 @@ public class JavaHttpClient implements IHttpClient {
   private CliTorClientService torClientService;
   private CliConfig cliConfig;
   private ObjectMapper objectMapper;
+  private HttpClient httpClientShared;
+  private HttpClient httpClientRegOut;
 
   public JavaHttpClient(CliTorClientService torClientService, CliConfig cliConfig) {
     this.torClientService = torClientService;
     this.cliConfig = cliConfig;
     this.objectMapper = new ObjectMapper();
     objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    httpClientShared = null;
+    httpClientRegOut = null;
   }
 
   @Override
-  public <T> T getJson(String urlStr, Class<T> responseType) throws HttpException {
+  public synchronized <T> T getJson(String urlStr, Class<T> responseType) throws HttpException {
+    final boolean isRegOut = false;
     try {
-      HttpClient httpClient = computeHttpClient(false);
+      HttpClient httpClient = getHttpClient(isRegOut);
       ContentResponse response = httpClient.GET(urlStr);
 
       T result = parseResponse(response, responseType);
       return result;
     } catch (Exception e) {
+      clearHttpClient(isRegOut);
       if (log.isDebugEnabled()) {
-        log.error("getJson failed: " + urlStr, e);
+        log.error("getJson failed: " + urlStr + ":" + e.getMessage());
       }
       if (!(e instanceof HttpException)) {
         e = new HttpException(e, null);
@@ -53,10 +59,11 @@ public class JavaHttpClient implements IHttpClient {
   }
 
   @Override
-  public <T> T postJsonOverTor(String urlStr, Class<T> responseType, Object bodyObj)
+  public synchronized <T> T postJsonOverTor(String urlStr, Class<T> responseType, Object bodyObj)
       throws HttpException {
+    final boolean isRegOut = true;
     try {
-      HttpClient httpClient = computeHttpClient(true);
+      HttpClient httpClient = getHttpClient(isRegOut);
       Request request = httpClient.POST(urlStr);
 
       String jsonBody = objectMapper.writeValueAsString(bodyObj);
@@ -68,6 +75,7 @@ public class JavaHttpClient implements IHttpClient {
       T result = parseResponse(response, responseType);
       return result;
     } catch (Exception e) {
+      clearHttpClient(isRegOut);
       if (log.isDebugEnabled()) {
         log.error("postJsonOverTor failed: " + urlStr, e);
       }
@@ -79,10 +87,11 @@ public class JavaHttpClient implements IHttpClient {
   }
 
   @Override
-  public <T> T postUrlEncoded(String urlStr, Class<T> responseType, Map<String, String> body)
-      throws HttpException {
+  public synchronized <T> T postUrlEncoded(
+      String urlStr, Class<T> responseType, Map<String, String> body) throws HttpException {
+    final boolean isRegOut = false;
     try {
-      HttpClient httpClient = computeHttpClient(false);
+      HttpClient httpClient = getHttpClient(isRegOut);
       Request request = httpClient.POST(urlStr);
 
       request.content(new FormContentProvider(computeBodyFields(body)));
@@ -91,6 +100,7 @@ public class JavaHttpClient implements IHttpClient {
       T result = parseResponse(response, responseType);
       return result;
     } catch (Exception e) {
+      clearHttpClient(isRegOut);
       if (log.isDebugEnabled()) {
         log.error("postUrlEncoded failed: " + urlStr, e);
       }
@@ -117,10 +127,56 @@ public class JavaHttpClient implements IHttpClient {
     return result;
   }
 
+  private HttpClient getHttpClient(boolean isRegisterOutput) throws Exception {
+    if (!isRegisterOutput) {
+      if (httpClientShared == null) {
+        if (log.isDebugEnabled()) {
+          log.debug("+httpClientShared");
+        }
+        httpClientShared = computeHttpClient(isRegisterOutput);
+      }
+      return httpClientShared;
+    } else {
+      if (httpClientRegOut == null) {
+        if (log.isDebugEnabled()) {
+          log.debug("+httpClientRegOut");
+        }
+        httpClientRegOut = computeHttpClient(isRegisterOutput);
+      }
+      return httpClientRegOut;
+    }
+  }
+
   private HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception {
     HttpClient httpClient =
         CliUtils.computeHttpClient(isRegisterOutput, torClientService, cliConfig.getCliProxy());
     httpClient.start();
     return httpClient;
+  }
+
+  private void clearHttpClient(boolean isRegisterOutput) {
+    if (!isRegisterOutput) {
+      if (httpClientShared != null) {
+        try {
+          httpClientShared.stop();
+        } catch (Exception e) {
+        }
+        if (log.isDebugEnabled()) {
+          log.debug("clear httpClientShared");
+        }
+        httpClientShared = null;
+      }
+    } else {
+      if (httpClientRegOut != null) {
+        try {
+          httpClientRegOut.stop();
+        } catch (Exception e) {
+        }
+        if (log.isDebugEnabled()) {
+          log.debug("clear httpClientRegOut");
+        }
+        httpClientRegOut = null;
+      }
+    }
   }
 }
