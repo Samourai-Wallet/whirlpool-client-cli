@@ -51,9 +51,6 @@ public class OsData {
       detectedType = actualGetOsType();
     }
 
-    if (detectedType == OsType.UNSUPPORTED) {
-      throw new RuntimeException("Unsupported OS");
-    }
     return detectedType;
   }
 
