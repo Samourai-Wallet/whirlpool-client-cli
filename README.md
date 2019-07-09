@@ -23,7 +23,7 @@ java -jar target/whirlpool-client-version-run.jar
 #### Optional arguments:
 - listen: enable API for remote commands & GUI. Authentication on startup is optional, but you can authenticate on startup with --authenticate
 - server: whirlpool server to connect to
-- tor: route all traffic to TOR
+- tor: route all traffic to Tor
 - proxy: connect through SOCKS/HTTP proxy.
     Tor proxy: socks://localhost:9050
     Tor Browser: socks://localhost:9150
@@ -106,7 +106,7 @@ Local configuration can be overriden with:
 ```
 cli.torConfig.executable = /path/to/bin/tor
 ```
-- Use `auto` to use embedded tor, or detecting a local TOR install when your system is not supported.
+- Use `auto` to use embedded tor, or detecting a local Tor install when your system is not supported.
 - Use `local` to detect a local tor install.
 - Use custom path to `tor` binary to use your own tor build.
 

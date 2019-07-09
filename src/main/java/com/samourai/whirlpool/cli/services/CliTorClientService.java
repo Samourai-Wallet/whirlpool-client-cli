@@ -67,7 +67,7 @@ public class CliTorClientService {
         return Optional.of(torConnexion);
       }
     }
-    // TOR disabled
+    // Tor disabled
     return Optional.empty();
   }
 
@@ -88,7 +88,7 @@ public class CliTorClientService {
     if (cliConfig.getTor()) {
       if (!torClient.isPresent()) {
         if (log.isDebugEnabled()) {
-          log.debug("Enabling TOR.");
+          log.debug("Enabling Tor.");
         }
         // instanciate TorClient
         try {
@@ -101,7 +101,7 @@ public class CliTorClientService {
     } else {
       if (torClient.isPresent()) {
         if (log.isDebugEnabled()) {
-          log.debug("Disabling TOR.");
+          log.debug("Disabling Tor.");
         }
         // disconnect and clear TorClient
         disconnect();

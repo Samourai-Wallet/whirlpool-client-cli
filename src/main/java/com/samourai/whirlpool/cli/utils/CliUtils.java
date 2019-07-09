@@ -166,7 +166,7 @@ public class CliUtils {
     if (cliProxyOptional.isPresent()) {
       CliProxy cliProxy = cliProxyOptional.get();
       if (log.isDebugEnabled()) {
-        log.debug("Using proxy: " + cliProxy);
+        log.debug("httpClient.proxy=" + cliProxy);
       }
       ProxyConfiguration.Proxy jettyProxy = cliProxy.computeJettyProxy();
       jettyHttpClient.getProxyConfiguration().getProxies().add(jettyProxy);

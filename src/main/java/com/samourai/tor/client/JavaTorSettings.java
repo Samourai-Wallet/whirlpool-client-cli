@@ -7,31 +7,29 @@ import java.util.Optional;
 
 public class JavaTorSettings extends DefaultSettings {
   private CliProxy cliProxy;
-  private int portOffset;
 
-  public JavaTorSettings(Optional<CliProxy> cliProxy, int portOffset) {
+  public JavaTorSettings(Optional<CliProxy> cliProxy) {
     this.cliProxy = cliProxy.orElse(null);
-    this.portOffset = portOffset;
   }
 
   @Override
   public String dnsPort() {
-    return Integer.toString(5400 + portOffset);
+    return "auto";
   }
 
   @Override
   public int getHttpTunnelPort() {
-    return 8118 + portOffset;
+    return 0;
   }
 
   @Override
   public int getRelayPort() {
-    return 9001 + portOffset;
+    return 0;
   }
 
   @Override
   public String getSocksPort() {
-    return Integer.toString(9050 + portOffset);
+    return "auto";
   }
 
   @Override
@@ -84,10 +82,12 @@ public class JavaTorSettings extends DefaultSettings {
   }
 
   @Override
+  public boolean disableNetwork() {
+    return false;
+  }
+
+  @Override
   public String toString() {
-    return "TorSettings[proxy="
-        + (cliProxy != null ? cliProxy : "null")
-        + ", portOffset="
-        + portOffset;
+    return "TorSettings[proxy=" + (cliProxy != null ? cliProxy : "null") + "]";
   }
 }

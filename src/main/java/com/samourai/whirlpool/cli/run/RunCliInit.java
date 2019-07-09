@@ -37,11 +37,11 @@ public class RunCliInit {
     String pairingPayload = CliUtils.readUserInputRequired("Pairing payload?", false);
     log.info("⣿ ");
 
-    // TOR
-    log.info("⣿ • Configure TOR: (you can change this later)");
+    // Tor
+    log.info("⣿ • Configure Tor: (you can change this later)");
     String torStr =
         CliUtils.readUserInputRequired(
-            "Enable TOR? (y/n)", false, new String[] {"y", "n", "Y", "N"});
+            "Enable Tor? (y/n)", false, new String[] {"y", "n", "Y", "N"});
     boolean tor = torStr.toLowerCase().equals("y");
     log.info("⣿ ");
 

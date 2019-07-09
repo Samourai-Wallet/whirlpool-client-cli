@@ -66,7 +66,7 @@ public class CliWallet extends WhirlpoolWallet {
   @Override
   public WhirlpoolClient mix(WhirlpoolUtxo whirlpoolUtxo, WhirlpoolClientListener notifyListener)
       throws NotifiableException {
-    // get TOR ready before mixing
+    // get Tor ready before mixing
     cliTorClientService.waitReady();
     return super.mix(whirlpoolUtxo, notifyListener);
   }
@@ -75,7 +75,7 @@ public class CliWallet extends WhirlpoolWallet {
   public void onMixSuccess(MixSuccess mixSuccess, WhirlpoolUtxo whirlpoolUtxo) {
     super.onMixSuccess(mixSuccess, whirlpoolUtxo);
 
-    // change TOR identity
+    // change Tor identity
     cliTorClientService.changeIdentity();
   }
 

@@ -155,7 +155,7 @@ public class Application implements ApplicationRunner {
   }
 
   private void runCli() throws Exception {
-    // connect TOR
+    // connect Tor
     cliTorClientService.connect();
 
     // initialize bitcoinj context
@@ -272,7 +272,7 @@ public class Application implements ApplicationRunner {
     } catch (NoSessionWalletException e) {
     }
 
-    // disconnect TOR
+    // disconnect Tor
     if (cliTorClientServiceStatic != null) {
       cliTorClientServiceStatic.shutdown();
     }

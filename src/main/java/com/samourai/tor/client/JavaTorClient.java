@@ -37,7 +37,7 @@ public class JavaTorClient {
         log.debug(
             "configuring tor for external executable: " + torExecutable.get().getAbsolutePath());
       }
-      // use existing local TOR instead of embedded one
+      // use existing local Tor instead of embedded one
       torConfigBuilder.torExecutable(torExecutable.get());
     }
 
@@ -89,11 +89,11 @@ public class JavaTorClient {
     Optional<File> torExecutable = computeTorExecutable();
     boolean useExecutableFromZip = !torExecutable.isPresent();
 
-    // setup TOR instances
+    // setup Tor instances
     this.torInstanceShared =
         new TorOnionProxyInstance(
             computeTorConfig(TOR_DIR_SHARED, torExecutable),
-            computeTorSettings(0),
+            computeTorSettings(),
             "shared",
             useExecutableFromZip);
 
@@ -101,7 +101,7 @@ public class JavaTorClient {
     this.torInstanceRegOut =
         new TorOnionProxyInstance(
             computeTorConfig(TOR_DIR_REG_OUT, torExecutable),
-            computeTorSettings(1),
+            computeTorSettings(),
             "regOut",
             useExecutableFromZip);
   }
@@ -124,27 +124,20 @@ public class JavaTorClient {
     if (!started) {
       connect();
     }
-    if (log.isDebugEnabled()) {
-      log.debug("waitReady");
-    }
     torInstanceShared.waitReady();
     torInstanceRegOut.waitReady();
-    log.info(
-        "TOR is ready: shared="
-            + torInstanceShared.getTorProxy()
-            + ", regOut="
-            + torInstanceRegOut.getTorProxy());
+    log.info("Tor is ready");
   }
 
   public void changeIdentity() {
     if (!started) {
       if (log.isDebugEnabled()) {
-        log.debug("Changing TOR identity -> connect");
+        log.debug("Changing Tor identity -> connect");
       }
       connect();
     } else {
       if (log.isDebugEnabled()) {
-        log.debug("Changing TOR identity");
+        log.debug("Changing Tor identity");
       }
 
       torInstanceShared.changeIdentity();
@@ -175,8 +168,8 @@ public class JavaTorClient {
     return torInstance;
   }
 
-  private TorSettings computeTorSettings(int portOffset) {
-    TorSettings torSettings = new JavaTorSettings(cliConfig.getCliProxy(), portOffset);
+  private TorSettings computeTorSettings() {
+    TorSettings torSettings = new JavaTorSettings(cliConfig.getCliProxy());
     return torSettings;
   }
 
@@ -185,7 +178,7 @@ public class JavaTorClient {
     boolean torExecutableLocal = cliConfig.getTorConfig().isExecutableLocal();
 
     if (!torExecutableAuto && !torExecutableLocal) {
-      // use specified path for TOR executable
+      // use specified path for Tor executable
       String executablePath = cliConfig.getTorConfig().getExecutable();
       if (log.isDebugEnabled()) {
         log.debug("Using tor executable: " + executablePath);
@@ -195,23 +188,23 @@ public class JavaTorClient {
 
     boolean osUnsupported = OsData.OsType.UNSUPPORTED.equals(OsData.getOsType());
     if (torExecutableAuto && !osUnsupported) {
-      // use embedded TOR
+      // use embedded Tor
       if (log.isDebugEnabled()) {
         log.debug("Using tor executable: embedded");
       }
       return Optional.empty();
     }
 
-    // search for local TOR executable
+    // search for local Tor executable
     if (log.isDebugEnabled()) {
       log.debug("Using tor executable: OS not supported, looking for existing local install");
     }
     Optional<File> torExecutable = findTorExecutableLocal();
 
-    // no TOR executable found
+    // no Tor executable found
     if (!torExecutable.isPresent()) {
       throw new NotifiableException(
-          "No local TOR executable found on your system, please install TOR.");
+          "No local Tor executable found on your system, please install Tor.");
     }
     return torExecutable;
   }

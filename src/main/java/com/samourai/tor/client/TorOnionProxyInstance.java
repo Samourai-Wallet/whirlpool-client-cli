@@ -17,7 +17,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
 
   private OnionProxyManager onionProxyManager;
   private Thread startThread;
-  private CliProxy torProxy = null;
+  private CliProxy torSocks = null;
   private int progress;
 
   public TorOnionProxyInstance(
@@ -27,7 +27,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     if (log.isDebugEnabled()) {
       log.debug("new TorOnionProxyInstance: " + torConfig + " ; " + torSettings);
     }
-    // setup TOR
+    // setup Tor
     TorInstaller torInstaller = new WhirlpoolTorInstaller(torConfig, useExecutableFromZip);
 
     JavaOnionProxyContext context = new JavaOnionProxyContext(torConfig, torInstaller, torSettings);
@@ -48,7 +48,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     }
 
     if (log.isDebugEnabled()) {
-      log.debug("starting TOR");
+      log.debug("starting Tor");
     }
     progress = PROGRESS_CONNECTING;
 
@@ -74,8 +74,11 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
       if (startThread == null) {
         throw new NotifiableException("Tor connect failed");
       }
+      if (log.isDebugEnabled()) {
+        log.debug("waiting for Tor connexion...");
+      }
       try {
-        Thread.sleep(90);
+        Thread.sleep(500);
       } catch (InterruptedException e) {
       }
     }
@@ -85,13 +88,19 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     boolean ready = onionProxyManager.isRunning();
     if (ready && progress != 100) {
       if (log.isDebugEnabled()) {
-        log.debug("TOR connected!");
+        String torProxy = "error";
+        try {
+          torProxy = getTorProxy().toString();
+        } catch (Exception e) {
+          log.error("", e);
+        }
+        log.debug("Tor connected! " + torProxy);
       }
       progress = 100;
     }
     if (!ready && progress == 100) {
       if (log.isDebugEnabled()) {
-        log.debug("TOR disconnected!");
+        log.debug("Tor disconnected!");
       }
       progress = PROGRESS_CONNECTING;
     }
@@ -100,7 +109,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
 
   public synchronized void stop() {
     if (log.isDebugEnabled()) {
-      log.debug("stopping TOR");
+      log.debug("stopping Tor");
     }
     startThread = null;
     progress = 0;
@@ -112,11 +121,13 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
         log.error("", e);
       }
     }
+
+    torSocks = null;
   }
 
   public synchronized void clear() {
     if (log.isDebugEnabled()) {
-      log.debug("clearing TOR");
+      log.debug("clearing Tor");
     }
     new Thread(
             () -> {
@@ -134,7 +145,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
   public void changeIdentity() {
     progress = PROGRESS_CONNECTING;
     if (!onionProxyManager.setNewIdentity()) {
-      log.warn("changeIdentity failed, restarting TOR...");
+      log.warn("changeIdentity failed, restarting Tor...");
       stop();
       start();
     }
@@ -148,20 +159,30 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
 
   @Override
   public CliProxy getTorProxy() throws NotifiableException {
-    if (torProxy == null) {
-      if (startThread == null) {
-        log.error("getTorProxy() called when not started");
-        return null;
+    CliProxy proxy;
+    while ((proxy = getTorSocksOrNull()) == null) {
+      if (log.isDebugEnabled()) {
+        log.debug("waiting for TorSocks...");
       }
       waitReady();
       try {
-        torProxy =
-            new CliProxy(
-                CliProxyProtocol.SOCKS, "127.0.0.1", onionProxyManager.getIPv4LocalHostSocksPort());
-      } catch (Exception e) {
-        log.error("Unable to get local tor proxy", e);
+        Thread.sleep(500);
+      } catch (InterruptedException e) {
       }
     }
-    return torProxy;
+    return proxy;
+  }
+
+  private CliProxy getTorSocksOrNull() {
+    if (torSocks == null) {
+      try {
+        int socksPort = onionProxyManager.getIPv4LocalHostSocksPort();
+        torSocks = new CliProxy(CliProxyProtocol.SOCKS, "127.0.0.1", socksPort);
+        log.info("TorSocks started: " + torSocks);
+      } catch (Exception e) {
+        log.error("Unable to get TorSocks", e);
+      }
+    }
+    return torSocks;
   }
 }
