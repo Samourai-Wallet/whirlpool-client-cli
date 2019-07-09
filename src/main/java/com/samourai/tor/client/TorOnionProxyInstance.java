@@ -176,6 +176,9 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
   private CliProxy getTorSocksOrNull() {
     if (torSocks == null) {
       try {
+        if (log.isDebugEnabled()) {
+          log.debug("Looking for TorSocks...");
+        }
         int socksPort = onionProxyManager.getIPv4LocalHostSocksPort();
         torSocks = new CliProxy(CliProxyProtocol.SOCKS, "127.0.0.1", socksPort);
         log.info("TorSocks started: " + torSocks);

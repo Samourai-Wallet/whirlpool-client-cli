@@ -1,4 +1,5 @@
 // TODO SAMOURAI FIX https://github.com/thaliproject/Tor_Onion_Proxy_Library/pull/124
+// TODO SAMOURAI FIX https://github.com/thaliproject/Tor_Onion_Proxy_Library/pull/132
 /*
 Copyright (c) Microsoft Open Technologies, Inc.
 All Rights Reserved
@@ -51,13 +52,20 @@ public final class TorConfigBuilder {
   }
 
   private static boolean isLocalPortOpen(int port) {
+    Socket socket = null;
     try {
-      Socket socket = new Socket();
+      socket = new Socket();
       socket.connect(new InetSocketAddress("127.0.0.1", port), 500);
-      socket.close();
       return true;
     } catch (Exception e) {
       return false;
+    } finally {
+      if (socket != null) {
+        try {
+          socket.close();
+        } catch (Exception ee) {
+        }
+      }
     }
   }
 
