@@ -22,7 +22,7 @@ public class ApiCliStateResponse {
     this.torProgress = cliState.getTorProgress();
 
     this.network = server.getParams().getPaymentProtocolId();
-    this.serverUrl = server.getServerUrl();
+    this.serverUrl = server.computeServerUrl(tor);
     this.serverName = server.name();
     this.tor = tor;
   }

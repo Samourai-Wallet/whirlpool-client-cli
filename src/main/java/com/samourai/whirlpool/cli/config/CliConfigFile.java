@@ -299,7 +299,7 @@ public abstract class CliConfigFile {
       IHttpClient httpClient,
       IStompClientService stompClientService,
       WhirlpoolWalletPersistHandler persistHandler) {
-    String serverUrl = computeServerUrl();
+    String serverUrl = server.computeServerUrl(tor);
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
             httpClient, stompClientService, persistHandler, serverUrl, server);
@@ -317,13 +317,6 @@ public abstract class CliConfigFile {
     config.setMixsTarget(mix.getMixsTarget());
 
     return config;
-  }
-
-  private String computeServerUrl() {
-    // better clearnet over torV2 than flawed onionV2
-    // String serverUrl = tor ? server.getServerOnionV2() : server.getServerUrl();
-    String serverUrl = server.getServerUrl();
-    return serverUrl;
   }
 
   public Map<String, String> getConfigInfo() {

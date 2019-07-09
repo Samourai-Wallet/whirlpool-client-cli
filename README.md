@@ -108,7 +108,7 @@ cli.torConfig.executable = /path/to/bin/tor
 ```
 - Use `auto` to use embedded tor, or detecting a local TOR install when your system is not supported.
 - Use `local` to detect a local tor install.
-- Use custom path to `tor` binary to use your own tor install.
+- Use custom path to `tor` binary to use your own tor build.
 
 ### API
 whirlpool-client-cli can be managed with a REST API. See [README-API.md](README-API.md)
