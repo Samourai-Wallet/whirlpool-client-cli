@@ -6,7 +6,7 @@
     <version>develop-SNAPSHOT</version>
     <name>whirlpool-client-cli</name>
     <properties>
-        <spring-boot.version>2.1.4.RELEASE</spring-boot.version>
+        <spring-boot.version>2.1.6.RELEASE</spring-boot.version>
         <spring-websocket.version>5.1.6.RELEASE</spring-websocket.version>
         <spring-security.version>5.1.6.RELEASE</spring-security.version>
         <maven.compiler.source>1.8</maven.compiler.source>
