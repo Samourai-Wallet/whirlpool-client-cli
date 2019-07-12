@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.config;
 
 import com.samourai.api.client.BackendServer;
+import com.samourai.api.client.SamouraiApi;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.wallet.util.FormatsUtilGeneric;
@@ -24,7 +25,8 @@ public class CliConfig extends CliConfigFile {
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClient httpClient,
       IStompClientService stompClientService,
-      WhirlpoolWalletPersistHandler persistHandler) {
+      WhirlpoolWalletPersistHandler persistHandler,
+      SamouraiApi samouraiApi) {
 
     // check valid
     if (autoAggregatePostmix && StringUtils.isEmpty(autoTx0PoolId)) {
@@ -32,16 +34,18 @@ public class CliConfig extends CliConfigFile {
     }
 
     WhirlpoolWalletConfig config =
-        super.computeWhirlpoolWalletConfig(httpClient, stompClientService, persistHandler);
+        super.computeWhirlpoolWalletConfig(
+            httpClient, stompClientService, persistHandler, samouraiApi);
     config.setAutoTx0PoolId(autoTx0PoolId);
     return config;
   }
 
   public String computeBackendUrl() {
     boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(getServer().getParams());
-    BackendServer backendServer = isTestnet ? BackendServer.TESTNET : BackendServer.MAINNET;
+    BackendServer backendServer = BackendServer.get(isTestnet);
     boolean useOnion = getTor() && getTorConfig().isOnionBackend();
-    return backendServer.getBackendUrl(useOnion);
+    String backendUrl = backendServer.getBackendUrl(useOnion);
+    return backendUrl;
   }
 
   public boolean isAutoAggregatePostmix() {

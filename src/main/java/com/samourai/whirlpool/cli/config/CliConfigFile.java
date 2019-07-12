@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.config;
 
+import com.samourai.api.client.SamouraiApi;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.whirlpool.cli.beans.CliProxy;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.validation.constraints.NotEmpty;
 import org.apache.logging.log4j.util.Strings;
+import org.bitcoinj.core.NetworkParameters;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -319,18 +321,20 @@ public abstract class CliConfigFile {
 
   public String computeServerUrl() {
     boolean useOnion = tor && torConfig.onionServer;
-    String serverUrl = server.computeServerUrl(useOnion);
+    String serverUrl = server.getServerUrl(useOnion);
     return serverUrl;
   }
 
-  public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
+  protected WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClient httpClient,
       IStompClientService stompClientService,
-      WhirlpoolWalletPersistHandler persistHandler) {
+      WhirlpoolWalletPersistHandler persistHandler,
+      SamouraiApi samouraiApi) {
     String serverUrl = computeServerUrl();
+    NetworkParameters params = server.getParams();
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
-            httpClient, stompClientService, persistHandler, serverUrl, server);
+            httpClient, stompClientService, persistHandler, serverUrl, params, samouraiApi);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }

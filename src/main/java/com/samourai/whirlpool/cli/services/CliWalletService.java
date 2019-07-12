@@ -49,6 +49,7 @@ public class CliWalletService extends WhirlpoolWalletService {
   private JavaHttpClient httpClient;
   private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
+  private SamouraiApiService samouraiApiService;
 
   // available when wallet is opened
   private CliWallet sessionWallet = null;
@@ -60,7 +61,8 @@ public class CliWalletService extends WhirlpoolWalletService {
       WalletAggregateService walletAggregateService,
       JavaHttpClient httpClient,
       JavaStompClientService stompClientService,
-      CliTorClientService cliTorClientService) {
+      CliTorClientService cliTorClientService,
+      SamouraiApiService samouraiApiService) {
     super();
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
@@ -69,6 +71,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     this.httpClient = httpClient;
     this.stompClientService = stompClientService;
     this.cliTorClientService = cliTorClientService;
+    this.samouraiApiService = samouraiApiService;
   }
 
   public CliWallet openWallet(String seedPassphrase) throws Exception {
@@ -118,7 +121,8 @@ public class CliWalletService extends WhirlpoolWalletService {
     // open wallet
     WhirlpoolWalletPersistHandler persistHandler = computePersistHandler(walletIdentifier);
     WhirlpoolWalletConfig whirlpoolWalletConfig =
-        cliConfig.computeWhirlpoolWalletConfig(httpClient, stompClientService, persistHandler);
+        cliConfig.computeWhirlpoolWalletConfig(
+            httpClient, stompClientService, persistHandler, samouraiApiService);
     WhirlpoolWallet whirlpoolWallet = openWallet(whirlpoolWalletConfig, bip84w);
     this.sessionWallet =
         new CliWallet(
@@ -227,7 +231,8 @@ public class CliWalletService extends WhirlpoolWalletService {
 
   public Pools listPools(CliConfig cliConfig) throws Exception {
     WhirlpoolWalletConfig config =
-        cliConfig.computeWhirlpoolWalletConfig(httpClient, stompClientService, null);
+        cliConfig.computeWhirlpoolWalletConfig(
+            httpClient, stompClientService, null, samouraiApiService);
     return config.newClient().fetchPools();
   }
 }
