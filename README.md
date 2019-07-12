@@ -116,11 +116,10 @@ Specify how to broadcast transactions (tx0, aggregate).
 
 
 
-### API
+## API usage
 whirlpool-client-cli can be managed with a REST API. See [README-API.md](README-API.md)
 
-### ApiKey override
-Local configuration can be overriden with:
+ApiKey can be overriden with:
 ```
 --api-key=
 ```
