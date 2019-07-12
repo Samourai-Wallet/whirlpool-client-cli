@@ -265,11 +265,15 @@ public abstract class CliConfigFile {
     public static final String EXECUTABLE_AUTO = "auto";
     public static final String EXECUTABLE_LOCAL = "local";
     @NotEmpty private String executable;
+    @NotEmpty private boolean onionServer;
+    @NotEmpty private boolean onionBackend;
 
     public TorConfig() {}
 
     public TorConfig(TorConfig copy) {
       this.executable = copy.executable;
+      this.onionServer = copy.onionServer;
+      this.onionBackend = copy.onionBackend;
     }
 
     public String getExecutable() {
@@ -288,18 +292,42 @@ public abstract class CliConfigFile {
       return EXECUTABLE_LOCAL.equals(this.executable);
     }
 
+    public boolean isOnionServer() {
+      return onionServer;
+    }
+
+    public void setOnionServer(boolean onionServer) {
+      this.onionServer = onionServer;
+    }
+
+    public boolean isOnionBackend() {
+      return onionBackend;
+    }
+
+    public void setOnionBackend(boolean onionBackend) {
+      this.onionBackend = onionBackend;
+    }
+
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
       configInfo.put("cli/tor/executable", executable);
+      configInfo.put("cli/tor/onionServer", Boolean.toString(onionServer));
+      configInfo.put("cli/tor/onionBackend", Boolean.toString(onionBackend));
       return configInfo;
     }
+  }
+
+  public String computeServerUrl() {
+    boolean useOnion = tor && torConfig.onionServer;
+    String serverUrl = server.computeServerUrl(useOnion);
+    return serverUrl;
   }
 
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
       IHttpClient httpClient,
       IStompClientService stompClientService,
       WhirlpoolWalletPersistHandler persistHandler) {
-    String serverUrl = server.computeServerUrl(tor);
+    String serverUrl = computeServerUrl();
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
             httpClient, stompClientService, persistHandler, serverUrl, server);

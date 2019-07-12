@@ -1,7 +1,9 @@
 package com.samourai.whirlpool.cli.config;
 
+import com.samourai.api.client.BackendServer;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.stomp.client.IStompClientService;
+import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
@@ -33,6 +35,13 @@ public class CliConfig extends CliConfigFile {
         super.computeWhirlpoolWalletConfig(httpClient, stompClientService, persistHandler);
     config.setAutoTx0PoolId(autoTx0PoolId);
     return config;
+  }
+
+  public String computeBackendUrl() {
+    boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(getServer().getParams());
+    BackendServer backendServer = isTestnet ? BackendServer.TESTNET : BackendServer.MAINNET;
+    boolean useOnion = getTor() && getTorConfig().isOnionBackend();
+    return backendServer.getBackendUrl(useOnion);
   }
 
   public boolean isAutoAggregatePostmix() {

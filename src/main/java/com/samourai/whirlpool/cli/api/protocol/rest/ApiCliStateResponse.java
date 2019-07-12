@@ -15,14 +15,15 @@ public class ApiCliStateResponse {
   private String serverName;
   private boolean tor;
 
-  public ApiCliStateResponse(CliState cliState, WhirlpoolServer server, boolean tor) {
+  public ApiCliStateResponse(
+      CliState cliState, WhirlpoolServer server, String serverUrl, boolean tor) {
     this.cliStatus = cliState.getCliStatus();
     this.cliMessage = cliState.getCliMessage();
     this.loggedIn = cliState.isLoggedIn();
     this.torProgress = cliState.getTorProgress();
 
     this.network = server.getParams().getPaymentProtocolId();
-    this.serverUrl = server.computeServerUrl(tor);
+    this.serverUrl = serverUrl;
     this.serverName = server.name();
     this.tor = tor;
   }

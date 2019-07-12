@@ -32,7 +32,10 @@ public class CliController extends AbstractRestController {
 
     ApiCliStateResponse response =
         new ApiCliStateResponse(
-            cliWalletService.getCliState(), cliConfig.getServer(), cliConfig.getTor());
+            cliWalletService.getCliState(),
+            cliConfig.getServer(),
+            cliConfig.computeServerUrl(),
+            cliConfig.getTor());
     return response;
   }
 

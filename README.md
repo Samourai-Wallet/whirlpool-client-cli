@@ -110,6 +110,14 @@ cli.torConfig.executable = /path/to/bin/tor
 - Use `local` to detect a local tor install.
 - Use custom path to `tor` binary to use your own tor build.
 
+```
+cli.torConfig.onionServer = true
+cli.torConfig.onionBackend = true
+```
+How to connect to whirlpool server and wallet backend:
+- `true`: connect to Tor v3 hidden services
+- `false`: connect to clearnet over Tor
+
 ### API
 whirlpool-client-cli can be managed with a REST API. See [README-API.md](README-API.md)
 
