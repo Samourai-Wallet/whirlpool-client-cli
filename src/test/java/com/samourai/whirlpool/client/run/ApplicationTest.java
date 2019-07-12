@@ -68,7 +68,6 @@ public class ApplicationTest extends AbstractApplicationTest {
           "--seed-words=all all all all all all all all all all all all",
           "--mixs=5",
           "--debug",
-          "--pool=1btc",
           "--test-mode"
         };
     ApplicationArguments appArgs = new DefaultApplicationArguments(args);
