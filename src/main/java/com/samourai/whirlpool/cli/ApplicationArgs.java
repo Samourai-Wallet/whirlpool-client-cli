@@ -1,13 +1,11 @@
 package com.samourai.whirlpool.cli;
 
 import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.lang.invoke.MethodHandles;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -21,7 +19,6 @@ public class ApplicationArgs {
 
   private static final String ARG_DEBUG = "debug";
   private static final String ARG_DEBUG_CLIENT = "debug-client";
-  private static final String ARG_SERVER = "server";
   private static final String ARG_LIST_POOLS = "list-pools";
   private static final String ARG_SCODE = "scode";
   private static final String ARG_CLIENTS = "clients";
@@ -33,8 +30,6 @@ public class ApplicationArgs {
   private static final String ARG_AUTO_TX0 = "auto-tx0";
   private static final String ARG_AUTO_MIX = "auto-mix";
   private static final String ARG_PUSHTX = "pushtx";
-  private static final String ARG_TOR = "tor";
-  private static final String ARG_PROXY = "proxy";
   private static final String ARG_LISTEN = "listen";
   private static final String ARG_API_KEY = "api-key";
   private static final String ARG_INIT = "init";
@@ -54,16 +49,6 @@ public class ApplicationArgs {
     Boolean valueBool;
     Integer valueInt;
 
-    value = optionalOption(ARG_SERVER);
-    if (!Strings.isEmpty(value)) {
-      java8.util.Optional<WhirlpoolServer> whirlpoolServer = WhirlpoolServer.find(value);
-      if (whirlpoolServer.isPresent()) {
-        cliConfig.setServer(whirlpoolServer.get());
-      } else {
-        log.error("Invalid server: " + value);
-      }
-    }
-
     value = optionalOption(ARG_SCODE);
     if (value != null) {
       cliConfig.setScode(value);
@@ -77,16 +62,6 @@ public class ApplicationArgs {
     value = optionalOption(ARG_PUSHTX);
     if (value != null) {
       cliConfig.setPushtx(value);
-    }
-
-    valueBool = optionalBoolean(ARG_TOR);
-    if (valueBool != null) {
-      cliConfig.setTor(valueBool);
-    }
-
-    value = optionalOption(ARG_PROXY);
-    if (value != null) {
-      cliConfig.setProxy(value);
     }
 
     valueInt = optionalInt(ARG_CLIENTS);

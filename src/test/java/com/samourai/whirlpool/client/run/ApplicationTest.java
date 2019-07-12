@@ -1,7 +1,6 @@
 package com.samourai.whirlpool.client.run;
 
 import com.samourai.whirlpool.cli.Application;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,7 +16,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 @Ignore
 public class ApplicationTest extends AbstractApplicationTest {
-  protected static final String SERVER = WhirlpoolServer.LOCAL_TESTNET.name();
 
   @Before
   @Override
@@ -33,13 +31,30 @@ public class ApplicationTest extends AbstractApplicationTest {
 
   @Test
   public void runListPools() {
-    String[] args = new String[] {"--debug", "--server=" + SERVER};
+    String[] args = new String[] {"--debug"};
     ApplicationArguments appArgs = new DefaultApplicationArguments(args);
 
     new Application().run(appArgs);
 
     Assert.assertTrue(getOut().contains(" • Fetching pools..."));
     Assert.assertTrue(getErr().isEmpty());
+  }
+
+  @Test
+  public void runApp() {
+    String[] args =
+        new String[] {
+          "--listen", "--authenticate", "--debug-client", "--debug", "--auto-mix", "--clients=5"
+        };
+    ApplicationArguments appArgs = new DefaultApplicationArguments(args);
+    Application.main(args);
+    // new Application().run(appArgs);
+    while (true) {
+      try {
+        Thread.sleep(100000);
+      } catch (InterruptedException e) {
+      }
+    }
   }
 
   @Test
@@ -54,8 +69,7 @@ public class ApplicationTest extends AbstractApplicationTest {
           "--mixs=5",
           "--debug",
           "--pool=1btc",
-          "--test-mode",
-          "--server=" + SERVER
+          "--test-mode"
         };
     ApplicationArguments appArgs = new DefaultApplicationArguments(args);
 

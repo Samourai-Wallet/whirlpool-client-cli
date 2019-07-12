@@ -16,18 +16,12 @@ You can setup whirlpool-client-cli in 2 ways:
 ```
 java -jar target/whirlpool-client-version-run.jar
 [--listen[=8899]] [--authenticate]
-[--server={MAINNET,TESTNET}] [--tor] [--proxy=(socks|http)://host:port] [--mixs-target=]
+[--mixs-target=]
 [--debug] [--debug-client] [--pushtx=auto|interactive|http://user:password@host:port] [--scode=] [--tx0-max-outputs=] {args...}
 ```
 
 #### Optional arguments:
 - listen: enable API for remote commands & GUI. Authentication on startup is optional, but you can authenticate on startup with --authenticate
-- server: whirlpool server to connect to
-- tor: route all traffic to Tor
-- proxy: connect through SOCKS/HTTP proxy.
-    Tor proxy: socks://localhost:9050
-    Tor Browser: socks://localhost:9150
-    HTTP proxy: http://your-proxy:8080
 - mixs-target: number of mixs to achieve per UTXO
 
 #### Tech arguments: you probably shouldn't use it
