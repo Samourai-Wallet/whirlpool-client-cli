@@ -65,7 +65,8 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
                 log.error("", e);
                 stop();
               }
-            });
+            },
+            "start-TorOnionProxyInstance");
     startThread.start();
   }
 
@@ -132,7 +133,8 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     new Thread(
             () -> {
               stop();
-            })
+            },
+            "stop-torOnionProxyInstance")
         .start();
     /*try {
       onionProxyManager.killTorProcess();

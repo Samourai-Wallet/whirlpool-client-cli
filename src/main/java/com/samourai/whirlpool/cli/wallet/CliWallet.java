@@ -72,8 +72,8 @@ public class CliWallet extends WhirlpoolWallet {
   }
 
   @Override
-  public void onMixSuccess(MixSuccess mixSuccess, WhirlpoolUtxo whirlpoolUtxo) {
-    super.onMixSuccess(mixSuccess, whirlpoolUtxo);
+  public void onMixSuccess(WhirlpoolUtxo whirlpoolUtxo, MixSuccess mixSuccess) {
+    super.onMixSuccess(whirlpoolUtxo, mixSuccess);
 
     // change Tor identity
     cliTorClientService.changeIdentity();

@@ -127,7 +127,7 @@ public class JavaHttpClient implements IHttpClient {
     return result;
   }
 
-  private HttpClient getHttpClient(boolean isRegisterOutput) throws Exception {
+  public HttpClient getHttpClient(boolean isRegisterOutput) throws Exception {
     if (!isRegisterOutput) {
       if (httpClientShared == null) {
         if (log.isDebugEnabled()) {
@@ -162,7 +162,7 @@ public class JavaHttpClient implements IHttpClient {
         } catch (Exception e) {
         }
         if (log.isDebugEnabled()) {
-          log.debug("clear httpClientShared");
+          log.debug("--httpClientShared");
         }
         httpClientShared = null;
       }
@@ -173,7 +173,7 @@ public class JavaHttpClient implements IHttpClient {
         } catch (Exception e) {
         }
         if (log.isDebugEnabled()) {
-          log.debug("clear httpClientRegOut");
+          log.debug("--httpClientRegOut");
         }
         httpClientRegOut = null;
       }

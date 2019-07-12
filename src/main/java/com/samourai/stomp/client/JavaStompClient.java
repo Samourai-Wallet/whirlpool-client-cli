@@ -1,7 +1,9 @@
 package com.samourai.stomp.client;
 
+import com.samourai.http.client.JavaHttpClient;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
+import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -18,6 +20,7 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
@@ -33,13 +36,21 @@ public class JavaStompClient implements IStompClient {
 
   private CliTorClientService torClientService;
   private CliConfig cliConfig;
+  private JavaHttpClient httpClientService;
+  private TaskScheduler taskScheduler;
 
   private WebSocketStompClient stompClient;
   private StompSession stompSession;
 
-  public JavaStompClient(CliTorClientService torClientService, CliConfig cliConfig) {
+  public JavaStompClient(
+      CliTorClientService torClientService,
+      CliConfig cliConfig,
+      JavaHttpClientService httpClientService,
+      ThreadPoolTaskScheduler taskScheduler) {
     this.torClientService = torClientService;
     this.cliConfig = cliConfig;
+    this.httpClientService = httpClientService;
+    this.taskScheduler = taskScheduler;
   }
 
   @Override
@@ -151,16 +162,11 @@ public class JavaStompClient implements IStompClient {
   }
 
   private WebSocketStompClient computeStompClient() throws Exception {
-    // enable heartbeat (mandatory to detect client disconnect)
-    ThreadPoolTaskScheduler te = new ThreadPoolTaskScheduler();
-    te.setPoolSize(1);
-    te.setThreadNamePrefix("wss-heartbeat-thread-");
-    te.initialize();
-
     SockJsClient webSocketClient = computeWebSocketClient();
     WebSocketStompClient stompClient = new WebSocketStompClient(webSocketClient);
     stompClient.setMessageConverter(new MappingJackson2MessageConverter());
-    stompClient.setTaskScheduler(te);
+    // enable heartbeat (mandatory to detect client disconnect)
+    stompClient.setTaskScheduler(taskScheduler);
     stompClient.setDefaultHeartbeat(new long[] {HEARTBEAT_DELAY, HEARTBEAT_DELAY});
     return stompClient;
   }
@@ -170,7 +176,7 @@ public class JavaStompClient implements IStompClient {
   }
 
   private SockJsClient computeWebSocketClient() throws Exception {
-    HttpClient jettyHttpClient = computeHttpClient();
+    HttpClient jettyHttpClient = httpClientService.getHttpClient(false);
 
     if (log.isDebugEnabled()) {
       log.debug("Using websocket transports: Websocket, XHR");
