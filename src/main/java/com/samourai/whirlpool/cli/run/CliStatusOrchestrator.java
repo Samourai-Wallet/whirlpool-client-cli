@@ -6,6 +6,7 @@ import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.beans.MixOrchestratorState;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolWalletState;
@@ -69,9 +70,13 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
       WhirlpoolWalletState whirlpoolWalletState = whirlpoolWallet.getState();
       MixOrchestratorState mixState = whirlpoolWalletState.getMixState();
 
+      WhirlpoolWalletConfig walletConfig = whirlpoolWallet.getConfig();
+
       System.out.print(
           "⣿ Wallet OPENED, mix "
               + (whirlpoolWallet.isStarted() ? "STARTED" : "STOPPED")
+              + (walletConfig.isAutoTx0() ? " +autoTx0=" + walletConfig.getAutoTx0PoolId() : "")
+              + (walletConfig.isAutoMix() ? " +autoMix" : "")
               + ", "
               + mixState.getNbMixing()
               + " mixing, "
