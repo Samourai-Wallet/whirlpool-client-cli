@@ -282,8 +282,6 @@ public class Application implements ApplicationRunner {
     if (isDebug) {
       LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
       // Utils.setLoggerDebug("org.springframework.security");
-    } else {
-      LogbackUtils.setLogLevel("org.silvertunnel_ng.netlib", Level.WARN.toString());
     }
 
     if (isDebugClient) {
@@ -306,8 +304,5 @@ public class Application implements ApplicationRunner {
     LogbackUtils.setLogLevel("com.msopentech.thali.java.toronionproxy", Level.WARN.toString());
     LogbackUtils.setLogLevel("org.springframework.web", Level.INFO.toString());
     LogbackUtils.setLogLevel("org.apache.http.impl.conn", Level.INFO.toString());
-
-    // LogbackUtils.setLogLevel("com", Level.DEBUG.toString());
-    // LogbackUtils.setLogLevel("org", Level.DEBUG.toString());
   }
 }

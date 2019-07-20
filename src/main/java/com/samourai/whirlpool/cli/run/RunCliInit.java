@@ -38,7 +38,7 @@ public class RunCliInit {
     log.info("⣿ ");
 
     // Tor
-    log.info("⣿ • Configure Tor: (you can change this later)");
+    log.info("⣿ • Enable Tor? (you can change this later)");
     String torStr =
         CliUtils.readUserInputRequired(
             "Enable Tor? (y/n)", false, new String[] {"y", "n", "Y", "N"});
