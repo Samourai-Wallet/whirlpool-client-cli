@@ -45,8 +45,8 @@ public class JavaTorSettings extends DefaultSettings {
 
   @Override
   public boolean hasSafeSocks() {
-    // prevent DNS leaks
-    return true;
+    // remote DNS resolving is not supported by Java
+    return false;
   }
 
   @Override
