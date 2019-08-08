@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.samourai.wallet.api.pairing.PairingNetwork;
+import com.samourai.wallet.api.pairing.PairingPayload;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
@@ -35,6 +36,9 @@ public class CliConfigService {
   private static final String KEY_APIKEY = "cli.apiKey";
   private static final String KEY_SEED = "cli.seed";
   private static final String KEY_SEED_APPEND_PASSPHRASE = "cli.seedAppendPassphrase";
+  private static final String KEY_DOJO_URL = "cli.dojo.url";
+  private static final String KEY_DOJO_APIKEY = "cli.dojo.apiKey";
+  public static final String KEY_DOJO_ENABLED = "cli.dojo.enabled";
   private static final String KEY_VERSION = "cli.version";
 
   private CliConfig cliConfig;
@@ -74,27 +78,55 @@ public class CliConfigService {
     return CliStatus.NOT_INITIALIZED.equals(cliStatus);
   }
 
-  public String initialize(String pairingPayloadStr, boolean tor) throws NotifiableException {
+  public WhirlpoolPairingPayload parsePairingPayload(String pairingWalletPayload) throws Exception {
+    return WhirlpoolPairingPayload.parse(pairingWalletPayload);
+  }
+
+  public String initialize(WhirlpoolPairingPayload pairingWallet, boolean tor, Boolean dojo)
+      throws NotifiableException {
     // parse payload
-    WhirlpoolPairingPayload pairingPayload = WhirlpoolPairingPayload.parse(pairingPayloadStr);
+
+    // use dojo?
+    String dojoUrl = null;
+    String dojoApiKey = null;
+    PairingPayload.PairingDojo pairingDojo = pairingWallet.getDojo();
+    if (pairingDojo != null) {
+      dojoUrl = pairingDojo.getUrl();
+      dojoApiKey = pairingDojo.getApikey();
+      if (dojo == null) {
+        dojo = true;
+      }
+    } else {
+      if (dojo == null) {
+        dojo = false;
+      }
+      if (dojo) {
+        throw new NotifiableException("Cannot enable DOJO: dojo pairing not found");
+      }
+    }
 
     // initialize
-    String encryptedMnemonic = pairingPayload.getPairing().getMnemonic();
-    boolean appendPassphrase = pairingPayload.getPairing().getPassphrase();
-    PairingNetwork pairingNetwork = pairingPayload.getPairing().getNetwork();
+    PairingPayload.PairingValue pairing = pairingWallet.getPairing();
+    String encryptedMnemonic = pairing.getMnemonic();
+    boolean appendPassphrase = pairing.getPassphrase();
+    PairingNetwork pairingNetwork = pairing.getNetwork();
     WhirlpoolServer whirlpoolServer =
         PairingNetwork.MAINNET.equals(pairingNetwork)
             ? WhirlpoolServer.MAINNET
             : WhirlpoolServer.TESTNET;
 
-    return initialize(encryptedMnemonic, appendPassphrase, whirlpoolServer, tor);
+    return initialize(
+        encryptedMnemonic, appendPassphrase, whirlpoolServer, tor, dojoUrl, dojoApiKey, dojo);
   }
 
   public synchronized String initialize(
       String encryptedMnemonic,
       boolean appendPassphrase,
       WhirlpoolServer whirlpoolServer,
-      boolean tor)
+      boolean tor,
+      String dojoUrl,
+      String dojoApiKey,
+      boolean dojoEnabled)
       throws NotifiableException {
     if (log.isDebugEnabled()) {
       log.debug(" • initialize");
@@ -117,6 +149,13 @@ public class CliConfigService {
     props.put(KEY_SEED_APPEND_PASSPHRASE, Boolean.toString(appendPassphrase));
     props.put(ApiCliConfig.KEY_SERVER, whirlpoolServer.name());
     props.put(ApiCliConfig.KEY_TOR, Boolean.toString(tor));
+    if (dojoUrl != null) {
+      props.put(KEY_DOJO_URL, dojoUrl);
+    }
+    if (dojoApiKey != null) {
+      props.put(KEY_DOJO_APIKEY, dojoApiKey);
+    }
+    props.put(KEY_DOJO_ENABLED, Boolean.toString(dojoEnabled));
     try {
       save(props);
     } catch (Exception e) {
@@ -136,6 +175,10 @@ public class CliConfigService {
   }
 
   public synchronized void setApiConfig(ApiCliConfig apiCliConfig) throws Exception {
+    if (apiCliConfig.getDojo() && !apiCliConfig.getTor()) {
+      throw new NotifiableException("Tor is required for DOJO");
+    }
+
     Properties props = loadEntries();
 
     apiCliConfig.toProperties(props);

@@ -77,6 +77,8 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + (whirlpoolWallet.isStarted() ? "STARTED" : "STOPPED")
               + (walletConfig.isAutoTx0() ? " +autoTx0=" + walletConfig.getAutoTx0PoolId() : "")
               + (walletConfig.isAutoMix() ? " +autoMix" : "")
+              + (cliConfig.getTor() ? " +Tor" : "")
+              + (cliConfig.isDojoEnabled() ? " +Dojo" : "")
               + ", "
               + mixState.getNbMixing()
               + " mixing, "

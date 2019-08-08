@@ -18,8 +18,12 @@ public class WhirlpoolPairingPayload extends PairingPayload {
   }
 
   public WhirlpoolPairingPayload(
-      PairingVersion version, PairingNetwork network, String mnemonic, Boolean passphrase) {
-    super(PairingType.WHIRLPOOL_GUI, version, network, mnemonic, passphrase);
+      PairingVersion version,
+      PairingNetwork network,
+      String mnemonic,
+      Boolean passphrase,
+      PairingDojo dojo) {
+    super(PairingType.WHIRLPOOL_GUI, version, network, mnemonic, passphrase, dojo);
   }
 
   public static WhirlpoolPairingPayload parse(String pairingPayloadStr) throws NotifiableException {
@@ -55,7 +59,8 @@ public class WhirlpoolPairingPayload extends PairingPayload {
       throw new NotifiableException("Unsupported pairing.type");
     }
     if (!PairingVersion.V1_0_0.equals(getPairing().getVersion())
-        && !PairingVersion.V2_0_0.equals(getPairing().getVersion())) {
+        && !PairingVersion.V2_0_0.equals(getPairing().getVersion())
+        && !PairingVersion.V3_0_0.equals(getPairing().getVersion())) {
       throw new NotifiableException("Unsupported pairing.version");
     }
     if (getPairing().getPassphrase() == null) {

@@ -28,6 +28,7 @@ public abstract class CliConfigFile {
   @NotEmpty private String pushtx;
   @NotEmpty private boolean tor;
   @NotEmpty private TorConfig torConfig;
+  @NotEmpty private DojoConfig dojo;
   @NotEmpty private String apiKey;
   @NotEmpty private String seed;
   @NotEmpty private boolean seedAppendPassphrase;
@@ -52,6 +53,7 @@ public abstract class CliConfigFile {
     this.pushtx = copy.pushtx;
     this.tor = copy.tor;
     this.torConfig = new TorConfig(copy.torConfig);
+    this.dojo = new DojoConfig(copy.dojo);
     this.apiKey = copy.apiKey;
     this.seed = copy.seed;
     this.seedAppendPassphrase = copy.seedAppendPassphrase;
@@ -119,6 +121,14 @@ public abstract class CliConfigFile {
 
   public void setTorConfig(TorConfig torConfig) {
     this.torConfig = torConfig;
+  }
+
+  public DojoConfig getDojo() {
+    return dojo;
+  }
+
+  public void setDojo(DojoConfig dojo) {
+    this.dojo = dojo;
   }
 
   public String getApiKey() {
@@ -319,6 +329,52 @@ public abstract class CliConfigFile {
     }
   }
 
+  public static class DojoConfig {
+    @NotEmpty private String url;
+    @NotEmpty private String apiKey;
+    @NotEmpty private boolean enabled;
+
+    public DojoConfig() {}
+
+    public DojoConfig(DojoConfig copy) {
+      this.url = copy.url;
+      this.apiKey = copy.apiKey;
+      this.enabled = copy.enabled;
+    }
+
+    public String getUrl() {
+      return url;
+    }
+
+    public void setUrl(String url) {
+      this.url = url;
+    }
+
+    public String getApiKey() {
+      return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+      this.apiKey = apiKey;
+    }
+
+    public boolean isEnabled() {
+      return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
+
+    public Map<String, String> getConfigInfo() {
+      Map<String, String> configInfo = new HashMap<>();
+      configInfo.put("cli/dojo/url", url);
+      configInfo.put("cli/dojo/apiKey", ClientUtils.maskString(apiKey));
+      configInfo.put("cli/dojo/enabled", Boolean.toString(enabled));
+      return configInfo;
+    }
+  }
+
   public String computeServerUrl() {
     boolean useOnion = tor && torConfig.onionServer;
     String serverUrl = server.getServerUrl(useOnion);
@@ -358,6 +414,11 @@ public abstract class CliConfigFile {
     configInfo.put("cli/pushtx", ClientUtils.maskString(pushtx));
     configInfo.put("cli/tor", Boolean.toString(tor));
     configInfo.putAll(torConfig.getConfigInfo());
+    if (dojo != null) {
+      configInfo.putAll(dojo.getConfigInfo());
+    } else {
+      configInfo.put("cli/dojo", "null");
+    }
     configInfo.put("cli/apiKey", ClientUtils.maskString(apiKey));
     configInfo.put("cli/seedEncrypted", ClientUtils.maskString(seed));
     configInfo.put("cli/persistDelay", Integer.toString(persistDelay));

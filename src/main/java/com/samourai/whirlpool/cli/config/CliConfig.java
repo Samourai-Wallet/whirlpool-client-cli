@@ -40,14 +40,6 @@ public class CliConfig extends CliConfigFile {
     return config;
   }
 
-  public String computeBackendUrl() {
-    boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(getServer().getParams());
-    BackendServer backendServer = BackendServer.get(isTestnet);
-    boolean useOnion = getTor() && getTorConfig().isOnionBackend();
-    String backendUrl = backendServer.getBackendUrl(useOnion);
-    return backendUrl;
-  }
-
   public boolean isAutoAggregatePostmix() {
     return autoAggregatePostmix;
   }
@@ -82,5 +74,37 @@ public class CliConfig extends CliConfigFile {
     configInfo.put("cli/autoAggregatePostmix", Boolean.toString(autoAggregatePostmix));
     configInfo.put("cli/autoTx0PoolId", autoTx0PoolId != null ? autoTx0PoolId : "null");
     return configInfo;
+  }
+
+  //
+
+  public String computeBackendUrl() {
+    if (getDojo().isEnabled()) {
+      // use dojo
+      return getDojo().getUrl();
+    }
+    // use Samourai backend
+    return computeBackendUrlSamourai();
+  }
+
+  public boolean isDojoEnabled() {
+    return getDojo() != null && getDojo().isEnabled();
+  }
+
+  public String computeBackendApiKey() {
+    if (isDojoEnabled()) {
+      // dojo: use apiKey
+      return getDojo().getApiKey();
+    }
+    // Samourai backend: no apiKey
+    return null;
+  }
+
+  private String computeBackendUrlSamourai() {
+    boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(getServer().getParams());
+    BackendServer backendServer = BackendServer.get(isTestnet);
+    boolean useOnion = getTor() && getTorConfig().isOnionBackend();
+    String backendUrl = backendServer.getBackendUrl(useOnion);
+    return backendUrl;
   }
 }

@@ -3,6 +3,7 @@ package com.samourai.whirlpool.cli.api.protocol.beans;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfigFile;
+import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolServer;
 import java.lang.invoke.MethodHandles;
@@ -17,6 +18,7 @@ public class ApiCliConfig {
   private String server;
   private String scode;
   private Boolean tor;
+  private Boolean dojo;
   private String proxy;
   private ApiMixConfig mix;
 
@@ -36,6 +38,7 @@ public class ApiCliConfig {
     this.server = cliConfig.getServer().name();
     this.scode = cliConfig.getScode();
     this.tor = cliConfig.getTor();
+    this.dojo = cliConfig.getDojo().isEnabled();
     this.proxy = cliConfig.getProxy();
     this.mix = new ApiMixConfig(cliConfig.getMix());
   }
@@ -53,6 +56,10 @@ public class ApiCliConfig {
 
     if (tor != null) {
       props.put(KEY_TOR, Boolean.toString(tor));
+    }
+
+    if (dojo != null) {
+      props.put(CliConfigService.KEY_DOJO_ENABLED, Boolean.toString(dojo));
     }
 
     if (proxy != null) {
@@ -89,6 +96,14 @@ public class ApiCliConfig {
 
   public void setTor(Boolean tor) {
     this.tor = tor;
+  }
+
+  public Boolean getDojo() {
+    return dojo;
+  }
+
+  public void setDojo(Boolean dojo) {
+    this.dojo = dojo;
   }
 
   public String getProxy() {

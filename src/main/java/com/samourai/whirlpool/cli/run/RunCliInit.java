@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.run;
 
 import com.samourai.whirlpool.cli.ApplicationArgs;
+import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -36,17 +37,26 @@ public class RunCliInit {
     log.info("⣿ • Paste your pairing payload here:");
     String pairingPayload = CliUtils.readUserInputRequired("Pairing payload?", false);
     log.info("⣿ ");
+    WhirlpoolPairingPayload pairing = cliConfigService.parsePairingPayload(pairingPayload);
 
     // Tor
-    log.info("⣿ • Enable Tor? (you can change this later)");
-    String torStr =
-        CliUtils.readUserInputRequired(
-            "Enable Tor? (y/n)", false, new String[] {"y", "n", "Y", "N"});
-    boolean tor = torStr.toLowerCase().equals("y");
-    log.info("⣿ ");
+    boolean tor;
+    if (pairing.getDojo() != null) {
+      // dojo => Tor enabled
+      log.info("⣿ Pairing with Dojo => Tor enabled.");
+      tor = true;
+    } else {
+      // samourai backend => Tor optional
+      log.info("⣿ • Enable Tor? (you can change this later)");
+      String torStr =
+          CliUtils.readUserInputRequired(
+              "Enable Tor? (y/n)", false, new String[] {"y", "n", "Y", "N"});
+      tor = torStr.toLowerCase().equals("y");
+      log.info("⣿ ");
+    }
 
     // init
-    String apiKey = cliConfigService.initialize(pairingPayload, tor);
+    String apiKey = cliConfigService.initialize(pairing, tor, null);
 
     log.info(CliUtils.LOG_SEPARATOR);
     log.info("⣿ API KEY GENERATED");

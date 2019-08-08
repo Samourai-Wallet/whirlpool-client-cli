@@ -7,6 +7,7 @@ import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitResponse;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliLoginRequest;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliStateResponse;
 import com.samourai.whirlpool.cli.beans.CliStatus;
+import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
@@ -35,7 +36,9 @@ public class CliController extends AbstractRestController {
             cliWalletService.getCliState(),
             cliConfig.getServer(),
             cliConfig.computeServerUrl(),
-            cliConfig.getTor());
+            cliConfig.getDojo().getUrl(),
+            cliConfig.getTor(),
+            cliConfig.isDojoEnabled());
     return response;
   }
 
@@ -53,7 +56,9 @@ public class CliController extends AbstractRestController {
     // init
     String pairingPayload = payload.pairingPayload;
     boolean tor = payload.tor;
-    String apiKey = cliConfigService.initialize(pairingPayload, tor);
+    boolean dojo = payload.dojo;
+    WhirlpoolPairingPayload pairing = cliConfigService.parsePairingPayload(pairingPayload);
+    String apiKey = cliConfigService.initialize(pairing, tor, dojo);
 
     ApiCliInitResponse response = new ApiCliInitResponse(apiKey);
     return response;

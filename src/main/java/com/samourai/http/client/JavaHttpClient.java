@@ -14,6 +14,7 @@ import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.FormContentProvider;
 import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.util.Fields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +39,12 @@ public class JavaHttpClient implements IHttpClient {
   }
 
   @Override
-  public synchronized <T> T getJson(String urlStr, Class<T> responseType) throws HttpException {
+  public synchronized <T> T getJson(
+      String urlStr, Class<T> responseType, Map<String, String> headers) throws HttpException {
     final boolean isRegOut = false;
     try {
-      HttpClient httpClient = getHttpClient(isRegOut);
-      ContentResponse response = httpClient.GET(urlStr);
+      Request req = computeHttpRequest(isRegOut, urlStr, HttpMethod.GET, headers);
+      ContentResponse response = req.send();
 
       T result = parseResponse(response, responseType);
       return result;
@@ -59,12 +61,12 @@ public class JavaHttpClient implements IHttpClient {
   }
 
   @Override
-  public synchronized <T> T postJsonOverTor(String urlStr, Class<T> responseType, Object bodyObj)
+  public synchronized <T> T postJsonOverTor(
+      String urlStr, Class<T> responseType, Map<String, String> headers, Object bodyObj)
       throws HttpException {
     final boolean isRegOut = true;
     try {
-      HttpClient httpClient = getHttpClient(isRegOut);
-      Request request = httpClient.POST(urlStr);
+      Request request = computeHttpRequest(isRegOut, urlStr, HttpMethod.POST, headers);
 
       String jsonBody = objectMapper.writeValueAsString(bodyObj);
       request.content(
@@ -88,12 +90,14 @@ public class JavaHttpClient implements IHttpClient {
 
   @Override
   public synchronized <T> T postUrlEncoded(
-      String urlStr, Class<T> responseType, Map<String, String> body) throws HttpException {
+      String urlStr, Class<T> responseType, Map<String, String> headers, Map<String, String> body)
+      throws HttpException {
     final boolean isRegOut = false;
     try {
-      HttpClient httpClient = getHttpClient(isRegOut);
-      Request request = httpClient.POST(urlStr);
-
+      Request request = computeHttpRequest(isRegOut, urlStr, HttpMethod.POST, headers);
+      if (log.isDebugEnabled()) {
+        log.debug("POST.body=" + body.keySet());
+      }
       request.content(new FormContentProvider(computeBodyFields(body)));
       ContentResponse response = request.send();
 
@@ -121,6 +125,9 @@ public class JavaHttpClient implements IHttpClient {
 
   private <T> T parseResponse(ContentResponse response, Class<T> responseType) throws Exception {
     T result = null;
+    if (log.isTraceEnabled()) {
+      log.trace("response: " + response.getContentAsString());
+    }
     if (responseType != null) {
       result = objectMapper.readValue(response.getContent(), responseType);
     }
@@ -145,6 +152,24 @@ public class JavaHttpClient implements IHttpClient {
       }
       return httpClientRegOut;
     }
+  }
+
+  private Request computeHttpRequest(
+      boolean isRegOut, String url, HttpMethod method, Map<String, String> headers)
+      throws Exception {
+    if (log.isDebugEnabled()) {
+      String headersStr = headers != null ? " (" + headers.keySet() + ")" : "";
+      log.debug("+" + method + ": " + url + headersStr);
+    }
+    HttpClient httpClient = getHttpClient(isRegOut);
+    Request req = httpClient.newRequest(url);
+    req.method(method);
+    if (headers != null) {
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        req.header(entry.getKey(), entry.getValue());
+      }
+    }
+    return req;
   }
 
   private HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception {

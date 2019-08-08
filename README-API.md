@@ -172,7 +172,9 @@ Response:
     "network": "test",
     "serverUrl": "",
     "serverName": "TESTNET",
-    "tor": true
+    "dojoUrl": "",
+    "tor": true,
+    "dojo": true
 }
 ```
 
@@ -208,10 +210,12 @@ Response:
 Payload:
 * pairingPayload: pairing payload from Samourai Wallet
 * tor: enable Tor
+* dojo: enable Dojo (use null to auto-detect from pairingPayload)
 ```
 {
     pairingPayload: "...",
-    tor: true
+    tor: true,
+    dojo: true
 }
 ```
 

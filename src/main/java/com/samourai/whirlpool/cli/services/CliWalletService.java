@@ -14,6 +14,7 @@ import com.samourai.whirlpool.cli.beans.CliState;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.cli.config.CliConfigFile;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -219,12 +220,20 @@ public class CliWalletService extends WhirlpoolWalletService {
         formatUtils.isTestNet(cliConfig.getServer().getParams())
             ? PairingNetwork.TESTNET
             : PairingNetwork.MAINNET;
+
+    PairingPayload.PairingDojo dojo = null;
+    CliConfigFile.DojoConfig dojoConfig = cliConfig.getDojo();
+    if (dojoConfig.isEnabled()) {
+      dojo = new PairingPayload.PairingDojo(dojoConfig.getUrl(), dojoConfig.getApiKey());
+    }
+
     PairingPayload pairingPayload =
         new WhirlpoolPairingPayload(
-            PairingVersion.V2_0_0,
+            PairingVersion.V3_0_0,
             pairingNetwork,
             cliConfig.getSeed(),
-            cliConfig.isSeedAppendPassphrase());
+            cliConfig.isSeedAppendPassphrase(),
+            dojo);
     String json = ClientUtils.toJsonString(pairingPayload);
     return json;
   }
