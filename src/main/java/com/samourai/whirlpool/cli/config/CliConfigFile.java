@@ -25,7 +25,6 @@ public abstract class CliConfigFile {
   private int version; // 0 for versions < 1
   private WhirlpoolServer server;
   private String scode;
-  @NotEmpty private String pushtx;
   @NotEmpty private boolean tor;
   @NotEmpty private TorConfig torConfig;
   @NotEmpty private DojoConfig dojo;
@@ -50,7 +49,6 @@ public abstract class CliConfigFile {
     this.version = copy.version;
     this.server = copy.server;
     this.scode = copy.scode;
-    this.pushtx = copy.pushtx;
     this.tor = copy.tor;
     this.torConfig = new TorConfig(copy.torConfig);
     this.dojo = new DojoConfig(copy.dojo);
@@ -85,26 +83,6 @@ public abstract class CliConfigFile {
 
   public void setScode(String scode) {
     this.scode = scode;
-  }
-
-  public boolean isPushtxInteractive() {
-    return PUSHTX_INTERACTIVE.equals(pushtx);
-  }
-
-  public boolean isPushtxAuto() {
-    return PUSHTX_AUTO.equals(pushtx);
-  }
-
-  public boolean isPushtxCli() {
-    return !PUSHTX_INTERACTIVE.equals(pushtx) && !PUSHTX_AUTO.equals(pushtx);
-  }
-
-  public String getPushtx() {
-    return pushtx;
-  }
-
-  public void setPushtx(String pushtx) {
-    this.pushtx = pushtx;
   }
 
   public boolean getTor() {
@@ -411,7 +389,6 @@ public abstract class CliConfigFile {
     Map<String, String> configInfo = new LinkedHashMap<>();
     configInfo.put("cli/server", server.name());
     configInfo.put("cli/scode", scode);
-    configInfo.put("cli/pushtx", ClientUtils.maskString(pushtx));
     configInfo.put("cli/tor", Boolean.toString(tor));
     configInfo.putAll(torConfig.getConfigInfo());
     if (dojo != null) {

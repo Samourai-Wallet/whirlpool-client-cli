@@ -15,7 +15,6 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
-import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Map;
@@ -53,7 +52,6 @@ public class Application implements ApplicationRunner {
   @Autowired private CliConfigService cliConfigService;
   @Autowired private CliWalletService cliWalletService;
   private static CliWalletService cliWalletServiceStatic;
-  @Autowired private PushTxService pushTxService;
   @Autowired private Bech32UtilGeneric bech32Util;
   @Autowired private WalletAggregateService walletAggregateService;
   @Autowired private CliTorClientService cliTorClientService;
@@ -168,11 +166,6 @@ public class Application implements ApplicationRunner {
       return;
     }
 
-    // check pushTxService
-    if (!pushTxService.testConnectivity()) {
-      throw new NotifiableException("Unable to connect to pushTxService");
-    }
-
     // check cli initialized
     if (cliConfigService.isCliStatusNotInitialized()) {
       // not initialized
@@ -227,7 +220,7 @@ public class Application implements ApplicationRunner {
 
     if (RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
       // execute specific command
-      new RunCliCommand(appArgs, cliWalletService, walletAggregateService, cliConfig).run();
+      new RunCliCommand(appArgs, cliWalletService, walletAggregateService).run();
     } else {
       // start wallet
       cliWallet.start();

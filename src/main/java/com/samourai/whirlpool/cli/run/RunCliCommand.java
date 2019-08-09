@@ -16,17 +16,14 @@ public class RunCliCommand {
   private ApplicationArgs appArgs;
   private CliWalletService cliWalletService;
   private WalletAggregateService walletAggregateService;
-  private CliConfig cliConfig;
 
   public RunCliCommand(
       ApplicationArgs appArgs,
       CliWalletService cliWalletService,
-      WalletAggregateService walletAggregateService,
-      CliConfig cliConfig) {
+      WalletAggregateService walletAggregateService) {
     this.appArgs = appArgs;
     this.cliWalletService = cliWalletService;
     this.walletAggregateService = walletAggregateService;
-    this.cliConfig = cliConfig;
   }
 
   public void run() throws Exception {
@@ -43,10 +40,11 @@ public class RunCliCommand {
       if (toAddress != null && !"true".equals(toAddress)) {
         Bip84ApiWallet depositWallet = cliWallet.getWalletDeposit();
         log.info(" • Moving funds to: " + toAddress);
-        walletAggregateService.toAddress(depositWallet, toAddress);
+        walletAggregateService.toAddress(depositWallet, toAddress, cliWallet);
       }
     } else if (appArgs.isListPools()) {
-      new RunListPools(cliWalletService, cliConfig).run();
+      CliWallet cliWallet = cliWalletService.getSessionWallet();
+      new RunListPools(cliWallet).run();
     } else {
       throw new Exception("Unknown command.");
     }

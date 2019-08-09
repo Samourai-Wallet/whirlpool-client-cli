@@ -1,27 +1,24 @@
 package com.samourai.whirlpool.cli.run;
 
-import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.services.CliWalletService;
+import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
-import com.samourai.whirlpool.client.whirlpool.beans.Pools;
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RunListPools {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private CliWalletService cliWalletService;
-  private CliConfig cliConfig;
+  private CliWallet cliWallet;
 
-  public RunListPools(CliWalletService cliWalletService, CliConfig cliConfig) {
-    this.cliWalletService = cliWalletService;
-    this.cliConfig = cliConfig;
+  public RunListPools(CliWallet cliWallet) {
+    this.cliWallet = cliWallet;
   }
 
   public void run() throws Exception {
-    Pools pools = cliWalletService.listPools(cliConfig);
+    Collection<Pool> pools = cliWallet.getPools(true);
 
     // show available pools
     String lineFormat = "| %15s | %6s | %15s | %14s | %12s | %15s | %23s |\n";
@@ -39,7 +36,7 @@ public class RunListPools {
     sb.append(
         String.format(
             lineFormat, "", "(btc)", "", "(confir/reg)", "", "(target/min)", "min-max (sat)"));
-    for (Pool pool : pools.getPools()) {
+    for (Pool pool : pools) {
       sb.append(
           String.format(
               lineFormat,

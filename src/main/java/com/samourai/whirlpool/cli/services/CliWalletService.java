@@ -24,7 +24,6 @@ import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
 import com.samourai.whirlpool.client.wallet.persist.FileWhirlpoolWalletPersistHandler;
 import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
-import com.samourai.whirlpool.client.whirlpool.beans.Pools;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
@@ -50,7 +49,6 @@ public class CliWalletService extends WhirlpoolWalletService {
   private JavaHttpClient httpClient;
   private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
-  private SamouraiApiService samouraiApiService;
 
   // available when wallet is opened
   private CliWallet sessionWallet = null;
@@ -62,8 +60,7 @@ public class CliWalletService extends WhirlpoolWalletService {
       WalletAggregateService walletAggregateService,
       JavaHttpClient httpClient,
       JavaStompClientService stompClientService,
-      CliTorClientService cliTorClientService,
-      SamouraiApiService samouraiApiService) {
+      CliTorClientService cliTorClientService) {
     super();
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
@@ -72,10 +69,9 @@ public class CliWalletService extends WhirlpoolWalletService {
     this.httpClient = httpClient;
     this.stompClientService = stompClientService;
     this.cliTorClientService = cliTorClientService;
-    this.samouraiApiService = samouraiApiService;
   }
 
-  public CliWallet openWallet(String seedPassphrase) throws Exception {
+  public CliWallet openWallet(String passphrase) throws Exception {
     // require CliStatus.READY
     if (!CliStatus.READY.equals(cliConfigService.getCliStatus())) {
       throw new NotifiableException(
@@ -84,9 +80,10 @@ public class CliWalletService extends WhirlpoolWalletService {
 
     NetworkParameters params = cliConfig.getServer().getParams();
 
+    // decrypt seed
     String seedWords;
     try {
-      seedWords = decryptSeedWords(cliConfig.getSeed(), seedPassphrase);
+      seedWords = decryptSeedWords(cliConfig.getSeed(), passphrase);
     } catch (Exception e) {
       log.error("decryptSeedWords failed, invalid passphrase?");
       if (log.isDebugEnabled()
@@ -102,11 +99,11 @@ public class CliWalletService extends WhirlpoolWalletService {
     try {
       // init wallet from seed
       byte[] seed = hdWalletFactory.computeSeedFromWords(seedWords);
-      String walletPassphrase = cliConfig.isSeedAppendPassphrase() ? seedPassphrase : "";
+      String walletPassphrase = cliConfig.isSeedAppendPassphrase() ? passphrase : "";
       bip84w = hdWalletFactory.getBIP84(seed, walletPassphrase, params);
 
       // identifier
-      walletIdentifier = computeWalletIdentifier(seed, seedPassphrase, params);
+      walletIdentifier = computeWalletIdentifier(seed, passphrase, params);
     } catch (MnemonicException e) {
       throw new NotifiableException("Mnemonic failed, invalid passphrase?");
     }
@@ -117,6 +114,13 @@ public class CliWalletService extends WhirlpoolWalletService {
       for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
         log.debug("[cliConfig/" + entry.getKey() + "] " + entry.getValue());
       }
+    }
+
+    // backend connexion
+    SamouraiApiService samouraiApiService = computeSamouraiApiService(passphrase);
+    if (!samouraiApiService.testConnectivity()) {
+      throw new NotifiableException(
+          "Unable to connect to wallet backend: " + samouraiApiService.getUrlBackend());
     }
 
     // open wallet
@@ -137,6 +141,15 @@ public class CliWalletService extends WhirlpoolWalletService {
     return sessionWallet;
   }
 
+  private SamouraiApiService computeSamouraiApiService(String passphrase) throws Exception {
+    // decrypt apiKey if any
+    String dojoApiKey = cliConfig.computeBackendApiKey();
+    if (dojoApiKey != null) {
+      dojoApiKey = decryptApiKey(dojoApiKey, passphrase);
+    }
+    return new SamouraiApiService(httpClient, cliConfig, dojoApiKey);
+  }
+
   private WhirlpoolWalletPersistHandler computePersistHandler(String walletIdentifier)
       throws NotifiableException {
     File indexFile = computeIndexFile(walletIdentifier);
@@ -149,6 +162,10 @@ public class CliWalletService extends WhirlpoolWalletService {
   protected String decryptSeedWords(String seedWordsEncrypted, String seedPassphrase)
       throws Exception {
     return AESUtil.decrypt(seedWordsEncrypted, new CharSequenceX(seedPassphrase));
+  }
+
+  protected String decryptApiKey(String apiKey, String seedPassphrase) throws Exception {
+    return AESUtil.decrypt(apiKey, new CharSequenceX(seedPassphrase));
   }
 
   public void closeWallet() {
@@ -236,12 +253,5 @@ public class CliWalletService extends WhirlpoolWalletService {
             dojo);
     String json = ClientUtils.toJsonString(pairingPayload);
     return json;
-  }
-
-  public Pools listPools(CliConfig cliConfig) throws Exception {
-    WhirlpoolWalletConfig config =
-        cliConfig.computeWhirlpoolWalletConfig(
-            httpClient, stompClientService, null, samouraiApiService);
-    return config.newClient().fetchPools();
   }
 }

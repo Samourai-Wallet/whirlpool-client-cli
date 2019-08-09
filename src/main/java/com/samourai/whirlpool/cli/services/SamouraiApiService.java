@@ -2,15 +2,14 @@ package com.samourai.whirlpool.cli.services;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.samourai.api.client.SamouraiApi;
+import com.samourai.http.client.IHttpClient;
 import com.samourai.wallet.api.backend.beans.RefreshTokenResponse;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.OAuthUtils;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
-@Service
 public class SamouraiApiService extends SamouraiApi {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -19,8 +18,8 @@ public class SamouraiApiService extends SamouraiApi {
   private DecodedJWT accessToken;
   private DecodedJWT refreshToken;
 
-  public SamouraiApiService(JavaHttpClientService httpClient, CliConfig cliConfig) {
-    super(httpClient, cliConfig.computeBackendUrl(), cliConfig.computeBackendApiKey());
+  public SamouraiApiService(IHttpClient httpClient, CliConfig cliConfig, String backendApiKey) {
+    super(httpClient, cliConfig.computeBackendUrl(), backendApiKey);
   }
 
   @Override

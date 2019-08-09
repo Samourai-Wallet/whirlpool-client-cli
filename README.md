@@ -105,16 +105,6 @@ When tor enabled, connect to whirlpool server or wallet backend through:
 - `true`: Tor hidden services 
 - `false`: clearnet over Tor
 
-### PushTx
-```
-cli.pushtx = auto
-```
-Specify how to broadcast transactions (tx0, aggregate).
-    * auto: by default, tx are broadcasted through Samourai service.
-    * interactive: print raw tx and pause to let you broadcast it manually.
-    * http://user:password@host:port: rpc connection to your own bitcoin node (connection is not encrypted, use on trusted network only).
-
-
 
 ## API usage
 whirlpool-client-cli can be managed with a REST API. See [README-API.md](README-API.md)

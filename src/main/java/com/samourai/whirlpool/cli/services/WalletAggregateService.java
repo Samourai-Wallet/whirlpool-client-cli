@@ -12,7 +12,6 @@ import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
-import com.samourai.whirlpool.client.wallet.pushTx.PushTxService;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,44 +28,50 @@ public class WalletAggregateService {
   private static final int AGGREGATED_UTXOS_PER_TX = 600;
   private static final FormatsUtilGeneric formatUtils = FormatsUtilGeneric.getInstance();
 
-  private SamouraiApi samouraiApi;
-  private PushTxService pushTxService;
   private NetworkParameters params;
   private CliConfig cliConfig;
   private Bech32UtilGeneric bech32Util;
   private TxAggregateService txAggregateService;
 
   public WalletAggregateService(
-      SamouraiApi samouraiApi,
-      PushTxService pushTxService,
       NetworkParameters params,
       CliConfig cliConfig,
       Bech32UtilGeneric bech32Util,
       TxAggregateService txAggregateService) {
-    this.samouraiApi = samouraiApi;
-    this.pushTxService = pushTxService;
     this.params = params;
     this.cliConfig = cliConfig;
     this.bech32Util = bech32Util;
     this.txAggregateService = txAggregateService;
   }
 
-  public boolean toWallet(Bip84ApiWallet sourceWallet, Bip84Wallet destinationWallet)
+  public boolean toWallet(
+      Bip84ApiWallet sourceWallet,
+      Bip84Wallet destinationWallet,
+      int feeSatPerByte,
+      SamouraiApi samouraiApi)
       throws Exception {
-    return doAggregate(sourceWallet, null, destinationWallet);
+    return doAggregate(sourceWallet, null, destinationWallet, feeSatPerByte, samouraiApi);
   }
 
-  public boolean toAddress(Bip84ApiWallet sourceWallet, String destinationAddress)
+  public boolean toAddress(
+      Bip84ApiWallet sourceWallet, String destinationAddress, CliWallet cliWallet)
       throws Exception {
     if (!formatUtils.isTestNet(cliConfig.getServer().getParams())) {
       throw new NotifiableException(
           "aggregate toAddress is disabled on mainnet for security reasons.");
     }
-    return doAggregate(sourceWallet, destinationAddress, null);
+
+    int feeSatPerByte = cliWallet.getFee(SamouraiFeeTarget.BLOCKS_2);
+    SamouraiApi samouraiApi = cliWallet.getConfig().getSamouraiApi();
+    return doAggregate(sourceWallet, destinationAddress, null, feeSatPerByte, samouraiApi);
   }
 
   private boolean doAggregate(
-      Bip84ApiWallet sourceWallet, String destinationAddress, Bip84Wallet destinationWallet)
+      Bip84ApiWallet sourceWallet,
+      String destinationAddress,
+      Bip84Wallet destinationWallet,
+      int feeSatPerByte,
+      SamouraiApi samouraiApi)
       throws Exception {
     List<UnspentResponse.UnspentOutput> utxos = sourceWallet.fetchUtxos();
     if (utxos.isEmpty()) {
@@ -95,7 +100,7 @@ public class WalletAggregateService {
         }
 
         log.info("Aggregating " + subsetUtxos.size() + " utxos (pass #" + round + ")");
-        txAggregate(sourceWallet, subsetUtxos, toAddress);
+        txAggregate(sourceWallet, subsetUtxos, toAddress, feeSatPerByte, samouraiApi);
         success = true;
 
         ClientUtils.sleepRefreshUtxos(cliConfig.getServer().getParams());
@@ -108,7 +113,9 @@ public class WalletAggregateService {
   private void txAggregate(
       Bip84ApiWallet sourceWallet,
       List<UnspentResponse.UnspentOutput> postmixUtxos,
-      String toAddress)
+      String toAddress,
+      int feeSatPerByte,
+      SamouraiApi samouraiApi)
       throws Exception {
     List<TransactionOutPoint> spendFromOutPoints = new ArrayList<>();
     List<HD_Address> spendFromAddresses = new ArrayList<>();
@@ -118,8 +125,6 @@ public class WalletAggregateService {
       spendFromOutPoints.add(utxo.computeOutpoint(params));
       spendFromAddresses.add(sourceWallet.getAddressAt(utxo));
     }
-
-    int feeSatPerByte = samouraiApi.fetchFees().get(SamouraiFeeTarget.BLOCKS_2);
 
     // tx
     Transaction txAggregate =
@@ -132,7 +137,7 @@ public class WalletAggregateService {
     // broadcast
     log.info(" • Broadcasting TxAggregate...");
     String txHex = ClientUtils.getTxHex(txAggregate);
-    pushTxService.pushTx(txHex);
+    samouraiApi.pushTx(txHex);
   }
 
   public boolean consolidateWallet(CliWallet cliWallet) throws Exception {
@@ -144,18 +149,21 @@ public class WalletAggregateService {
     Bip84ApiWallet premixWallet = cliWallet.getWalletPremix();
     Bip84ApiWallet postmixWallet = cliWallet.getWalletPostmix();
 
+    int feeSatPerByte = cliWallet.getFee(SamouraiFeeTarget.BLOCKS_2);
+    SamouraiApi samouraiApi = cliWallet.getConfig().getSamouraiApi();
+
     log.info(" • Consolidating postmix -> deposit...");
-    toWallet(postmixWallet, depositWallet);
+    toWallet(postmixWallet, depositWallet, feeSatPerByte, samouraiApi);
 
     log.info(" • Consolidating premix -> deposit...");
-    toWallet(premixWallet, depositWallet);
+    toWallet(premixWallet, depositWallet, feeSatPerByte, samouraiApi);
 
     if (depositWallet.fetchUtxos().size() < 2) {
       log.info(" • Consolidating deposit... nothing to aggregate.");
       return false;
     }
     log.info(" • Consolidating deposit...");
-    boolean success = toWallet(depositWallet, depositWallet);
+    boolean success = toWallet(depositWallet, depositWallet, feeSatPerByte, samouraiApi);
     return success;
   }
 }
