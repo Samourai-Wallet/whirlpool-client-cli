@@ -22,6 +22,16 @@ public class SamouraiApiService extends SamouraiApi {
     super(httpClient, cliConfig.computeBackendUrl(), backendApiKey);
   }
 
+  /*@Override
+  protected Map<String, String> computeHeaders() throws Exception {
+    Map<String, String> headers = super.computeHeaders();
+    if (getApiKey() != null) {
+      // add auth token
+      headers.put("Authorization<", "Bearer " + computeAccessToken());
+    }
+    return headers;
+  }*/
+
   @Override
   protected String computeAuthUrl(String url) throws Exception {
     url = super.computeAuthUrl(url);
