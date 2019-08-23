@@ -74,7 +74,7 @@ public class UtxoController extends AbstractRestController {
     if (!Strings.isEmpty(payload.poolId)) {
       whirlpoolWallet.setPool(whirlpoolUtxo, payload.poolId);
     }
-    if (payload.mixsTarget > 0) {
+    if (payload.mixsTarget != null && payload.mixsTarget > 0) {
       whirlpoolWallet.setMixsTarget(whirlpoolUtxo, payload.mixsTarget);
     }
 
