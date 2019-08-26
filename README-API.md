@@ -7,7 +7,10 @@ Required headers:
 
 ## Pools
 
-### List pools: ```GET /rest/pools```
+### List pools: ```GET /rest/pools[?tx0FeeTarget=BLOCKS_24]```
+Parameters:
+* (optional) tx0FeeTarget: tx0 fee target for tx0BalanceMin computation
+
 Response:
 ```
 {
