@@ -2,7 +2,6 @@ package com.samourai.whirlpool.cli.api.protocol.rest;
 
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxo;
 import com.samourai.whirlpool.client.wallet.beans.MixOrchestratorState;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoPriorityComparator;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolWalletState;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -28,7 +27,6 @@ public class ApiWalletStateResponse {
         mixState
             .getUtxosMixing()
             .stream()
-            .sorted(new WhirlpoolUtxoPriorityComparator())
             .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo))
             .collect(Collectors.toList());
   }
