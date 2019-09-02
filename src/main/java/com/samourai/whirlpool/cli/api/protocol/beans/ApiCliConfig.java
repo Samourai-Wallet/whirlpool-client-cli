@@ -26,7 +26,8 @@ public class ApiCliConfig {
   private static final String KEY_SCODE = "cli.scode";
   public static final String KEY_TOR = "cli.tor";
   private static final String KEY_PROXY = "cli.proxy";
-  private static final String KEY_MIX_CLIENTS = "cli.mix.clients";
+  public static final String KEY_MIX_CLIENTS = "cli.mix.clients";
+  private static final String KEY_MIX_CLIENTS_PER_POOL = "cli.mix.clientsPerPool";
   private static final String KEY_MIX_CLIENT_DELAY = "cli.mix.clientDelay";
   private static final String KEY_MIX_TX0_MAX_OUTPUTS = "cli.mix.tx0MaxOutputs";
   private static final String KEY_MIX_AUTO_MIX = "cli.mix.autoMix";
@@ -124,6 +125,7 @@ public class ApiCliConfig {
 
   public static class ApiMixConfig {
     private Integer clients;
+    private Integer clientsPerPool;
     private Integer clientDelay;
     private Integer tx0MaxOutputs;
     private Boolean autoMix;
@@ -133,6 +135,7 @@ public class ApiCliConfig {
 
     public ApiMixConfig(CliConfigFile.MixConfig mixConfig) {
       this.clients = mixConfig.getClients();
+      this.clientsPerPool = mixConfig.getClientsPerPool();
       this.clientDelay = mixConfig.getClientDelay();
       this.tx0MaxOutputs = mixConfig.getTx0MaxOutputs();
       this.autoMix = mixConfig.isAutoMix();
@@ -145,6 +148,12 @@ public class ApiCliConfig {
           throw new NotifiableException("mix.clients should be > 0");
         }
         props.put(KEY_MIX_CLIENTS, Integer.toString(clients));
+      }
+      if (clientsPerPool != null) {
+        if (clientsPerPool < 1) {
+          throw new NotifiableException("mix.clientsPerPool should be > 0");
+        }
+        props.put(KEY_MIX_CLIENTS_PER_POOL, Integer.toString(clientsPerPool));
       }
       if (clientDelay != null) {
         if (clientDelay < 1) {
@@ -175,6 +184,14 @@ public class ApiCliConfig {
 
     public void setClients(Integer clients) {
       this.clients = clients;
+    }
+
+    public Integer getClientsPerPool() {
+      return clientsPerPool;
+    }
+
+    public void setClientsPerPool(Integer clientsPerPool) {
+      this.clientsPerPool = clientsPerPool;
     }
 
     public Integer getClientDelay() {

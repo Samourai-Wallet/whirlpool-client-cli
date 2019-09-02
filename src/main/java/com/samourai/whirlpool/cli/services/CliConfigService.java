@@ -31,7 +31,7 @@ import org.springframework.util.DefaultPropertiesPersister;
 public class CliConfigService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int CLI_VERSION = 1;
+  public static final int CLI_VERSION = 2;
   public static final String CLI_CONFIG_FILENAME = "whirlpool-cli-config.properties";
   private static final String KEY_APIKEY = "cli.apiKey";
   private static final String KEY_SEED = "cli.seed";
@@ -174,21 +174,13 @@ public class CliConfigService {
     return apiKey;
   }
 
-  private Properties loadEntries() throws Exception {
+  public Properties loadProperties() throws Exception {
     Resource resource = new FileSystemResource(getConfigurationFile());
     Properties props = PropertiesLoaderUtils.loadProperties(resource);
     return props;
   }
 
-  public synchronized void setApiConfig(ApiCliConfig apiCliConfig) throws Exception {
-    if (apiCliConfig.getDojo() && !apiCliConfig.getTor()) {
-      throw new NotifiableException("Tor is required for DOJO");
-    }
-
-    Properties props = loadEntries();
-
-    apiCliConfig.toProperties(props);
-
+  public synchronized void saveProperties(Properties props) throws Exception {
     // save
     save(props);
 
@@ -196,8 +188,21 @@ public class CliConfigService {
     this.setCliStatusNotReady("CLI restart required. Configuration updated.");
   }
 
+  public synchronized void setApiConfig(ApiCliConfig apiCliConfig) throws Exception {
+    if (apiCliConfig.getDojo() && !apiCliConfig.getTor()) {
+      throw new NotifiableException("Tor is required for DOJO");
+    }
+
+    Properties props = loadProperties();
+
+    apiCliConfig.toProperties(props);
+
+    // save
+    saveProperties(props);
+  }
+
   public synchronized void setVersionCurrent() throws Exception {
-    Properties props = loadEntries();
+    Properties props = loadProperties();
     props.put(KEY_VERSION, Integer.toString(CLI_VERSION));
 
     // save
@@ -256,7 +261,7 @@ public class CliConfigService {
     boolean shouldRestart = false;
     int lastVersion = cliConfig.getVersion();
 
-    if (lastVersion < CliConfigService.CLI_VERSION) {
+    if (lastVersion < CLI_VERSION) {
       // older version => run upgrade
       if (log.isDebugEnabled()) {
         log.debug(" • Upgrading cli wallet: " + lastVersion + " -> " + CLI_VERSION);

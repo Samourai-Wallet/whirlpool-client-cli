@@ -174,6 +174,7 @@ public abstract class CliConfigFile {
 
   public static class MixConfig {
     @NotEmpty private int clients;
+    @NotEmpty private int clientsPerPool;
     @NotEmpty private int clientDelay;
     @NotEmpty private int tx0Delay;
     @NotEmpty private int tx0MaxOutputs;
@@ -184,6 +185,7 @@ public abstract class CliConfigFile {
 
     public MixConfig(MixConfig copy) {
       this.clients = copy.clients;
+      this.clientsPerPool = copy.clientsPerPool;
       this.clientDelay = copy.clientDelay;
       this.tx0Delay = copy.tx0Delay;
       this.tx0MaxOutputs = copy.tx0MaxOutputs;
@@ -197,6 +199,14 @@ public abstract class CliConfigFile {
 
     public void setClients(int clients) {
       this.clients = clients;
+    }
+
+    public int getClientsPerPool() {
+      return clientsPerPool;
+    }
+
+    public void setClientsPerPool(int clientsPerPool) {
+      this.clientsPerPool = clientsPerPool;
     }
 
     public int getClientDelay() {
@@ -242,6 +252,7 @@ public abstract class CliConfigFile {
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
       configInfo.put("cli/mix/clients", Integer.toString(clients));
+      configInfo.put("cli/mix/clientsPerPool", Integer.toString(clientsPerPool));
       configInfo.put("cli/mix/clientDelay", Integer.toString(clientDelay));
       configInfo.put("cli/mix/tx0Delay", Integer.toString(tx0Delay));
       configInfo.put("cli/mix/tx0MaxOutputs", Integer.toString(tx0MaxOutputs));
@@ -376,6 +387,7 @@ public abstract class CliConfigFile {
     config.setRefreshPoolsDelay(refreshPoolsDelay);
 
     config.setMaxClients(mix.getClients());
+    config.setMaxClientsPerPool(mix.getClientsPerPool());
     config.setClientDelay(mix.getClientDelay());
     config.setTx0Delay(mix.getTx0Delay());
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs() > 0 ? mix.getTx0MaxOutputs() : null);
