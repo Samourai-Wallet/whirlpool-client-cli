@@ -188,6 +188,9 @@ public class Application implements ApplicationRunner {
     if (shouldRestart) {
       log.warn("⣿ UPGRADE SUCCESS");
       log.warn("⣿ Please restart CLI.");
+      if (listenPort != null) {
+        keepRunning();
+      }
       return;
     }
 
