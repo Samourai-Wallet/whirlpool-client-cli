@@ -31,7 +31,7 @@ import org.springframework.util.DefaultPropertiesPersister;
 public class CliConfigService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static final int CLI_VERSION = 2;
+  public static final int CLI_VERSION = 3;
   public static final String CLI_CONFIG_FILENAME = "whirlpool-cli-config.properties";
   private static final String KEY_APIKEY = "cli.apiKey";
   private static final String KEY_SEED = "cli.seed";

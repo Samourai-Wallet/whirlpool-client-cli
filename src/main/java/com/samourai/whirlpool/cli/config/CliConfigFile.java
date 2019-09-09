@@ -173,7 +173,7 @@ public abstract class CliConfigFile {
   }
 
   public static class MixConfig {
-    @NotEmpty private int clients;
+    @NotEmpty private Integer clients;
     @NotEmpty private int clientsPerPool;
     @NotEmpty private int clientDelay;
     @NotEmpty private int tx0Delay;
@@ -193,11 +193,11 @@ public abstract class CliConfigFile {
       this.mixsTarget = copy.mixsTarget;
     }
 
-    public int getClients() {
+    public Integer getClients() {
       return clients;
     }
 
-    public void setClients(int clients) {
+    public void setClients(Integer clients) {
       this.clients = clients;
     }
 
@@ -251,7 +251,7 @@ public abstract class CliConfigFile {
 
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
-      configInfo.put("cli/mix/clients", Integer.toString(clients));
+      configInfo.put("cli/mix/clients", clients != null ? Integer.toString(clients) : "null");
       configInfo.put("cli/mix/clientsPerPool", Integer.toString(clientsPerPool));
       configInfo.put("cli/mix/clientDelay", Integer.toString(clientDelay));
       configInfo.put("cli/mix/tx0Delay", Integer.toString(tx0Delay));

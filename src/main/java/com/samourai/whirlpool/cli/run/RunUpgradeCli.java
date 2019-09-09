@@ -12,7 +12,7 @@ public class RunUpgradeCli {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int CLI_V1 = 1;
-  private static final int CLI_V2 = 2;
+  private static final int CLI_V3 = 3;
 
   private CliConfig cliConfig;
   private CliConfigService cliConfigService;
@@ -24,25 +24,17 @@ public class RunUpgradeCli {
 
   public void run(int lastVersion) throws Exception {
     // run upgrades
-    if (lastVersion < CLI_V1) {
-      upgradeV1();
-    }
-
-    if (lastVersion < CLI_V2) {
-      upgradeV2();
+    if (lastVersion < CLI_V3) {
+      upgradeV3();
     }
   }
 
-  public void upgradeV1() throws Exception {
-    log.info(" - Upgrading to: V1");
-  }
+  public void upgradeV3() throws Exception {
+    log.info(" - Upgrading to: V3");
 
-  public void upgradeV2() throws Exception {
-    log.info(" - Upgrading to: V2");
-
-    // set mix.clients=3
+    // unset mix.clients=
     Properties props = cliConfigService.loadProperties();
-    props.put(ApiCliConfig.KEY_MIX_CLIENTS, Integer.toString(3));
+    props.put(ApiCliConfig.KEY_MIX_CLIENTS, "");
     cliConfigService.saveProperties(props);
   }
 }

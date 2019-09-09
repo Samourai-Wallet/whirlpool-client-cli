@@ -82,8 +82,6 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + ", "
               + mixState.getNbMixing()
               + " mixing, "
-              + mixState.getNbIdle()
-              + " idle, "
               + mixState.getNbQueued()
               + " queued. Commands: [T]hreads, [D]eposit, [P]remix, P[O]stmix\r");
     } catch (NoSessionWalletException e) {
@@ -110,9 +108,6 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
                 + " ; "
                 + whirlpoolUtxo.getUtxoConfig());
         i++;
-      }
-      for (; i < cliConfig.getMix().getClients(); i++) {
-        log.info("⣿ Thread #" + (i + 1) + ": idle");
       }
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED");

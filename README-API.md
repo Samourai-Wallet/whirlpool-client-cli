@@ -55,8 +55,6 @@ Response:
 
     "started":true,
     "nbMixing":1,
-    "maxClients":10,
-    "nbIdle":6,
     "nbQueued":17,
     "threads":[{
         "hash":"c7f456d5ff002faa89dadec01cc5eb98bb00fdefb92031890324ec127f9d1541",

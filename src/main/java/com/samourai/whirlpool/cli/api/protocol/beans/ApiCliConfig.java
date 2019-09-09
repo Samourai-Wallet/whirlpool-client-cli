@@ -143,12 +143,10 @@ public class ApiCliConfig {
     }
 
     public void toProperties(Properties props) throws NotifiableException {
-      if (clients != null) {
-        if (clients < 1) {
-          throw new NotifiableException("mix.clients should be > 0");
-        }
-        props.put(KEY_MIX_CLIENTS, Integer.toString(clients));
+      if (clients != null && clients < 1) {
+        throw new NotifiableException("mix.clients should be > 0 or null");
       }
+      props.put(KEY_MIX_CLIENTS, clients != null ? Integer.toString(clients) : "");
       if (clientsPerPool != null) {
         if (clientsPerPool < 1) {
           throw new NotifiableException("mix.clientsPerPool should be > 0");

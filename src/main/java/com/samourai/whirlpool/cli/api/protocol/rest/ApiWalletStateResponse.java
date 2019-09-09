@@ -10,8 +10,6 @@ public class ApiWalletStateResponse {
   private boolean started;
 
   private int nbMixing;
-  private int maxClients;
-  private int nbIdle;
   private int nbQueued;
   private Collection<ApiUtxo> threads;
 
@@ -20,8 +18,6 @@ public class ApiWalletStateResponse {
 
     MixOrchestratorState mixState = whirlpoolWalletState.getMixState();
     this.nbMixing = mixState.getNbMixing();
-    this.maxClients = mixState.getMaxClients();
-    this.nbIdle = mixState.getNbIdle();
     this.nbQueued = mixState.getNbQueued();
     this.threads =
         mixState
@@ -37,14 +33,6 @@ public class ApiWalletStateResponse {
 
   public int getNbMixing() {
     return nbMixing;
-  }
-
-  public int getMaxClients() {
-    return maxClients;
-  }
-
-  public int getNbIdle() {
-    return nbIdle;
   }
 
   public int getNbQueued() {
