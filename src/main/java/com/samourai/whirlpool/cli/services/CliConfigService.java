@@ -40,6 +40,7 @@ public class CliConfigService {
   private static final String KEY_DOJO_APIKEY = "cli.dojo.apiKey";
   public static final String KEY_DOJO_ENABLED = "cli.dojo.enabled";
   private static final String KEY_VERSION = "cli.version";
+  public static final String KEY_MIX_CLIENTS = "cli.mix.clients";
 
   private CliConfig cliConfig;
   private CliStatus cliStatus;

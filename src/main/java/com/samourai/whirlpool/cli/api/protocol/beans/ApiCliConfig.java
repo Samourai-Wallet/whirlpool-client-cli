@@ -26,7 +26,6 @@ public class ApiCliConfig {
   private static final String KEY_SCODE = "cli.scode";
   public static final String KEY_TOR = "cli.tor";
   private static final String KEY_PROXY = "cli.proxy";
-  public static final String KEY_MIX_CLIENTS = "cli.mix.clients";
   private static final String KEY_MIX_CLIENTS_PER_POOL = "cli.mix.clientsPerPool";
   private static final String KEY_MIX_CLIENT_DELAY = "cli.mix.clientDelay";
   private static final String KEY_MIX_TX0_MAX_OUTPUTS = "cli.mix.tx0MaxOutputs";
@@ -124,7 +123,6 @@ public class ApiCliConfig {
   }
 
   public static class ApiMixConfig {
-    private Integer clients;
     private Integer clientsPerPool;
     private Integer clientDelay;
     private Integer tx0MaxOutputs;
@@ -134,7 +132,6 @@ public class ApiCliConfig {
     public ApiMixConfig() {}
 
     public ApiMixConfig(CliConfigFile.MixConfig mixConfig) {
-      this.clients = mixConfig.getClients();
       this.clientsPerPool = mixConfig.getClientsPerPool();
       this.clientDelay = mixConfig.getClientDelay();
       this.tx0MaxOutputs = mixConfig.getTx0MaxOutputs();
@@ -143,10 +140,6 @@ public class ApiCliConfig {
     }
 
     public void toProperties(Properties props) throws NotifiableException {
-      if (clients != null && clients < 1) {
-        throw new NotifiableException("mix.clients should be > 0 or null");
-      }
-      props.put(KEY_MIX_CLIENTS, clients != null ? Integer.toString(clients) : "");
       if (clientsPerPool != null) {
         if (clientsPerPool < 1) {
           throw new NotifiableException("mix.clientsPerPool should be > 0");
@@ -174,14 +167,6 @@ public class ApiCliConfig {
         }
         props.put(KEY_MIX_MIXS_TARGET, Integer.toString(mixsTarget));
       }
-    }
-
-    public Integer getClients() {
-      return clients;
-    }
-
-    public void setClients(Integer clients) {
-      this.clients = clients;
     }
 
     public Integer getClientsPerPool() {

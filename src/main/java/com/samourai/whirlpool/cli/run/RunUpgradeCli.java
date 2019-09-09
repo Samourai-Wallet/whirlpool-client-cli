@@ -1,6 +1,5 @@
 package com.samourai.whirlpool.cli.run;
 
-import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import java.lang.invoke.MethodHandles;
@@ -34,7 +33,7 @@ public class RunUpgradeCli {
 
     // unset mix.clients=
     Properties props = cliConfigService.loadProperties();
-    props.put(ApiCliConfig.KEY_MIX_CLIENTS, "");
+    props.put(CliConfigService.KEY_MIX_CLIENTS, "");
     cliConfigService.saveProperties(props);
   }
 }
