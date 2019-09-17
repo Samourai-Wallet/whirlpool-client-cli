@@ -22,7 +22,7 @@ java -jar target/whirlpool-client-version-run.jar
 
 #### Optional arguments:
 - listen: enable API for remote commands & GUI. Authentication on startup is optional, but you can authenticate on startup with --authenticate
-- mixs-target: number of mixs to achieve per UTXO
+- mixs-target: minimum number of mixs to achieve per UTXO
 
 #### Tech arguments: you probably shouldn't use it
 - debug: display debug logs from cli
