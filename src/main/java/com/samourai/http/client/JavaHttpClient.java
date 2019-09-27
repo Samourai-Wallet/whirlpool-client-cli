@@ -15,6 +15,7 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.FormContentProvider;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.util.Fields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,6 +126,13 @@ public class JavaHttpClient implements IHttpClient {
 
   private <T> T parseResponse(ContentResponse response, Class<T> responseType) throws Exception {
     T result = null;
+    if (response.getStatus() != HttpStatus.OK_200) {
+      String responseBody = response.getContentAsString();
+      log.error(
+          "Http query failed: status=" + response.getStatus() + ", responseBody=" + responseBody);
+      throw new HttpException(
+          new Exception("Http query failed: status=" + response.getStatus()), responseBody);
+    }
     if (log.isTraceEnabled()) {
       log.trace("response: " + response.getContentAsString());
     }
