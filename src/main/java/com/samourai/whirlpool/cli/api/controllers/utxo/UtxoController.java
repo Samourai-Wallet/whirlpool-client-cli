@@ -8,24 +8,17 @@ import com.samourai.whirlpool.cli.api.protocol.rest.ApiUtxoConfigureRequest;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
-import com.samourai.whirlpool.client.tx0.Tx0Service;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import javax.validation.Valid;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class UtxoController extends AbstractRestController {
   @Autowired private CliWalletService cliWalletService;
-  @Autowired private Tx0Service tx0Service;
 
   private WhirlpoolUtxo findUtxo(String utxoHash, int utxoIndex) throws Exception {
     // find utxo

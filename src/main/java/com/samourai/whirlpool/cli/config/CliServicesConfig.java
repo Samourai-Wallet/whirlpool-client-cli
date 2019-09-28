@@ -2,7 +2,6 @@ package com.samourai.whirlpool.cli.config;
 
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
-import com.samourai.whirlpool.client.tx0.Tx0Service;
 import java.lang.invoke.MethodHandles;
 import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
@@ -41,11 +40,6 @@ public class CliServicesConfig {
   @Bean
   NetworkParameters networkParameters(CliConfig cliConfig) {
     return cliConfig.getServer().getParams();
-  }
-
-  @Bean
-  Tx0Service tx0Service(CliConfig cliConfig) {
-    return new Tx0Service(cliConfig.getServer().getParams());
   }
 
   @Bean
