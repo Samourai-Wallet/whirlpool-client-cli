@@ -40,7 +40,7 @@ public class WhirlpoolPairingPayloadTest {
         PairingVersion.V1_0_0,
         PairingNetwork.MAINNET,
         "rV2e6YUj33akmh6+k32mjVEE0Amm8XrLRDe4Qvi1WZ1PWAWXHxpuaHwbbXZzzzIlwLnLMNJ8fxtMQMAGR77xew==",
-            true); // passphrase=true for V1
+        true); // passphrase=true for V1
 
     // valid V2
     payload =

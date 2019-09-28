@@ -33,6 +33,7 @@ public abstract class CliConfigFile {
   @NotEmpty private boolean seedAppendPassphrase;
   @NotEmpty private int persistDelay;
   @NotEmpty private int refreshPoolsDelay;
+  @NotEmpty private int tx0MinConfirmations;
   @NotEmpty private String proxy;
   private Optional<CliProxy> _cliProxy;
   @NotEmpty private MixConfig mix;
@@ -57,6 +58,7 @@ public abstract class CliConfigFile {
     this.seedAppendPassphrase = copy.seedAppendPassphrase;
     this.persistDelay = copy.persistDelay;
     this.refreshPoolsDelay = copy.refreshPoolsDelay;
+    this.tx0MinConfirmations = copy.tx0MinConfirmations;
     this.proxy = copy.proxy;
     this.mix = new MixConfig(copy.mix);
   }
@@ -147,6 +149,14 @@ public abstract class CliConfigFile {
 
   public void setRefreshPoolsDelay(int refreshPoolsDelay) {
     this.refreshPoolsDelay = refreshPoolsDelay;
+  }
+
+  public int getTx0MinConfirmations() {
+    return tx0MinConfirmations;
+  }
+
+  public void setTx0MinConfirmations(int tx0MinConfirmations) {
+    this.tx0MinConfirmations = tx0MinConfirmations;
   }
 
   public String getProxy() {
@@ -385,6 +395,7 @@ public abstract class CliConfigFile {
     }
     config.setPersistDelay(persistDelay);
     config.setRefreshPoolsDelay(refreshPoolsDelay);
+    config.setTx0MinConfirmations(tx0MinConfirmations);
 
     config.setMaxClients(mix.getClients());
     config.setMaxClientsPerPool(mix.getClientsPerPool());
@@ -412,6 +423,7 @@ public abstract class CliConfigFile {
     configInfo.put("cli/seedEncrypted", ClientUtils.maskString(seed));
     configInfo.put("cli/persistDelay", Integer.toString(persistDelay));
     configInfo.put("cli/refreshPoolsDelay", Integer.toString(refreshPoolsDelay));
+    configInfo.put("cli/tx0MinConfirmations", Integer.toString(tx0MinConfirmations));
     configInfo.put("cli/proxy", proxy != null ? ClientUtils.maskString(proxy) : "null");
     configInfo.putAll(mix.getConfigInfo());
     return configInfo;
