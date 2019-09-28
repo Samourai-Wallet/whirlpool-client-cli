@@ -20,7 +20,7 @@ public class WhirlpoolPairingPayloadTest {
         PairingVersion.V1_0_0,
         PairingNetwork.TESTNET,
         "0qTfDpexBYZ7GM0/F1xCnXctAKLPNcd8+U+GYWNDq7jHxGtsbcfwSeHI0BoVMSm7KrdIgBiKhyUl0XCntfq9drU6nOrtmqo2x1dppnvrLjNI71go2ICospLOtRHiFUac",
-        null);
+        true); // passphrase=true for V1
 
     // valid
     payload =
@@ -30,7 +30,7 @@ public class WhirlpoolPairingPayloadTest {
         PairingVersion.V1_0_0,
         PairingNetwork.TESTNET,
         "BcXzXesuQjLKTgS54rzPBdyJ43IgWdvEXwNJo/ZE49hq8U5eLp/ge+4XQibNAeJS+Eng7AY19hiAIoR3vsTdsyCzGdfR0ZBjML4gpoebFT2LD0+eMrbKo/1dZueYHq4j",
-        null);
+        true); // passphrase=true for V1
 
     // valid
     payload =
@@ -40,7 +40,7 @@ public class WhirlpoolPairingPayloadTest {
         PairingVersion.V1_0_0,
         PairingNetwork.MAINNET,
         "rV2e6YUj33akmh6+k32mjVEE0Amm8XrLRDe4Qvi1WZ1PWAWXHxpuaHwbbXZzzzIlwLnLMNJ8fxtMQMAGR77xew==",
-        null);
+            true); // passphrase=true for V1
 
     // valid V2
     payload =
@@ -49,7 +49,7 @@ public class WhirlpoolPairingPayloadTest {
         payload,
         PairingVersion.V2_0_0,
         PairingNetwork.TESTNET,
-        "rV2e6YUj33akmh6+k32mjVEE0Amm8XrLRDe4Qvi1WZ1PWAWXHxpuaHwbbXZzzzIlwLnLMNJ8fxtMQMAGR77xew==",
+        "O/fIt9AvelDmz3lVLTzdkvjUtO1MZ1knFPSyPfPNgwMDviVzjAKZSE4mIBvaPazs8sJHZxkyJu09mEgOC4n95TXHCMYWTx3R3MsLfki4WHi77jhZhPDScDExGI9uLlNj",
         true);
 
     // valid V2 no passphrase
