@@ -1,9 +1,9 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.api.client.BackendServer;
 import com.samourai.api.client.SamouraiApi;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.stomp.client.IStompClientService;
+import com.samourai.wallet.api.backend.BackendServer;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
