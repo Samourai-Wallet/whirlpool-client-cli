@@ -57,7 +57,7 @@ public class JavaStompClient implements IStompClient {
   public void connect(
       String url,
       Map<String, String> stompHeaders,
-      MessageErrorListener<IStompMessage, Throwable> onConnectOnDisconnectListener) {
+      MessageErrorListener<Void, Throwable> onConnectOnDisconnectListener) {
 
     WebSocketHttpHeaders httpHeaders = computeHttpHeaders();
     StompHeaders stompHeadersObj = computeStompHeaders(stompHeaders);
@@ -113,7 +113,7 @@ public class JavaStompClient implements IStompClient {
   }
 
   private StompSessionHandlerAdapter computeStompSessionHandler(
-      final MessageErrorListener<IStompMessage, Throwable> onConnectOnDisconnectListener) {
+      final MessageErrorListener<Void, Throwable> onConnectOnDisconnectListener) {
     return new StompSessionHandlerAdapter() {
 
       @Override
@@ -125,9 +125,7 @@ public class JavaStompClient implements IStompClient {
         }
         // set session twice, as we need it for subscribe
         stompSession = session;
-        // send back connected headers through IStompMessage
-        IStompMessage stompMessage = new JavaStompMessage(connectedHeaders, null);
-        onConnectOnDisconnectListener.onMessage(stompMessage);
+        onConnectOnDisconnectListener.onMessage(null);
       }
 
       @Override
