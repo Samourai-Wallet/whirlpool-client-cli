@@ -64,7 +64,7 @@ public class JavaStompClient implements IStompClient {
     try {
       this.stompClient = computeStompClient();
       this.stompSession =
-          stompClient // set stompSession twice, as we need it for getSessionId()
+          stompClient
               .connect(
                   url,
                   httpHeaders,
@@ -76,11 +76,6 @@ public class JavaStompClient implements IStompClient {
       disconnect();
       onConnectOnDisconnectListener.onError(e);
     }
-  }
-
-  @Override
-  public String getSessionId() {
-    return stompSession.getSessionId();
   }
 
   @Override
