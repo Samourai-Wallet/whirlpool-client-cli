@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.services;
 
 import com.google.common.primitives.Bytes;
 import com.samourai.http.client.JavaHttpClient;
+import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
 import com.samourai.wallet.api.pairing.PairingVersion;
@@ -117,17 +118,17 @@ public class CliWalletService extends WhirlpoolWalletService {
     }
 
     // backend connexion
-    SamouraiApiService samouraiApiService = computeSamouraiApiService(passphrase);
-    if (!samouraiApiService.testConnectivity()) {
+    BackendApi BackendApiService = computeBackendApiService(passphrase);
+    if (!BackendApiService.testConnectivity()) {
       throw new NotifiableException(
-          "Unable to connect to wallet backend: " + samouraiApiService.getUrlBackend());
+          "Unable to connect to wallet backend: " + BackendApiService.getUrlBackend());
     }
 
     // open wallet
     WhirlpoolWalletPersistHandler persistHandler = computePersistHandler(walletIdentifier);
     WhirlpoolWalletConfig whirlpoolWalletConfig =
         cliConfig.computeWhirlpoolWalletConfig(
-            httpClient, stompClientService, persistHandler, samouraiApiService);
+            httpClient, stompClientService, persistHandler, BackendApiService);
     WhirlpoolWallet whirlpoolWallet = openWallet(whirlpoolWalletConfig, bip84w);
     this.sessionWallet =
         new CliWallet(
@@ -141,13 +142,15 @@ public class CliWalletService extends WhirlpoolWalletService {
     return sessionWallet;
   }
 
-  private SamouraiApiService computeSamouraiApiService(String passphrase) throws Exception {
-    // decrypt apiKey if any
+  private BackendApi computeBackendApiService(String passphrase) throws Exception {
+    String backendUrl = cliConfig.computeBackendUrl();
+
+    // dojo apiKey
     String dojoApiKey = cliConfig.computeBackendApiKey();
     if (dojoApiKey != null) {
       dojoApiKey = decryptApiKey(dojoApiKey, passphrase);
     }
-    return new SamouraiApiService(httpClient, cliConfig, dojoApiKey);
+    return new BackendApi(httpClient, backendUrl, dojoApiKey);
   }
 
   private WhirlpoolWalletPersistHandler computePersistHandler(String walletIdentifier)

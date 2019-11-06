@@ -1,8 +1,8 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.api.client.SamouraiApi;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.stomp.client.IStompClientService;
+import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -384,12 +384,12 @@ public abstract class CliConfigFile {
       IHttpClient httpClient,
       IStompClientService stompClientService,
       WhirlpoolWalletPersistHandler persistHandler,
-      SamouraiApi samouraiApi) {
+      BackendApi backendApi) {
     String serverUrl = computeServerUrl();
     NetworkParameters params = server.getParams();
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
-            httpClient, stompClientService, persistHandler, serverUrl, params, samouraiApi);
+            httpClient, stompClientService, persistHandler, serverUrl, params, backendApi);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }

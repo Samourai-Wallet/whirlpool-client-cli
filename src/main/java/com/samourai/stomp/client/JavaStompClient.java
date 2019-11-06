@@ -125,6 +125,7 @@ public class JavaStompClient implements IStompClient {
         }
         // set session twice, as we need it for subscribe
         stompSession = session;
+        // notify connected
         onConnectOnDisconnectListener.onMessage(null);
       }
 

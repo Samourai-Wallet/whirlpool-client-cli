@@ -1,7 +1,7 @@
 package com.samourai.whirlpool.cli.services;
 
-import com.samourai.api.client.SamouraiApi;
-import com.samourai.wallet.api.backend.SamouraiFeeTarget;
+import com.samourai.wallet.api.backend.BackendApi;
+import com.samourai.wallet.api.backend.MinerFeeTarget;
 import com.samourai.wallet.api.backend.beans.UnspentResponse;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.wallet.client.Bip84Wallet;
@@ -48,9 +48,9 @@ public class WalletAggregateService {
       Bip84ApiWallet sourceWallet,
       Bip84Wallet destinationWallet,
       int feeSatPerByte,
-      SamouraiApi samouraiApi)
+      BackendApi backendApi)
       throws Exception {
-    return doAggregate(sourceWallet, null, destinationWallet, feeSatPerByte, samouraiApi);
+    return doAggregate(sourceWallet, null, destinationWallet, feeSatPerByte, backendApi);
   }
 
   public boolean toAddress(
@@ -61,9 +61,9 @@ public class WalletAggregateService {
           "aggregate toAddress is disabled on mainnet for security reasons.");
     }
 
-    int feeSatPerByte = cliWallet.getFee(SamouraiFeeTarget.BLOCKS_2);
-    SamouraiApi samouraiApi = cliWallet.getConfig().getSamouraiApi();
-    return doAggregate(sourceWallet, destinationAddress, null, feeSatPerByte, samouraiApi);
+    int feeSatPerByte = cliWallet.getFee(MinerFeeTarget.BLOCKS_2);
+    BackendApi backendApi = cliWallet.getConfig().getBackendApi();
+    return doAggregate(sourceWallet, destinationAddress, null, feeSatPerByte, backendApi);
   }
 
   private boolean doAggregate(
@@ -71,7 +71,7 @@ public class WalletAggregateService {
       String destinationAddress,
       Bip84Wallet destinationWallet,
       int feeSatPerByte,
-      SamouraiApi samouraiApi)
+      BackendApi backendApi)
       throws Exception {
     List<UnspentResponse.UnspentOutput> utxos = sourceWallet.fetchUtxos();
     if (utxos.isEmpty()) {
@@ -100,7 +100,7 @@ public class WalletAggregateService {
         }
 
         log.info("Aggregating " + subsetUtxos.size() + " utxos (pass #" + round + ")");
-        txAggregate(sourceWallet, subsetUtxos, toAddress, feeSatPerByte, samouraiApi);
+        txAggregate(sourceWallet, subsetUtxos, toAddress, feeSatPerByte, backendApi);
         success = true;
 
         ClientUtils.sleepRefreshUtxos(cliConfig.getServer().getParams());
@@ -115,7 +115,7 @@ public class WalletAggregateService {
       List<UnspentResponse.UnspentOutput> postmixUtxos,
       String toAddress,
       int feeSatPerByte,
-      SamouraiApi samouraiApi)
+      BackendApi backendApi)
       throws Exception {
     List<TransactionOutPoint> spendFromOutPoints = new ArrayList<>();
     List<HD_Address> spendFromAddresses = new ArrayList<>();
@@ -137,7 +137,7 @@ public class WalletAggregateService {
     // broadcast
     log.info(" • Broadcasting TxAggregate...");
     String txHex = ClientUtils.getTxHex(txAggregate);
-    samouraiApi.pushTx(txHex);
+    backendApi.pushTx(txHex);
   }
 
   public boolean consolidateWallet(CliWallet cliWallet) throws Exception {
@@ -149,21 +149,21 @@ public class WalletAggregateService {
     Bip84ApiWallet premixWallet = cliWallet.getWalletPremix();
     Bip84ApiWallet postmixWallet = cliWallet.getWalletPostmix();
 
-    int feeSatPerByte = cliWallet.getFee(SamouraiFeeTarget.BLOCKS_2);
-    SamouraiApi samouraiApi = cliWallet.getConfig().getSamouraiApi();
+    int feeSatPerByte = cliWallet.getFee(MinerFeeTarget.BLOCKS_2);
+    BackendApi backendApi = cliWallet.getConfig().getBackendApi();
 
     log.info(" • Consolidating postmix -> deposit...");
-    toWallet(postmixWallet, depositWallet, feeSatPerByte, samouraiApi);
+    toWallet(postmixWallet, depositWallet, feeSatPerByte, backendApi);
 
     log.info(" • Consolidating premix -> deposit...");
-    toWallet(premixWallet, depositWallet, feeSatPerByte, samouraiApi);
+    toWallet(premixWallet, depositWallet, feeSatPerByte, backendApi);
 
     if (depositWallet.fetchUtxos().size() < 2) {
       log.info(" • Consolidating deposit... nothing to aggregate.");
       return false;
     }
     log.info(" • Consolidating deposit...");
-    boolean success = toWallet(depositWallet, depositWallet, feeSatPerByte, samouraiApi);
+    boolean success = toWallet(depositWallet, depositWallet, feeSatPerByte, backendApi);
     return success;
   }
 }

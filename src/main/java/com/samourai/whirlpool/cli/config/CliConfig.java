@@ -1,8 +1,8 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.api.client.SamouraiApi;
 import com.samourai.http.client.IHttpClient;
 import com.samourai.stomp.client.IStompClientService;
+import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.backend.BackendServer;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -26,7 +26,7 @@ public class CliConfig extends CliConfigFile {
       IHttpClient httpClient,
       IStompClientService stompClientService,
       WhirlpoolWalletPersistHandler persistHandler,
-      SamouraiApi samouraiApi) {
+      BackendApi backendApi) {
 
     // check valid
     if (autoAggregatePostmix && StringUtils.isEmpty(autoTx0PoolId)) {
@@ -35,7 +35,7 @@ public class CliConfig extends CliConfigFile {
 
     WhirlpoolWalletConfig config =
         super.computeWhirlpoolWalletConfig(
-            httpClient, stompClientService, persistHandler, samouraiApi);
+            httpClient, stompClientService, persistHandler, backendApi);
     config.setAutoTx0PoolId(autoTx0PoolId);
     return config;
   }
