@@ -1,10 +1,12 @@
 package com.samourai.whirlpool.cli.run;
 
 import com.samourai.wallet.client.Bip84ApiWallet;
+import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
+import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
@@ -42,6 +44,34 @@ public class RunCliCommand {
         log.info(" • Moving funds to: " + toAddress);
         walletAggregateService.toAddress(depositWallet, toAddress, cliWallet);
       }
+    } else if (appArgs.isEmptyTo()) {
+      CliWallet cliWallet = cliWalletService.getSessionWallet();
+      String toAddress = appArgs.getEmptyTo();
+
+      if (!FormatsUtilGeneric.getInstance().isValidBech32(toAddress)) {
+        throw new Exception("Invalid bech32 destination address: " + toAddress);
+      }
+
+      // confirm
+      System.out.println("⣿ WARNING ⣿ This will EMPTY your wallet and move funds to: " + toAddress);
+      CliUtils.readUserInputRequired("Press <y> to continue", false, new String[] {"y", "Y"});
+
+      // deposit
+      Bip84ApiWallet depositWallet = cliWallet.getWalletDeposit();
+      log.info(" • Moving funds: DEPOSIT -> " + toAddress);
+      walletAggregateService.toAddress(depositWallet, toAddress, cliWallet);
+
+      // premix
+      Bip84ApiWallet premixWallet = cliWallet.getWalletDeposit();
+      log.info(" • Moving funds: PREMIX -> " + toAddress);
+      walletAggregateService.toAddress(premixWallet, toAddress, cliWallet);
+
+      // postmix
+      Bip84ApiWallet postmixWallet = cliWallet.getWalletDeposit();
+      log.info(" • Moving funds: POSTMIX -> " + toAddress);
+      walletAggregateService.toAddress(postmixWallet, toAddress, cliWallet);
+
+      log.info("⣿ SUCCESS ⣿ All funds were moved to " + toAddress);
     } else if (appArgs.isListPools()) {
       CliWallet cliWallet = cliWalletService.getSessionWallet();
       new RunListPools(cliWallet).run();
@@ -55,6 +85,9 @@ public class RunCliCommand {
   }
 
   public static boolean hasCommandToRun(ApplicationArgs appArgs, CliConfig cliConfig) {
-    return appArgs.isDumpPayload() || appArgs.isAggregatePostmix() || appArgs.isListPools();
+    return appArgs.isDumpPayload()
+        || appArgs.isAggregatePostmix()
+        || appArgs.isEmptyTo()
+        || appArgs.isListPools();
   }
 }

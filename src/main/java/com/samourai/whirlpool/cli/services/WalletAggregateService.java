@@ -10,7 +10,6 @@ import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
 import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
-import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -56,10 +55,11 @@ public class WalletAggregateService {
   public boolean toAddress(
       Bip84ApiWallet sourceWallet, String destinationAddress, CliWallet cliWallet)
       throws Exception {
-    if (!formatUtils.isTestNet(cliConfig.getServer().getParams())) {
+    // enabled for mainnet for branch empty-to
+    /*if (!formatUtils.isTestNet(cliConfig.getServer().getParams())) {
       throw new NotifiableException(
           "aggregate toAddress is disabled on mainnet for security reasons.");
-    }
+    }*/
 
     int feeSatPerByte = cliWallet.getFee(SamouraiFeeTarget.BLOCKS_2);
     SamouraiApi samouraiApi = cliWallet.getConfig().getSamouraiApi();

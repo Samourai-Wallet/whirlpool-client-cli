@@ -26,6 +26,7 @@ public class ApplicationArgs {
   private static final String ARG_TX0_DELAY = "tx0-delay";
   private static final String ARG_TX0_MAX_OUTPUTS = "tx0-max-outputs";
   private static final String ARG_AGGREGATE_POSTMIX = "aggregate-postmix";
+  private static final String ARG_EMPTY_TO = "emptyTo";
   private static final String ARG_AUTO_AGGREGATE_POSTMIX = "auto-aggregate-postmix";
   private static final String ARG_AUTO_TX0 = "auto-tx0";
   private static final String ARG_AUTO_MIX = "auto-mix";
@@ -117,6 +118,14 @@ public class ApplicationArgs {
 
   public boolean isAggregatePostmix() {
     return !StringUtils.isEmpty(getAggregatePostmix());
+  }
+
+  public String getEmptyTo() {
+    return optionalOption(ARG_EMPTY_TO);
+  }
+
+  public boolean isEmptyTo() {
+    return !StringUtils.isEmpty(getEmptyTo());
   }
 
   public boolean isInit() {
