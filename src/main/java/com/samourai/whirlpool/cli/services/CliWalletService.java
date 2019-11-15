@@ -28,6 +28,7 @@ import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandle
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
+import java8.util.Optional;
 import javax.crypto.AEADBadTagException;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.crypto.MnemonicException;
@@ -40,7 +41,6 @@ import org.springframework.stereotype.Service;
 public class CliWalletService extends WhirlpoolWalletService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final String INDEX_CLI_VERSION = "cliVersion";
   private static final FormatsUtilGeneric formatUtils = FormatsUtilGeneric.getInstance();
 
   private CliConfig cliConfig;
@@ -50,9 +50,6 @@ public class CliWalletService extends WhirlpoolWalletService {
   private JavaHttpClient httpClient;
   private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
-
-  // available when wallet is opened
-  private CliWallet sessionWallet = null;
 
   public CliWalletService(
       CliConfig cliConfig,
@@ -129,8 +126,8 @@ public class CliWalletService extends WhirlpoolWalletService {
     WhirlpoolWalletConfig whirlpoolWalletConfig =
         cliConfig.computeWhirlpoolWalletConfig(
             httpClient, stompClientService, persistHandler, BackendApiService);
-    WhirlpoolWallet whirlpoolWallet = openWallet(whirlpoolWalletConfig, bip84w);
-    this.sessionWallet =
+    WhirlpoolWallet whirlpoolWallet = computeWhirlpoolWallet(whirlpoolWalletConfig, bip84w);
+    CliWallet cliWallet =
         new CliWallet(
             whirlpoolWallet,
             cliConfig,
@@ -138,8 +135,7 @@ public class CliWalletService extends WhirlpoolWalletService {
             walletAggregateService,
             cliTorClientService,
             this);
-
-    return sessionWallet;
+    return (CliWallet) openWallet(cliWallet);
   }
 
   private BackendApi computeBackendApiService(String passphrase) throws Exception {
@@ -171,22 +167,16 @@ public class CliWalletService extends WhirlpoolWalletService {
     return AESUtil.decrypt(apiKey, new CharSequenceX(seedPassphrase));
   }
 
-  public void closeWallet() {
-    if (this.sessionWallet != null) {
-      this.sessionWallet.stop();
-      this.sessionWallet = null;
-    }
-  }
-
   public CliWallet getSessionWallet() throws NoSessionWalletException {
-    if (sessionWallet == null) {
+    Optional<CliWallet> cliWalletOpt = (Optional) getWhirlpoolWallet();
+    if (!cliWalletOpt.isPresent()) {
       throw new NoSessionWalletException();
     }
-    return sessionWallet;
+    return cliWalletOpt.get();
   }
 
   public boolean hasSessionWallet() {
-    return sessionWallet != null;
+    return getWhirlpoolWallet().isPresent();
   }
 
   private String computeWalletIdentifier(
