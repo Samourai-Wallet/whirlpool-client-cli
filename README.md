@@ -23,6 +23,7 @@ java -jar target/whirlpool-client-version-run.jar
 #### Optional arguments:
 - listen: enable API for remote commands & GUI. Authentication on startup is optional, but you can authenticate on startup with --authenticate
 - mixs-target: minimum number of mixs to achieve per UTXO
+- authenticate: will ask for your passphrase at startup
 
 #### Tech arguments: you probably shouldn't use it
 - debug: display debug logs from cli
@@ -87,6 +88,19 @@ java -jar target/whirlpool-client-version-run.jar --aggregate-postmix
 
 
 
+### Start CLI in authenticated mode
+You can authenticate to CLI in several ways:
+- --authenticate: manually type your passphrase at startup
+- --listen: use the GUI or API to authenticate remotely
+
+
+For security reasons, you should not store your passphrase anywhere. If you really need to automate authentication process, use this at your own risk:
+```
+export PP="mypassphrase"
+echo $PP|java -jar whirlpool-client-cli-x-run.jar --authenticate
+```
+
+
 ## Advanced configuration
 
 ### Tor
@@ -106,12 +120,28 @@ When tor enabled, connect to whirlpool server or wallet backend through:
 - `false`: clearnet over Tor
 
 
-## API usage
+### API key
 whirlpool-client-cli can be managed with a REST API. See [README-API.md](README-API.md)
 
 ApiKey can be overriden with:
 ```
 --api-key=
+```
+
+### API HTTP certificate
+REST API uses a self-signed certificate for HTTPS.
+You can provide your own cert in `whirlpool-cli-config.properties`:
+```
+server.ssl.key-store-type=PKCS12 or JKS
+server.ssl.key-store=</path/to/keystore>
+server.ssl.key-store-password=<passord>
+server.ssl.key-alias=<alias in keystore>
+```
+
+### API HTTPS requirement
+REST API requires HTTPS for your privacy. However, this can be disabled at your own risk in `whirlpool-cli-config.properties`:
+```
+security.require-ssl=false
 ```
 
 ## Build instructions
