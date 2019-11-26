@@ -8,6 +8,7 @@ import com.samourai.whirlpool.cli.api.protocol.rest.ApiUtxoConfigureRequest;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
+import com.samourai.whirlpool.client.tx0.Tx0Config;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import javax.validation.Valid;
@@ -71,8 +72,10 @@ public class UtxoController extends AbstractRestController {
       whirlpoolWallet.setMixsTarget(whirlpoolUtxo, payload.mixsTarget);
     }
 
+    Tx0Config tx0Config = whirlpoolWallet.getTx0Config();
+
     // tx0
-    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxo, payload.feeTarget);
+    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxo, tx0Config, payload.feeTarget);
     return new ApiTx0Response(tx0.getTx().getHashAsString());
   }
 
