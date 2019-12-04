@@ -1,9 +1,31 @@
 # whirlpool-client-cli API
 
 whirlpool-client-cli exposes a REST API when started with --listen[=8899].
-Required headers:
+
+#### API KEY
+API key is configured in ```whirlpool-cli-config.properties```.  
+It can be overriden with ```--api-key=```
+
+
+#### Required headers
 * apiVersion (see [CliApi.java](src/main/java/com/samourai/whirlpool/cli/api/protocol/CliApi.java))
-* apiKey (see `cli.apiKey` in your whirlpool-cli-config.properties)
+* apiKey
+
+
+#### HTTPS
+REST API uses a self-signed certificate for HTTPS.
+You can configure your own cert in `whirlpool-cli-config.properties`:
+```
+server.ssl.key-store-type=PKCS12 or JKS
+server.ssl.key-store=</path/to/keystore>
+server.ssl.key-store-password=<passord>
+server.ssl.key-alias=<alias in keystore>
+```
+
+HTTPS can be disabled at your own risk:
+```
+security.require-ssl=false
+```
 
 ## Pools
 

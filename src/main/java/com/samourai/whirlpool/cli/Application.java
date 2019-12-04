@@ -134,7 +134,11 @@ public class Application implements ApplicationRunner {
         Arrays.toString(args.getSourceArgs()),
         System.getProperty("java.version"));
     if (log.isDebugEnabled()) {
-      log.debug("[config/listen] " + (listenPort != null ? listenPort : "false"));
+      log.debug(
+          "[config/listen] "
+              + (listenPort != null
+                  ? listenPort + ", https=" + System.getProperty("security.require-ssl")
+                  : "false"));
       log.debug("[config/debug] debug=" + debug + ", debugClient=" + debugClient);
       for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
         log.debug("[cliConfig/" + entry.getKey() + "] " + entry.getValue());

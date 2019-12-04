@@ -5,93 +5,46 @@
 
 Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool) by Samourai-Wallet.
 
+## Getting started
 
-## Setup
+#### Download and verify CLI
+- Download whirlpool-client-cli-\[version\]-run.jar from [releases](https://github.com/Samourai-Wallet/whirlpool-client-cli/releases)
+- Verify sha256 hash of the jar with signed message in whirlpool-client-cli-\[version\]-run.jar.sig
+- Verify signature with [@SamouraiDev](https://github.com/SamouraiDev) 's key
+
+#### Initial setup
 You can setup whirlpool-client-cli in 2 ways:
-- commandline: run CLI with ```--init```
-- remotely through API: run CLI with ```--listen```, then open GUI
+- command-line: run CLI with ```--init```
+- remotely: run CLI with ```--listen```, then use GUI or API
 
-
-## General usage
-```
-java -jar target/whirlpool-client-version-run.jar
-[--listen[=8899]] [--authenticate]
-[--mixs-target=]
-[--debug] [--debug-client] [--scode=] [--tx0-max-outputs=] {args...}
-```
-
-#### Optional arguments:
-- listen: enable API for remote commands & GUI. Authentication on startup is optional, but you can authenticate on startup with --authenticate
-- mixs-target: minimum number of mixs to achieve per UTXO
-- authenticate: will ask for your passphrase at startup
-
-#### Tech arguments: you probably shouldn't use it
-- debug: display debug logs from cli
-- debug-client: display debug logs from whirlpool-client
-- scode: optional scode to use for tx0
-- tx0-max-outputs: tx0 outputs limit
-
-### List pools
-```
---list-pools
-```
-
-Example:
-```
-java -jar target/whirlpool-client-version-run.jar --list-pools
-```
-
-### Mix a wallet
-You need a wallet holding funds to mix.
-
-```
-[--client-delay=5] [--tx0-delay=20]
-[--auto-tx0=poolId] [--auto-mix] [--auto-aggregate-postmix]
-```
-
-Example:
+#### Run
 ```
 java -jar target/whirlpool-client-version-run.jar
 ```
-- client-delay: delay (in seconds) between each connexion
-- tx0-delay: delay (in seconds) between each tx0 (from --auto-tx0)
-- auto-tx0: automatically run tx0 from deposit for specified pool when premix wallet is empty
-- auto-mix: automatically mix utxos detected in premix wallet
-- auto-aggregate-postmix: enable automatically post-mix wallet agregation to refill premix when empty
+
+Optional arguments:
+- ```--listen[=8899]```: enable API for remote commands & GUI. Authentication on startup is optional, but you can authenticate on startup with --authenticate
+- ```--mixs-target```: minimum number of mixs to achieve per UTXO
+- ```--authenticate```: will ask for your passphrase at startup
+- ```--list-pools```: list pools and exit
+
 
 ## Expert usage
 
-
-### Dump pairing payload of current wallet
-```
---dump-payload
-```
-
-Example:
-```
-java -jar target/whirlpool-client-version-run.jar --dump-payload
-```
+#### API
+whirlpool-client-cli can be managed remotely with REST API. See [README-API.md](README-API.md)
 
 
-### Aggregate postmix / move funds
-Move all postmix funds back to premix wallet and consolidate to a single UTXO.
-Only allowed on testnet for testing purpose.
-```
---aggregate-postmix[=address]
-```
-
-Example:
-```
-java -jar target/whirlpool-client-version-run.jar --aggregate-postmix
-```
-- aggregate-postmix: move funds back to premix-wallet. Or --aggregate-postmix=address to move funds to a specific address.
+#### Debugging
+- ```--debug```: debug logs
+- ```--debug-client```: more debug logs
+- ```--dump-payload```: dump pairing-payload of current wallet and exit
 
 
-
-### Start CLI in authenticated mode
-You can authenticate to CLI in several ways:
-- --authenticate: manually type your passphrase at startup
-- --listen: use the GUI or API to authenticate remotely
+#### Authenticate on startup
+You can authenticate in several ways:
+- ```--authenticate```: manually type your passphrase on startup
+- ```--listen```: use the GUI or API to authenticate remotely
 
 
 For security reasons, you should not store your passphrase anywhere. If you really need to automate authentication process, use this at your own risk:
@@ -100,10 +53,7 @@ export PP="mypassphrase"
 echo $PP|java -jar whirlpool-client-cli-x-run.jar --authenticate
 ```
 
-
-## Advanced configuration
-
-### Tor
+#### Tor configuration
 ```
 cli.torConfig.executable = /path/to/bin/tor
 ```
@@ -120,29 +70,15 @@ When tor enabled, connect to whirlpool server or wallet backend through:
 - `false`: clearnet over Tor
 
 
-### API key
-whirlpool-client-cli can be managed with a REST API. See [README-API.md](README-API.md)
+#### Configuration override
+Configuration can be overriden in whirlpool-cli-config.properties (see default configuration in [src/main/resources/application.properties]).
 
-ApiKey can be overriden with:
-```
---api-key=
-```
+Or with following arguments:
+- ```--scode```: scode to use for tx0
+- ```--tx0-max-outputs```: tx0 outputs limit
+- ```--auto-tx0=[poolId]```: run tx0 from deposit utxos automatically
+- ```--auto-mix=[true/false]```: mix premix utxos automatically
 
-### API HTTP certificate
-REST API uses a self-signed certificate for HTTPS.
-You can provide your own cert in `whirlpool-cli-config.properties`:
-```
-server.ssl.key-store-type=PKCS12 or JKS
-server.ssl.key-store=</path/to/keystore>
-server.ssl.key-store-password=<passord>
-server.ssl.key-alias=<alias in keystore>
-```
-
-### API HTTPS requirement
-REST API requires HTTPS for your privacy. However, this can be disabled at your own risk in `whirlpool-cli-config.properties`:
-```
-security.require-ssl=false
-```
 
 ## Build instructions
 Build with maven:
