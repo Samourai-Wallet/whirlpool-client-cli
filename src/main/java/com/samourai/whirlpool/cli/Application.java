@@ -1,32 +1,21 @@
 package com.samourai.whirlpool.cli;
 
-import com.samourai.http.client.IHttpClient;
-import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
-import com.samourai.whirlpool.cli.beans.CliProxy;
-import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
-import com.samourai.whirlpool.cli.run.RunCliCommand;
-import com.samourai.whirlpool.cli.run.RunCliInit;
 import com.samourai.whirlpool.cli.services.CliConfigService;
-import com.samourai.whirlpool.cli.services.CliTorClientService;
-import com.samourai.whirlpool.cli.services.CliWalletService;
-import com.samourai.whirlpool.cli.services.WalletAggregateService;
+import com.samourai.whirlpool.cli.services.CliService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
+import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import org.bitcoinj.core.Context;
-import org.bitcoinj.core.NetworkParameters;
+import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -34,7 +23,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 
-/** Command-line client. */
+/** Main application. */
 @SpringBootApplication
 @ServletComponentScan(value = "com.samourai.whirlpool.cli.config.filters")
 public class Application implements ApplicationRunner {
@@ -44,244 +33,113 @@ public class Application implements ApplicationRunner {
   private static boolean debug;
   private static boolean debugClient;
   private static ConfigurableApplicationContext applicationContext;
+  private static ApplicationArguments applicationArguments;
+  private static boolean restart;
   private static int exitCode = 0;
 
   @Autowired Environment env;
-  @Autowired private ApplicationArgs appArgs;
-  @Autowired private CliConfig cliConfig;
-  @Autowired private CliConfigService cliConfigService;
-  @Autowired private CliWalletService cliWalletService;
-  private static CliWalletService cliWalletServiceStatic;
-  @Autowired private Bech32UtilGeneric bech32Util;
-  @Autowired private WalletAggregateService walletAggregateService;
-  @Autowired private CliTorClientService cliTorClientService;
-  private static CliTorClientService cliTorClientServiceStatic;
-  @Autowired private IHttpClient httpClient;
+  @Autowired CliService cliService;
 
   public static void main(String... args) {
+    if (log.isDebugEnabled()) {
+      log.debug("Main... " + Arrays.toString(args));
+    }
+
     // override configuration with local file
     System.setProperty(
         "spring.config.location",
         "classpath:application.properties,./" + CliConfigService.CLI_CONFIG_FILENAME);
 
-    ApplicationArgs.setMainArgs(args);
-
     // start REST api if --listen
-    listenPort = ApplicationArgs.getMainListen();
-    WebApplicationType wat =
-        listenPort != null ? WebApplicationType.SERVLET : WebApplicationType.NONE;
+    listenPort = ApplicationArgs.getMainListen(args);
     if (listenPort != null) {
       System.setProperty("server.port", Integer.toString(listenPort));
     }
 
     // enable debug logs with --debug
-    debug = ApplicationArgs.isMainDebug();
-    debugClient = ApplicationArgs.isMainDebugClient();
+    debug = ApplicationArgs.isMainDebug(args);
+    debugClient = ApplicationArgs.isMainDebugClient(args);
     setDebug(debug, debugClient);
 
     // run
+    WebApplicationType wat =
+        listenPort != null ? WebApplicationType.SERVLET : WebApplicationType.NONE;
     applicationContext =
-        new SpringApplicationBuilder(Application.class).logStartupInfo(debug).web(wat).run(args);
+        new SpringApplicationBuilder(Application.class)
+            .logStartupInfo(debugClient)
+            .web(wat)
+            .run(args);
 
-    shutdown();
+    if (restart) {
+      // restart
+      restart();
+    } else {
+      // exit
+      if (exitCode != 0) {
+        // error
+        if (log.isDebugEnabled()) {
+          log.debug("Exit with error: " + exitCode);
+        }
+        SpringApplication.exit(applicationContext, () -> exitCode);
+        System.exit(exitCode);
+      } else {
+        // success
+        if (log.isDebugEnabled()) {
+          log.debug("CLI startup complete.");
+        }
+      }
+    }
+  }
 
-    // exit with exitCode
-    applicationContext.close();
-    System.exit(exitCode);
+  @PreDestroy
+  public void preDestroy() {
+    cliService.shutdown();
   }
 
   @Override
-  public void run(ApplicationArguments args) {
-    // set static references from autowire
-    cliWalletServiceStatic = cliWalletService;
-    cliTorClientServiceStatic = cliTorClientService;
+  public void run(ApplicationArguments applicationArguments) {
+    restart = false;
 
-    log.info("------------ whirlpool-client-cli starting ------------");
-    setup(args);
+    Application.applicationArguments = applicationArguments;
+    setDebug(debug, debugClient); // run twice to fix incorrect log level
 
-    if (env.acceptsProfiles(CliUtils.SPRING_PROFILE_TESTING)) {
-      log.info("Running unit test...");
-      return;
+    if (log.isDebugEnabled()) {
+      log.debug("Run... " + Arrays.toString(applicationArguments.getSourceArgs()));
     }
+
+    boolean listen = (listenPort != null);
+    if (log.isDebugEnabled()) {
+      log.debug("[cli/debug] debug=" + debug + ", debugClient=" + debugClient);
+      log.debug("[cli/protocolVersion] " + WhirlpoolProtocol.PROTOCOL_VERSION);
+      log.debug(
+          "[cli/listen] "
+              + (listen
+                  ? listenPort + ", https=" + System.getProperty("security.require-ssl")
+                  : "false"));
+    }
+
     try {
-      runCli();
+      if (env.acceptsProfiles(CliUtils.SPRING_PROFILE_TESTING)) {
+        log.info("Running unit test...");
+        return;
+      }
+
+      restart = cliService.run(listen);
     } catch (NotifiableException e) {
       exitCode = 1;
       CliUtils.notifyError(e.getMessage());
     } catch (IllegalArgumentException e) {
       exitCode = 1;
-      log.info("Invalid arguments: " + e.getMessage());
+      log.error("Invalid arguments: " + e.getMessage());
     } catch (Exception e) {
       exitCode = 1;
       log.error("", e);
-    }
-
-    log.info("------------ whirlpool-client-cli ending ------------");
-  }
-
-  private void setup(ApplicationArguments args) {
-    // log configuration
-    setDebug(debug, debugClient); // run twice to fix incorrect log level
-
-    // properties were just set on CliConfig => override CliConfig with cli args
-    if (log.isDebugEnabled()) {
-      log.debug("Overriding cliConfigFile with CLI args");
-    }
-    appArgs.override(cliConfig);
-
-    log.info(
-        "Running whirlpool-client {} on java {}",
-        Arrays.toString(args.getSourceArgs()),
-        System.getProperty("java.version"));
-    if (log.isDebugEnabled()) {
-      log.debug(
-          "[config/listen] "
-              + (listenPort != null
-                  ? listenPort + ", https=" + System.getProperty("security.require-ssl")
-                  : "false"));
-      log.debug("[config/debug] debug=" + debug + ", debugClient=" + debugClient);
-      for (Map.Entry<String, String> entry : cliConfig.getConfigInfo().entrySet()) {
-        log.debug("[cliConfig/" + entry.getKey() + "] " + entry.getValue());
-      }
-    }
-
-    // setup proxy
-    Optional<CliProxy> cliProxyOptional = cliConfig.getCliProxy();
-    if (cliProxyOptional.isPresent()) {
-      CliProxy cliProxy = cliProxyOptional.get();
-      log.info("PROXY is ENABLED. Using: " + cliProxy);
-      CliUtils.useProxy(cliProxy);
-    } else {
-      log.info("PROXY is DISABLED.");
-    }
-  }
-
-  private void runCli() throws Exception {
-    // connect Tor
-    cliTorClientService.connect();
-
-    // initialize bitcoinj context
-    NetworkParameters params = cliConfig.getServer().getParams();
-    new Context(params);
-
-    // check init
-    if (appArgs.isInit() || (cliConfigService.isCliStatusNotInitialized() && listenPort == null)) {
-      new RunCliInit(appArgs, cliConfigService, cliWalletService).run();
-      return;
-    }
-
-    // check cli initialized
-    if (cliConfigService.isCliStatusNotInitialized()) {
-      // not initialized
-      if (log.isDebugEnabled()) {
-        log.debug("CliStatus=" + cliConfigService.getCliStatus());
-      }
-
-      // keep cli running for remote initialization
-      log.warn(CliUtils.LOG_SEPARATOR);
-      log.warn("⣿ INITIALIZATION REQUIRED");
-      log.warn("⣿ Please start GUI to initialize CLI.");
-      log.warn("⣿ Or initialize with --init");
-      log.warn(CliUtils.LOG_SEPARATOR);
-      keepRunning();
-      return;
-    }
-
-    // check upgrade
-    boolean shouldRestart = cliConfigService.checkUpgrade();
-    if (shouldRestart) {
-      log.warn("⣿ UPGRADE SUCCESS");
-      log.warn("⣿ Please restart CLI.");
-      if (listenPort != null) {
-        keepRunning();
-      }
-      return;
-    }
-
-    if (!appArgs.isAuthenticate()
-        && listenPort != null
-        && !RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
-      // no passphrase but listening => keep listening
-      log.info(CliUtils.LOG_SEPARATOR);
-      log.info("⣿ AUTHENTICATION REQUIRED");
-      log.info("⣿ Whirlpool wallet is CLOSED.");
-      log.info("⣿ Please start GUI to authenticate and start mixing.");
-      log.info("⣿ Or authenticate with --authenticate");
-      log.info(CliUtils.LOG_SEPARATOR);
-      keepRunning();
-      return;
-    }
-
-    // authenticate to open wallet when passphrase providen through arguments
-    String seedPassphrase = authenticate();
-
-    // we may have authenticated from API in the meantime...
-    CliWallet cliWallet =
-        cliWalletService.hasSessionWallet()
-            ? cliWalletService.getSessionWallet()
-            : cliWalletService.openWallet(seedPassphrase);
-    log.info(CliUtils.LOG_SEPARATOR);
-    log.info("⣿ AUTHENTICATION SUCCESS");
-    log.info("⣿ Whirlpool is starting...");
-    log.info(CliUtils.LOG_SEPARATOR);
-
-    if (RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
-      // execute specific command
-      new RunCliCommand(appArgs, cliWalletService, walletAggregateService).run();
-    } else {
-      // start wallet
-      cliWallet.start();
-
-      // keep cli running
-      cliWallet.interactive();
-    }
-  }
-
-  private void keepRunning() {
-    while (true) {
-      try {
-        synchronized (this) {
-          wait();
-        }
-      } catch (InterruptedException e) {
-      }
-    }
-  }
-
-  private String authenticate() {
-    log.info(CliUtils.LOG_SEPARATOR);
-    log.info("⣿ AUTHENTICATION REQUIRED");
-    log.info("⣿ Whirlpool wallet is CLOSED.");
-    log.info("⣿ • Please type your seed passphrase to authenticate and start mixing.");
-    return CliUtils.readUserInputRequired("Seed passphrase?", true);
-  }
-
-  private static void shutdown() {
-    if (log.isDebugEnabled()) {
-      log.debug("shutdown");
-    }
-    try {
-      CliWallet cliWallet =
-          cliWalletServiceStatic != null && cliWalletServiceStatic.hasSessionWallet()
-              ? cliWalletServiceStatic.getSessionWallet()
-              : null;
-      // stop cliWallet
-      if (cliWallet != null && cliWallet.isStarted()) {
-        cliWallet.stop();
-      }
-    } catch (NoSessionWalletException e) {
-    }
-
-    // disconnect Tor
-    if (cliTorClientServiceStatic != null) {
-      cliTorClientServiceStatic.shutdown();
     }
   }
 
   private static void setDebug(boolean isDebug, boolean isDebugClient) {
     if (isDebug) {
       LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
-      // Utils.setLoggerDebug("org.springframework.security");
     }
 
     if (isDebugClient) {
@@ -305,5 +163,37 @@ public class Application implements ApplicationRunner {
     LogbackUtils.setLogLevel("com.msopentech.thali.java.toronionproxy", Level.WARN.toString());
     LogbackUtils.setLogLevel("org.springframework.web", Level.INFO.toString());
     LogbackUtils.setLogLevel("org.apache.http.impl.conn", Level.INFO.toString());
+  }
+
+  public static void restart() {
+    long restartDelay = 1000;
+    if (log.isDebugEnabled()) {
+      log.debug("Restarting CLI in " + restartDelay + "ms");
+    }
+
+    // wait for restartDelay
+    try {
+      Thread.sleep(restartDelay);
+    } catch (InterruptedException e) {
+    }
+
+    // restart application
+    log.info("Restarting CLI...");
+    Thread thread =
+        new Thread(
+            () -> {
+              applicationContext.close();
+
+              String[] restartArgs = computeRestartArgs();
+              main(restartArgs);
+            });
+    thread.setDaemon(false);
+    thread.start();
+  }
+
+  private static String[] computeRestartArgs() {
+    return Arrays.stream(applicationArguments.getSourceArgs())
+        .filter(a -> !a.toLowerCase().equals("--" + ApplicationArgs.ARG_INIT))
+        .toArray(i -> new String[i]);
   }
 }

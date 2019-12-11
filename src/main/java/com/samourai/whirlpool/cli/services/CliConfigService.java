@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.services;
 
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
+import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
@@ -226,6 +227,7 @@ public class CliConfigService {
 
   public void setCliStatusNotReady(String error) {
     this.setCliStatus(CliStatus.NOT_READY, error);
+    Application.restart();
   }
 
   protected synchronized void save(Properties props) throws Exception {
