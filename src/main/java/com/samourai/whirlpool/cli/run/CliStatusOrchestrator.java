@@ -7,9 +7,8 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
-import com.samourai.whirlpool.client.wallet.beans.MixOrchestratorState;
+import com.samourai.whirlpool.client.wallet.beans.MixingState;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolWalletState;
 import com.samourai.whirlpool.client.wallet.orchestrator.AbstractOrchestrator;
 import java.util.Collection;
 import org.slf4j.Logger;
@@ -30,8 +29,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
 
   @Override
   protected void runOrchestrator() {
-    // log CLI status
-    printState();
+    interactive();
   }
 
   public void interactive() {
@@ -67,22 +65,20 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
   private void printState() {
     try {
       WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-      WhirlpoolWalletState whirlpoolWalletState = whirlpoolWallet.getState();
-      MixOrchestratorState mixState = whirlpoolWalletState.getMixState();
-
+      MixingState mixingState = whirlpoolWallet.getMixingState();
       WhirlpoolWalletConfig walletConfig = whirlpoolWallet.getConfig();
 
-      System.out.print(
+      System.out.println(
           "⣿ Wallet OPENED, mix "
-              + (whirlpoolWallet.isStarted() ? "STARTED" : "STOPPED")
+              + (mixingState.isStarted() ? "STARTED" : "STOPPED")
               + (walletConfig.isAutoTx0() ? " +autoTx0=" + walletConfig.getAutoTx0PoolId() : "")
               + (walletConfig.isAutoMix() ? " +autoMix" : "")
               + (cliConfig.getTor() ? " +Tor" : "")
               + (cliConfig.isDojoEnabled() ? " +Dojo" : "")
               + ", "
-              + mixState.getNbMixing()
+              + mixingState.getNbMixing()
               + " mixing, "
-              + mixState.getNbQueued()
+              + mixingState.getNbQueued()
               + " queued. Commands: [T]hreads, [D]eposit, [P]remix, P[O]stmix\r");
     } catch (NoSessionWalletException e) {
       System.out.print("⣿ Wallet CLOSED");
@@ -94,12 +90,11 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
   private void printThreads() {
     try {
       WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
-      WhirlpoolWalletState whirlpoolWalletState = whirlpoolWallet.getState();
-      MixOrchestratorState mixState = whirlpoolWalletState.getMixState();
+      MixingState mixingState = whirlpoolWallet.getMixingState();
       log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
       log.info("⣿ THREADS:");
       int i = 0;
-      for (WhirlpoolUtxo whirlpoolUtxo : mixState.getUtxosMixing()) {
+      for (WhirlpoolUtxo whirlpoolUtxo : mixingState.getUtxosMixing()) {
         log.info(
             "⣿ Thread #"
                 + (i + 1)

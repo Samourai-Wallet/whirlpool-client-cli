@@ -4,6 +4,7 @@ import com.google.common.primitives.Ints;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
+import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoState;
 import java.util.Comparator;
 import java8.lang.Longs;
 
@@ -16,14 +17,16 @@ public class ApiWalletUtxosResponse {
     Comparator<WhirlpoolUtxo> comparator =
         (o1, o2) -> {
           // last activity first
-          if (o1.getLastActivity() != null || o2.getLastActivity() != null) {
-            if (o1.getLastActivity() != null && o2.getLastActivity() == null) {
+          WhirlpoolUtxoState s1 = o1.getUtxoState();
+          WhirlpoolUtxoState s2 = o2.getUtxoState();
+          if (s1.getLastActivity() != null || s2.getLastActivity() != null) {
+            if (s1.getLastActivity() != null && s2.getLastActivity() == null) {
               return -1;
             }
-            if (o2.getLastActivity() != null && o1.getLastActivity() == null) {
+            if (s2.getLastActivity() != null && s1.getLastActivity() == null) {
               return 1;
             }
-            int compare = Longs.compare(o2.getLastActivity(), o1.getLastActivity());
+            int compare = Longs.compare(s2.getLastActivity(), s1.getLastActivity());
             if (compare != 0) {
               return compare;
             }

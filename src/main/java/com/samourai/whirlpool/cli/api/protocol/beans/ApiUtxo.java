@@ -2,10 +2,7 @@ package com.samourai.whirlpool.cli.api.protocol.beans;
 
 import com.samourai.wallet.api.backend.beans.UnspentResponse;
 import com.samourai.whirlpool.client.mix.listener.MixStep;
-import com.samourai.whirlpool.client.wallet.beans.MixableStatus;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolAccount;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
-import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxoStatus;
+import com.samourai.whirlpool.client.wallet.beans.*;
 
 public class ApiUtxo {
   private String hash;
@@ -35,18 +32,22 @@ public class ApiUtxo {
     this.path = utxo.xpub.path;
 
     this.account = whirlpoolUtxo.getAccount();
-    this.status = whirlpoolUtxo.getStatus();
-    this.mixStep = whirlpoolUtxo.getMixStep();
-    this.mixableStatus = whirlpoolUtxo.getMixableStatus();
-    this.progressPercent = whirlpoolUtxo.getProgressPercent();
-    this.poolId = whirlpoolUtxo.getUtxoConfig().getPoolId();
-    this.mixsTarget = whirlpoolUtxo.getUtxoConfig().getMixsTarget();
-    this.mixsDone = whirlpoolUtxo.getUtxoConfig().getMixsDone();
-    this.message = whirlpoolUtxo.getMessage();
-    this.error = whirlpoolUtxo.getError();
+    WhirlpoolUtxoConfig utxoConfig = whirlpoolUtxo.getUtxoConfig();
+    WhirlpoolUtxoState utxoState = whirlpoolUtxo.getUtxoState();
+    this.status = utxoState.getStatus();
+    this.mixStep =
+        utxoState.getMixProgress() != null ? utxoState.getMixProgress().getMixStep() : null;
+    this.mixableStatus = utxoState.getMixableStatus();
+    this.progressPercent =
+        utxoState.getMixProgress() != null ? utxoState.getMixProgress().getProgressPercent() : null;
+    this.poolId = utxoConfig.getPoolId();
+    this.mixsTarget = utxoConfig.getMixsTarget();
+    this.mixsDone = utxoConfig.getMixsDone();
+    this.message = utxoState.getMessage();
+    this.error = utxoState.getError();
     this.lastActivityElapsed =
-        whirlpoolUtxo.getLastActivity() != null
-            ? System.currentTimeMillis() - whirlpoolUtxo.getLastActivity()
+        utxoState.getLastActivity() != null
+            ? System.currentTimeMillis() - utxoState.getLastActivity()
             : null;
   }
 
