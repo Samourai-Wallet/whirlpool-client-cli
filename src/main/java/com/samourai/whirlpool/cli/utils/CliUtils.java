@@ -1,11 +1,13 @@
 package com.samourai.whirlpool.cli.utils;
 
+import ch.qos.logback.classic.Level;
 import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.client.utils.LogbackUtils;
 import java.io.Console;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -203,5 +205,18 @@ public class CliUtils {
       }
     }
     return lines;
+  }
+
+  public static void setLogLevel(boolean isDebug, boolean isDebugClient) {
+    Level whirlpoolLevel = isDebug ? Level.DEBUG : Level.INFO;
+    Level whirlpoolClientLevel = isDebugClient ? Level.DEBUG : Level.INFO;
+    ClientUtils.setLogLevel(whirlpoolLevel, whirlpoolClientLevel);
+
+    LogbackUtils.setLogLevel(
+        "com.msopentech.thali.toronionproxy", org.slf4j.event.Level.WARN.toString());
+    LogbackUtils.setLogLevel(
+        "com.msopentech.thali.java.toronionproxy", org.slf4j.event.Level.WARN.toString());
+    LogbackUtils.setLogLevel("org.springframework.web", org.slf4j.event.Level.INFO.toString());
+    LogbackUtils.setLogLevel("org.apache.http.impl.conn", org.slf4j.event.Level.INFO.toString());
   }
 }

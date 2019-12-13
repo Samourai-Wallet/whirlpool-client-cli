@@ -122,7 +122,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
     try {
       log.info("⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿");
       log.info("⣿ " + account + " UTXOS:");
-      ClientUtils.logWhirlpoolUtxos(utxos);
+      ClientUtils.logWhirlpoolUtxos(utxos, cliConfig.getMix().getMixsTarget());
 
     } catch (Exception e) {
       log.error("", e);

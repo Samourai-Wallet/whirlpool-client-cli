@@ -4,6 +4,7 @@ import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiWalletStateResponse;
 import com.samourai.whirlpool.cli.services.CliWalletService;
+import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.MixingState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -19,8 +20,9 @@ public class MixController extends AbstractRestController {
   @RequestMapping(value = CliApiEndpoint.REST_MIX, method = RequestMethod.GET)
   public ApiWalletStateResponse wallet(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
-    MixingState mixingState = cliWalletService.getSessionWallet().getMixingState();
-    return new ApiWalletStateResponse(mixingState);
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+    MixingState mixingState = whirlpoolWallet.getMixingState();
+    return new ApiWalletStateResponse(mixingState, whirlpoolWallet.getConfig().getMixsTarget());
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_MIX_START, method = RequestMethod.POST)

@@ -11,12 +11,15 @@ public class ApiWallet {
   private String zpub;
 
   public ApiWallet(
-      Collection<WhirlpoolUtxo> whirlpoolUtxos, String zpub, Comparator<WhirlpoolUtxo> comparator) {
+      Collection<WhirlpoolUtxo> whirlpoolUtxos,
+      String zpub,
+      Comparator<WhirlpoolUtxo> comparator,
+      int mixsTargetMin) {
     this.utxos =
         whirlpoolUtxos
             .stream()
             .sorted(comparator)
-            .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo))
+            .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo, mixsTargetMin))
             .collect(Collectors.toList());
     this.balance =
         whirlpoolUtxos.stream().mapToLong(whirlpoolUtxo -> whirlpoolUtxo.getUtxo().value).sum();

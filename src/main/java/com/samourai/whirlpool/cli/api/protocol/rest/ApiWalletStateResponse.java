@@ -12,7 +12,7 @@ public class ApiWalletStateResponse {
   private int nbQueued;
   private Collection<ApiUtxo> threads;
 
-  public ApiWalletStateResponse(MixingState mixingState) {
+  public ApiWalletStateResponse(MixingState mixingState, int mixsTargetMin) {
     this.started = mixingState.isStarted();
     this.nbMixing = mixingState.getNbMixing();
     this.nbQueued = mixingState.getNbQueued();
@@ -20,7 +20,7 @@ public class ApiWalletStateResponse {
         mixingState
             .getUtxosMixing()
             .stream()
-            .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo))
+            .map(whirlpoolUtxo -> new ApiUtxo(whirlpoolUtxo, mixsTargetMin))
             .collect(Collectors.toList());
   }
 

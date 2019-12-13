@@ -4,14 +4,12 @@ import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.utils.LogbackUtils;
 import com.samourai.whirlpool.protocol.WhirlpoolProtocol;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -55,7 +53,7 @@ public class Application implements ApplicationRunner {
     // enable debug logs with --debug
     debug = ApplicationArgs.isMainDebug(args);
     debugClient = ApplicationArgs.isMainDebugClient(args);
-    setDebug(debug, debugClient);
+    CliUtils.setLogLevel(debug, debugClient);
 
     // run
     WebApplicationType wat =
@@ -97,7 +95,7 @@ public class Application implements ApplicationRunner {
     restart = false;
 
     Application.applicationArguments = applicationArguments;
-    setDebug(debug, debugClient); // run twice to fix incorrect log level
+    CliUtils.setLogLevel(debug, debugClient); // run twice to fix incorrect log level
 
     if (log.isDebugEnabled()) {
       log.debug("Run... " + Arrays.toString(applicationArguments.getSourceArgs()));
@@ -131,34 +129,6 @@ public class Application implements ApplicationRunner {
       exitCode = 1;
       log.error("", e);
     }
-  }
-
-  private static void setDebug(boolean isDebug, boolean isDebugClient) {
-    if (isDebug) {
-      LogbackUtils.setLogLevel("com.samourai", Level.DEBUG.toString());
-    }
-
-    if (isDebugClient) {
-      LogbackUtils.setLogLevel("com.samourai.whirlpool.client", Level.DEBUG.toString());
-      LogbackUtils.setLogLevel("com.samourai.stomp.client", Level.DEBUG.toString());
-    } else {
-      LogbackUtils.setLogLevel("com.samourai.whirlpool.client", Level.INFO.toString());
-      LogbackUtils.setLogLevel("com.samourai.stomp.client", Level.INFO.toString());
-    }
-
-    if (isDebug) {
-      LogbackUtils.setLogLevel("com.samourai.whirlpool.client.wallet", Level.DEBUG.toString());
-      LogbackUtils.setLogLevel(
-          "com.samourai.whirlpool.client.wallet.orchestrator", Level.DEBUG.toString());
-    }
-
-    // skip noisy logs
-    LogbackUtils.setLogLevel("org.bitcoinj", Level.ERROR.toString());
-    LogbackUtils.setLogLevel("org.bitcoin", Level.WARN.toString()); // "no wallycore"
-    LogbackUtils.setLogLevel("com.msopentech.thali.toronionproxy", Level.WARN.toString());
-    LogbackUtils.setLogLevel("com.msopentech.thali.java.toronionproxy", Level.WARN.toString());
-    LogbackUtils.setLogLevel("org.springframework.web", Level.INFO.toString());
-    LogbackUtils.setLogLevel("org.apache.http.impl.conn", Level.INFO.toString());
   }
 
   public static void restart() {

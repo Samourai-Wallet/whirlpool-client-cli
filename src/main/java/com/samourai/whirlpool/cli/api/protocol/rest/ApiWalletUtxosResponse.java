@@ -35,15 +35,25 @@ public class ApiWalletUtxosResponse {
           // last confirmed
           return Ints.compare(o1.getUtxo().confirmations, o2.getUtxo().confirmations);
         };
+    int mixsTargetMin = whirlpoolWallet.getConfig().getMixsTarget();
     this.deposit =
         new ApiWallet(
-            whirlpoolWallet.getUtxosDeposit(), whirlpoolWallet.getZpubDeposit(), comparator);
+            whirlpoolWallet.getUtxosDeposit(),
+            whirlpoolWallet.getZpubDeposit(),
+            comparator,
+            mixsTargetMin);
     this.premix =
         new ApiWallet(
-            whirlpoolWallet.getUtxosPremix(), whirlpoolWallet.getZpubPremix(), comparator);
+            whirlpoolWallet.getUtxosPremix(),
+            whirlpoolWallet.getZpubPremix(),
+            comparator,
+            mixsTargetMin);
     this.postmix =
         new ApiWallet(
-            whirlpoolWallet.getUtxosPostmix(), whirlpoolWallet.getZpubPostmix(), comparator);
+            whirlpoolWallet.getUtxosPostmix(),
+            whirlpoolWallet.getZpubPostmix(),
+            comparator,
+            mixsTargetMin);
   }
 
   public ApiWallet getDeposit() {
