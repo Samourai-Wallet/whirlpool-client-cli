@@ -41,10 +41,6 @@ public class Application implements ApplicationRunner {
   @Autowired CliService cliService;
 
   public static void main(String... args) {
-    if (log.isDebugEnabled()) {
-      log.debug("Main... " + Arrays.toString(args));
-    }
-
     // override configuration with local file
     System.setProperty(
         "spring.config.location",

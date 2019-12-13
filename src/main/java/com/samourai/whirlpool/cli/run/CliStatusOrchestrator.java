@@ -29,7 +29,14 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
 
   @Override
   protected void runOrchestrator() {
-    interactive();
+    printState();
+
+    new Thread(
+            () -> {
+              interactive();
+            },
+            "cliStatusOrchestrator-interactive")
+        .start();
   }
 
   public void interactive() {
@@ -68,7 +75,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
       MixingState mixingState = whirlpoolWallet.getMixingState();
       WhirlpoolWalletConfig walletConfig = whirlpoolWallet.getConfig();
 
-      System.out.println(
+      System.out.print(
           "⣿ Wallet OPENED, mix "
               + (mixingState.isStarted() ? "STARTED" : "STOPPED")
               + (walletConfig.isAutoTx0() ? " +autoTx0=" + walletConfig.getAutoTx0PoolId() : "")
