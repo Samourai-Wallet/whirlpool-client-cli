@@ -11,8 +11,9 @@ import com.samourai.whirlpool.client.tx0.Tx0;
 import com.samourai.whirlpool.client.tx0.Tx0Config;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
+import com.samourai.whirlpool.client.whirlpool.beans.Pool;
+import java8.util.Lists;
 import javax.validation.Valid;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -65,17 +66,19 @@ public class UtxoController extends AbstractRestController {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
 
     // override utxo settings
-    if (!Strings.isEmpty(payload.poolId)) {
-      whirlpoolWallet.setPool(whirlpoolUtxo, payload.poolId);
-    }
     if (payload.mixsTarget != null && payload.mixsTarget > 0) {
       whirlpoolWallet.setMixsTarget(whirlpoolUtxo, payload.mixsTarget);
     }
 
     Tx0Config tx0Config = whirlpoolWallet.getTx0Config();
 
+    Pool pool = whirlpoolWallet.findPoolById(payload.poolId);
+    if (pool == null) {
+      throw new NotifiableException("poolId is not valid");
+    }
+
     // tx0
-    Tx0 tx0 = whirlpoolWallet.tx0(whirlpoolUtxo, tx0Config, payload.feeTarget);
+    Tx0 tx0 = whirlpoolWallet.tx0(Lists.of(whirlpoolUtxo), pool, tx0Config, payload.feeTarget);
     return new ApiTx0Response(tx0.getTx().getHashAsString());
   }
 
