@@ -2,13 +2,11 @@ package com.samourai.whirlpool.cli.api.controllers.utxo;
 
 import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
-import com.samourai.whirlpool.cli.api.protocol.rest.ApiTx0Request;
-import com.samourai.whirlpool.cli.api.protocol.rest.ApiTx0Response;
-import com.samourai.whirlpool.cli.api.protocol.rest.ApiUtxoConfigureRequest;
+import com.samourai.whirlpool.cli.api.protocol.rest.*;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.tx0.Tx0;
-import com.samourai.whirlpool.client.tx0.Tx0Config;
+import com.samourai.whirlpool.client.tx0.Tx0Preview;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
@@ -52,6 +50,31 @@ public class UtxoController extends AbstractRestController {
     return whirlpoolUtxo;
   }
 
+  @RequestMapping(value = CliApiEndpoint.REST_UTXO_TX0_PREVIEW, method = RequestMethod.POST)
+  public ApiTx0PreviewResponse tx0Preview(
+      @RequestHeader HttpHeaders headers,
+      @PathVariable("hash") String utxoHash,
+      @PathVariable("index") int utxoIndex,
+      @Valid @RequestBody ApiTx0PreviewRequest payload)
+      throws Exception {
+    checkHeaders(headers);
+
+    // find utxo
+    WhirlpoolUtxo whirlpoolUtxo = findUtxo(utxoHash, utxoIndex);
+    WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
+
+    Pool pool = whirlpoolWallet.findPoolById(payload.poolId);
+    if (pool == null) {
+      throw new NotifiableException("poolId is not valid");
+    }
+
+    // tx0 preview
+    Tx0Preview tx0Preview =
+        whirlpoolWallet.tx0Preview(
+            Lists.of(whirlpoolUtxo), pool, whirlpoolWallet.getTx0Config(), payload.feeTarget);
+    return new ApiTx0PreviewResponse(tx0Preview);
+  }
+
   @RequestMapping(value = CliApiEndpoint.REST_UTXO_TX0, method = RequestMethod.POST)
   public ApiTx0Response tx0(
       @RequestHeader HttpHeaders headers,
@@ -70,16 +93,16 @@ public class UtxoController extends AbstractRestController {
       whirlpoolWallet.setMixsTarget(whirlpoolUtxo, payload.mixsTarget);
     }
 
-    Tx0Config tx0Config = whirlpoolWallet.getTx0Config();
-
     Pool pool = whirlpoolWallet.findPoolById(payload.poolId);
     if (pool == null) {
       throw new NotifiableException("poolId is not valid");
     }
 
     // tx0
-    Tx0 tx0 = whirlpoolWallet.tx0(Lists.of(whirlpoolUtxo), pool, tx0Config, payload.feeTarget);
-    return new ApiTx0Response(tx0.getTx().getHashAsString());
+    Tx0 tx0 =
+        whirlpoolWallet.tx0(
+            Lists.of(whirlpoolUtxo), pool, whirlpoolWallet.getTx0Config(), payload.feeTarget);
+    return new ApiTx0Response(tx0);
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_UTXO_STARTMIX, method = RequestMethod.POST)
