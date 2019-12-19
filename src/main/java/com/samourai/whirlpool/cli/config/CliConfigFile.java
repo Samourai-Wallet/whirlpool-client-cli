@@ -387,9 +387,16 @@ public abstract class CliConfigFile {
       BackendApi backendApi) {
     String serverUrl = computeServerUrl();
     NetworkParameters params = server.getParams();
+    String clientPreHash = ClientUtils.sha256Hash("clientPreHash" + apiKey);
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
-            httpClient, stompClientService, persistHandler, serverUrl, params, backendApi);
+            httpClient,
+            stompClientService,
+            persistHandler,
+            serverUrl,
+            params,
+            backendApi,
+            clientPreHash);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }
