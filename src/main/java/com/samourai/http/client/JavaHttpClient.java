@@ -6,6 +6,7 @@ import com.samourai.wallet.api.backend.beans.HttpException;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
+import io.reactivex.Observable;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class JavaHttpClient implements IHttpClient {
   }
 
   @Override
-  public synchronized <T> T postJsonOverTor(
+  public synchronized <T> Observable<T> postJsonOverTor(
       String urlStr, Class<T> responseType, Map<String, String> headers, Object bodyObj)
       throws HttpException {
     final boolean isRegOut = true;
@@ -73,10 +74,12 @@ public class JavaHttpClient implements IHttpClient {
       request.content(
           new StringContentProvider(
               MediaType.APPLICATION_JSON_VALUE, jsonBody, StandardCharsets.UTF_8));
-      ContentResponse response = request.send();
-
-      T result = parseResponse(response, responseType);
-      return result;
+      return Observable.fromCallable(
+          () -> {
+            ContentResponse response = request.send();
+            T result = parseResponse(response, responseType);
+            return result;
+          });
     } catch (Exception e) {
       clearHttpClient(isRegOut);
       if (log.isDebugEnabled()) {

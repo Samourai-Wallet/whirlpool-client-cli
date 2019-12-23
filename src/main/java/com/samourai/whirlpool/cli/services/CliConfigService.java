@@ -172,7 +172,7 @@ public class CliConfigService {
     }
 
     // restart needed
-    this.setCliStatusNotReady("CLI restart required. Wallet initialization success.");
+    this.setCliStatusNotReady("Wallet initialization success. Restarting CLI...");
     return apiKey;
   }
 
@@ -187,7 +187,7 @@ public class CliConfigService {
     save(props);
 
     // restart needed
-    this.setCliStatusNotReady("CLI restart required. Configuration updated.");
+    this.setCliStatusNotReady("Configuration updated. Restarting CLI...");
   }
 
   public synchronized void setApiConfig(ApiCliConfig apiCliConfig) throws Exception {
@@ -225,7 +225,7 @@ public class CliConfigService {
     }
 
     // restart needed
-    this.setCliStatusNotReady("CLI restart required. Configuration reset.");
+    this.setCliStatusNotReady("Configuration reset. Restarting CLI...");
   }
 
   public void setCliStatusNotReady(String error) {
