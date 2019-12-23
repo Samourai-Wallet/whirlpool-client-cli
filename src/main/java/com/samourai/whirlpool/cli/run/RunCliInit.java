@@ -59,14 +59,11 @@ public class RunCliInit {
     String apiKey = cliConfigService.initialize(pairing, tor, null);
 
     log.info(CliUtils.LOG_SEPARATOR);
-    log.info("⣿ API KEY GENERATED");
+    log.info("⣿ INITIALIZATION SUCCESS");
     log.info("⣿ Take note of your API Key, to connect remotely from GUI or API.");
     log.info("⣿ Your API key is: " + apiKey);
-    log.info(CliUtils.LOG_SEPARATOR);
-    log.info("");
-    log.info(CliUtils.LOG_SEPARATOR);
-    log.info("⣿ INITIALIZATION SUCCESS");
-    log.info("⣿ Please restart CLI.");
+    log.info("⣿ ");
+    log.info("⣿ Restarting CLI...");
     log.info(CliUtils.LOG_SEPARATOR);
   }
 }

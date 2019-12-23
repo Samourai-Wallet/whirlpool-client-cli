@@ -172,7 +172,7 @@ public class CliConfigService {
     }
 
     // restart needed
-    this.setCliStatusNotReady("CLI restart required. Wallet inizialization success.");
+    this.setCliStatusNotReady("CLI restart required. Wallet initialization success.");
     return apiKey;
   }
 
@@ -201,6 +201,9 @@ public class CliConfigService {
 
     // save
     saveProperties(props);
+
+    // restart
+    Application.restart();
   }
 
   public synchronized void setVersionCurrent() throws Exception {
@@ -227,7 +230,6 @@ public class CliConfigService {
 
   public void setCliStatusNotReady(String error) {
     this.setCliStatus(CliStatus.NOT_READY, error);
-    Application.restart();
   }
 
   protected synchronized void save(Properties props) throws Exception {
@@ -275,7 +277,7 @@ public class CliConfigService {
       setVersionCurrent();
 
       // stop wallet & restart needed
-      this.setCliStatusNotReady("Upgrade success. Please restart.");
+      this.setCliStatusNotReady("Upgrade success. Restarting CLI...");
       shouldRestart = true;
     } else {
       // up to date

@@ -148,7 +148,9 @@ public class Application implements ApplicationRunner {
     Thread thread =
         new Thread(
             () -> {
-              applicationContext.close();
+              if (applicationContext != null) {
+                applicationContext.close();
+              }
 
               String[] restartArgs = computeRestartArgs();
               main(restartArgs);

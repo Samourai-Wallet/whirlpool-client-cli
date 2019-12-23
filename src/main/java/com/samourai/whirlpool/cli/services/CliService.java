@@ -111,8 +111,10 @@ public class CliService {
     // check upgrade
     boolean shouldRestart = cliConfigService.checkUpgrade();
     if (shouldRestart) {
+      log.warn(CliUtils.LOG_SEPARATOR);
       log.warn("⣿ UPGRADE SUCCESS");
-      log.warn("⣿ Please restart CLI.");
+      log.warn("⣿ Restarting CLI...");
+      log.warn(CliUtils.LOG_SEPARATOR);
       return true; // restart
     }
 

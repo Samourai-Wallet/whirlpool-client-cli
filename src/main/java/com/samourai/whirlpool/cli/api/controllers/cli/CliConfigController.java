@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.api.controllers.cli;
 
+import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
@@ -44,5 +45,6 @@ public class CliConfigController extends AbstractRestController {
     checkHeaders(headers);
 
     cliConfigService.resetConfiguration();
+    Application.restart();
   }
 }
