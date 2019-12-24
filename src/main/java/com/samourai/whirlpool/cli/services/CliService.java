@@ -118,6 +118,14 @@ public class CliService {
       return true; // restart
     }
 
+    if (listen) {
+      String info = "API listening on https://127.0.0.1:" + cliConfig.getApi().getPortHttps();
+      if (!cliConfig.getApi().isRequireHttps()) {
+        info += " and http://127.0.0.1:" + cliConfig.getApi().getPortHttp();
+      }
+      log.info(info);
+    }
+
     if (!appArgs.isAuthenticate() && listen && !RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
       // no passphrase but listening => keep listening
       log.info(CliUtils.LOG_SEPARATOR);

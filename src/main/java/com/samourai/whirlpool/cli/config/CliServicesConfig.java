@@ -2,10 +2,15 @@ package com.samourai.whirlpool.cli.config;
 
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.segwit.bech32.Bech32UtilGeneric;
+import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import java.lang.invoke.MethodHandles;
+import org.apache.catalina.connector.Connector;
 import org.bitcoinj.core.NetworkParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,5 +63,20 @@ public class CliServicesConfig {
     config.addAllowedMethod("PATCH");
     source.registerCorsConfiguration("/**", config);
     return new CorsFilter(source);
+  }
+
+  @Bean
+  @ConditionalOnProperty(name = ApiCliConfig.KEY_API_REQUIRE_HTTPS, havingValue = "false")
+  public ServletWebServerFactory httpServer(CliConfig cliConfig) {
+    // https not required => configure HTTP server
+    int portHttp = cliConfig.getApi().getPortHttp();
+    if (log.isDebugEnabled()) {
+      log.debug("Enabling API over HTTP... portHttp=" + portHttp);
+    }
+    Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+    connector.setPort(portHttp);
+    TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
+    factory.addAdditionalTomcatConnectors(connector);
+    return factory;
   }
 }

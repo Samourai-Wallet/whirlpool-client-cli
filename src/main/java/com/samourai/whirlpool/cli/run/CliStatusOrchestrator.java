@@ -88,7 +88,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
               + mixingState.getNbQueued()
               + " queued. Commands: [T]hreads, [D]eposit, [P]remix, P[O]stmix\r");
     } catch (NoSessionWalletException e) {
-      System.out.print("⣿ Wallet CLOSED");
+      System.out.print("⣿ Wallet CLOSED\r");
     } catch (Exception e) {
       log.error("", e);
     }
@@ -112,7 +112,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
         i++;
       }
     } catch (NoSessionWalletException e) {
-      System.out.print("⣿ Wallet CLOSED");
+      System.out.print("⣿ Wallet CLOSED\r");
     } catch (Exception e) {
       log.error("", e);
     }

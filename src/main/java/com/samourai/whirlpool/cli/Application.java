@@ -105,11 +105,7 @@ public class Application implements ApplicationRunner {
     if (log.isDebugEnabled()) {
       log.debug("[cli/debug] debug=" + debug + ", debugClient=" + debugClient);
       log.debug("[cli/protocolVersion] " + WhirlpoolProtocol.PROTOCOL_VERSION);
-      log.debug(
-          "[cli/listen] "
-              + (listen
-                  ? listenPort + ", https=" + System.getProperty("security.require-ssl")
-                  : "false"));
+      log.debug("[cli/listen] " + (listen ? listenPort : "false"));
     }
 
     try {
@@ -163,5 +159,9 @@ public class Application implements ApplicationRunner {
     return Arrays.stream(applicationArguments.getSourceArgs())
         .filter(a -> !a.toLowerCase().equals("--" + ApplicationArgs.ARG_INIT))
         .toArray(i -> new String[i]);
+  }
+
+  public static Integer getListenPort() {
+    return listenPort;
   }
 }

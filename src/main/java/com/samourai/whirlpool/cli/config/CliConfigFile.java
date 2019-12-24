@@ -37,6 +37,7 @@ public abstract class CliConfigFile {
   @NotEmpty private String proxy;
   private Optional<CliProxy> _cliProxy;
   @NotEmpty private MixConfig mix;
+  @NotEmpty private ApiConfig api;
 
   private static final String PUSHTX_AUTO = "auto";
   private static final String PUSHTX_INTERACTIVE = "interactive";
@@ -60,6 +61,7 @@ public abstract class CliConfigFile {
     this.refreshPoolsDelay = copy.refreshPoolsDelay;
     this.tx0MinConfirmations = copy.tx0MinConfirmations;
     this.proxy = copy.proxy;
+    this.api = new ApiConfig(copy.api);
     this.mix = new MixConfig(copy.mix);
   }
 
@@ -182,6 +184,14 @@ public abstract class CliConfigFile {
     this.mix = mix;
   }
 
+  public ApiConfig getApi() {
+    return api;
+  }
+
+  public void setApi(ApiConfig api) {
+    this.api = api;
+  }
+
   public static class MixConfig {
     @NotEmpty private Integer clients;
     @NotEmpty private int clientsPerPool;
@@ -268,6 +278,57 @@ public abstract class CliConfigFile {
       configInfo.put("cli/mix/tx0MaxOutputs", Integer.toString(tx0MaxOutputs));
       configInfo.put("cli/mix/autoMix", Boolean.toString(autoMix));
       configInfo.put("cli/mix/mixsTarget", Integer.toString(mixsTarget));
+      return configInfo;
+    }
+  }
+
+  public static class ApiConfig {
+    @NotEmpty private int portHttps;
+    @NotEmpty private int portHttp;
+    @NotEmpty private boolean requireHttps;
+
+    public ApiConfig() {}
+
+    public ApiConfig(ApiConfig copy) {
+      this.portHttps = copy.portHttps;
+      this.portHttp = copy.portHttp;
+      this.requireHttps = copy.requireHttps;
+    }
+
+    public int getPortHttps() {
+      return portHttps;
+    }
+
+    public void setPortHttps(int portHttps) {
+      this.portHttps = portHttps;
+    }
+
+    public int getPortHttp() {
+      return portHttp;
+    }
+
+    public void setPortHttp(int portHttp) {
+      this.portHttp = portHttp;
+    }
+
+    public boolean isRequireHttps() {
+      return requireHttps;
+    }
+
+    public void setRequireHttps(boolean requireHttps) {
+      this.requireHttps = requireHttps;
+    }
+
+    public Map<String, String> getConfigInfo() {
+      Map<String, String> configInfo = new HashMap<>();
+      configInfo.put(
+          "cli/api",
+          "portHttps="
+              + portHttps
+              + ", portHttp="
+              + portHttp
+              + ", requireHttps="
+              + Boolean.toString(requireHttps));
       return configInfo;
     }
   }
@@ -426,6 +487,7 @@ public abstract class CliConfigFile {
     configInfo.put("cli/tx0MinConfirmations", Integer.toString(tx0MinConfirmations));
     configInfo.put("cli/proxy", proxy != null ? ClientUtils.maskString(proxy) : "null");
     configInfo.putAll(mix.getConfigInfo());
+    configInfo.putAll(api.getConfigInfo());
     return configInfo;
   }
 }
