@@ -47,7 +47,12 @@ public class JavaTorClient {
 
   private Optional<File> findTorExecutableLocal() {
     try {
-      List<String> whichResult = CliUtils.exec("which tor");
+      // try uppercase
+      List<String> whichResult = CliUtils.exec("which Tor");
+      if (whichResult.isEmpty()) {
+        // try lowercase
+        whichResult = CliUtils.exec("which tor");
+      }
       if (whichResult.size() > 0) {
         if (log.isDebugEnabled()) {
           log.debug("Tor executable found in: " + StringUtils.join(whichResult.toArray(), ";"));
