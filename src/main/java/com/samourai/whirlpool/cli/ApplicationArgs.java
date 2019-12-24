@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ApplicationArgs {
   private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static final int LISTEN_DEFAULT_PORT = 8899;
 
   private static final String ARG_DEBUG = "debug";
   private static final String ARG_DEBUG_CLIENT = "debug-client";
@@ -126,8 +125,8 @@ public class ApplicationArgs {
     return args.containsOption(ARG_AUTHENTICATE);
   }
 
-  public static Integer getMainListen(String[] mainArgs) {
-    return mainInteger(ARG_LISTEN, mainArgs, null, LISTEN_DEFAULT_PORT);
+  public static boolean getMainListen(String[] mainArgs) {
+    return mainBoolean(ARG_LISTEN, mainArgs);
   }
 
   public static boolean isMainDebug(String[] mainArgs) {

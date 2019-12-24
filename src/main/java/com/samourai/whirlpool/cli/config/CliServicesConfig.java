@@ -66,15 +66,15 @@ public class CliServicesConfig {
   }
 
   @Bean
-  @ConditionalOnProperty(name = ApiCliConfig.KEY_API_REQUIRE_HTTPS, havingValue = "false")
+  @ConditionalOnProperty(name = ApiCliConfig.KEY_API_HTTP_ENABLE, havingValue = "true")
   public ServletWebServerFactory httpServer(CliConfig cliConfig) {
     // https not required => configure HTTP server
-    int portHttp = cliConfig.getApi().getPortHttp();
+    int httpPort = cliConfig.getApi().getHttpPort();
     if (log.isDebugEnabled()) {
-      log.debug("Enabling API over HTTP... portHttp=" + portHttp);
+      log.debug("Enabling API over HTTP... httpPort=" + httpPort);
     }
     Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
-    connector.setPort(portHttp);
+    connector.setPort(httpPort);
     TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
     factory.addAdditionalTomcatConnectors(connector);
     return factory;

@@ -31,7 +31,7 @@ public class ApiCliConfig {
   private static final String KEY_MIX_TX0_MAX_OUTPUTS = "cli.mix.tx0MaxOutputs";
   private static final String KEY_MIX_AUTO_MIX = "cli.mix.autoMix";
   private static final String KEY_MIX_MIXS_TARGET = "cli.mix.mixsTarget";
-  public static final String KEY_API_REQUIRE_HTTPS = "cli.api.require-https";
+  public static final String KEY_API_HTTP_ENABLE = "cli.api.http-enable";
 
   public ApiCliConfig() {}
 

@@ -25,9 +25,9 @@ public class CliWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
-    boolean requireHttps = cliConfig.getApi().isRequireHttps();
+    boolean httpEnable = cliConfig.getApi().isHttpEnable();
     if (log.isDebugEnabled()) {
-      log.debug("Configuring REST API: requireHttps=" + requireHttps);
+      log.debug("Configuring REST API: httpEnable=" + httpEnable);
     }
 
     // disable CSRF
@@ -43,7 +43,7 @@ public class CliWebSecurityConfig extends WebSecurityConfigurerAdapter {
         .anyRequest()
         .denyAll();
 
-    if (requireHttps) {
+    if (!httpEnable) {
       http.requiresChannel().anyRequest().requiresSecure();
     }
   }

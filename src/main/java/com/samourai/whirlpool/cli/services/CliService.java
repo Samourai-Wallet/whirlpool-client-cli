@@ -119,9 +119,9 @@ public class CliService {
     }
 
     if (listen) {
-      String info = "API listening on https://127.0.0.1:" + cliConfig.getApi().getPortHttps();
-      if (!cliConfig.getApi().isRequireHttps()) {
-        info += " and http://127.0.0.1:" + cliConfig.getApi().getPortHttp();
+      String info = "API is listening on https://127.0.0.1:" + cliConfig.getApi().getPort();
+      if (cliConfig.getApi().isHttpEnable()) {
+        info += " and http://127.0.0.1:" + cliConfig.getApi().getHttpPort();
       }
       log.info(info);
     }

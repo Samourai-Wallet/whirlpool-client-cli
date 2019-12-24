@@ -1,15 +1,17 @@
 # whirlpool-client-cli API
 
+
+## Using REST API
 whirlpool-client-cli exposes a REST API over HTTPS when started with --listen.
 HTTPS port is defined in `whirlpool-cli-config.properties`:
 ```
-cli.api.port-https=8899
+cli.api.port=8899
 ```
 
-HTTPS requirement can be disabled at your own risk:
+Clear HTTP can be enabled at your own risk:
 ```
-cli.api.require-https=false
-cli.api.port-http=8898
+cli.api.http-enable=true
+cli.api.http-port=8898
 ```
 
 

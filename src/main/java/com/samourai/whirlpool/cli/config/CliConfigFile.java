@@ -283,52 +283,50 @@ public abstract class CliConfigFile {
   }
 
   public static class ApiConfig {
-    @NotEmpty private int portHttps;
-    @NotEmpty private int portHttp;
-    @NotEmpty private boolean requireHttps;
+    @NotEmpty private int port;
+    @NotEmpty private int httpPort;
+    @NotEmpty private boolean httpEnable;
 
     public ApiConfig() {}
 
     public ApiConfig(ApiConfig copy) {
-      this.portHttps = copy.portHttps;
-      this.portHttp = copy.portHttp;
-      this.requireHttps = copy.requireHttps;
+      this.port = copy.port;
+      this.httpPort = copy.httpPort;
+      this.httpEnable = copy.httpEnable;
     }
 
-    public int getPortHttps() {
-      return portHttps;
+    public int getPort() {
+      return port;
     }
 
-    public void setPortHttps(int portHttps) {
-      this.portHttps = portHttps;
+    public void setPort(int port) {
+      this.port = port;
     }
 
-    public int getPortHttp() {
-      return portHttp;
+    public int getHttpPort() {
+      return httpPort;
     }
 
-    public void setPortHttp(int portHttp) {
-      this.portHttp = portHttp;
+    public void setHttpPort(int httpPort) {
+      this.httpPort = httpPort;
     }
 
-    public boolean isRequireHttps() {
-      return requireHttps;
+    public boolean isHttpEnable() {
+      return httpEnable;
     }
 
-    public void setRequireHttps(boolean requireHttps) {
-      this.requireHttps = requireHttps;
+    public void setHttpEnable(boolean httpEnable) {
+      this.httpEnable = httpEnable;
     }
 
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
-      configInfo.put(
-          "cli/api",
-          "portHttps="
-              + portHttps
-              + ", portHttp="
-              + portHttp
-              + ", requireHttps="
-              + Boolean.toString(requireHttps));
+      String info = "port=" + port;
+      if (httpEnable) {
+        info += ", httpPort=" + httpPort;
+      }
+      info += ", httpEnable=" + httpEnable;
+      configInfo.put("cli/api", info);
       return configInfo;
     }
   }

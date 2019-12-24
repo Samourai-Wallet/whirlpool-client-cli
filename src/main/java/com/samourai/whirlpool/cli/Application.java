@@ -27,7 +27,7 @@ import org.springframework.core.env.Environment;
 public class Application implements ApplicationRunner {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static Integer listenPort;
+  private static boolean listen;
   private static boolean debug;
   private static boolean debugClient;
   private static ConfigurableApplicationContext applicationContext;
@@ -45,10 +45,7 @@ public class Application implements ApplicationRunner {
         "classpath:application.properties,./" + CliConfigService.CLI_CONFIG_FILENAME);
 
     // start REST api if --listen
-    listenPort = ApplicationArgs.getMainListen(args);
-    if (listenPort != null) {
-      System.setProperty("server.port", Integer.toString(listenPort));
-    }
+    listen = ApplicationArgs.getMainListen(args);
 
     // enable debug logs with --debug
     debug = ApplicationArgs.isMainDebug(args);
@@ -56,8 +53,7 @@ public class Application implements ApplicationRunner {
     CliUtils.setLogLevel(debug, debugClient);
 
     // run
-    WebApplicationType wat =
-        listenPort != null ? WebApplicationType.SERVLET : WebApplicationType.NONE;
+    WebApplicationType wat = listen ? WebApplicationType.SERVLET : WebApplicationType.NONE;
     applicationContext =
         new SpringApplicationBuilder(Application.class)
             .logStartupInfo(debugClient)
@@ -101,11 +97,10 @@ public class Application implements ApplicationRunner {
       log.debug("Run... " + Arrays.toString(applicationArguments.getSourceArgs()));
     }
 
-    boolean listen = (listenPort != null);
     if (log.isDebugEnabled()) {
       log.debug("[cli/debug] debug=" + debug + ", debugClient=" + debugClient);
       log.debug("[cli/protocolVersion] " + WhirlpoolProtocol.PROTOCOL_VERSION);
-      log.debug("[cli/listen] " + (listen ? listenPort : "false"));
+      log.debug("[cli/listen] " + listen);
     }
 
     try {
@@ -159,9 +154,5 @@ public class Application implements ApplicationRunner {
     return Arrays.stream(applicationArguments.getSourceArgs())
         .filter(a -> !a.toLowerCase().equals("--" + ApplicationArgs.ARG_INIT))
         .toArray(i -> new String[i]);
-  }
-
-  public static Integer getListenPort() {
-    return listenPort;
   }
 }
