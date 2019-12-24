@@ -389,7 +389,7 @@ public abstract class CliConfigFile {
     NetworkParameters params = server.getParams();
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
-            httpClient, stompClientService, persistHandler, serverUrl, params, backendApi);
+            httpClient, stompClientService, persistHandler, serverUrl, params, false, backendApi);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }
