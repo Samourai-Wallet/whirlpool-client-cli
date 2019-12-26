@@ -158,6 +158,28 @@ Response:
 }
 ```
 
+### Tx0 preview ```POST /rest/utxos/{hash}:{index}/tx0Preview```
+Parameters:
+* hash, index: utxo to spend for tx0
+
+Payload:
+* feeTarget (mandatory): fee target for tx0
+* poolId (optional): override utxo's poolId
+```
+{
+    feeTarget: "BLOCKS_4",
+    poolId: "0.01btc"
+}
+```
+
+
+Response:
+```
+{
+    "txid":"aa079c0323349f4abf3fb793bf2ed1ce1e11c53cd22aeced3554872033bfa722"
+}
+```
+
 ### Tx0 ```POST /rest/utxos/{hash}:{index}/tx0```
 Parameters:
 * hash, index: utxo to spend for tx0
