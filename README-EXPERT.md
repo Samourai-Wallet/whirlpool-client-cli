@@ -14,10 +14,10 @@ You can run CLI in loop mode on testnet to generate liquidity on testnet server:
 - mix while possible
 - consolidate wallet when PREMIX is empty and start again
 ```
---auto-tx0=0.01btc --tx0-max-outputs=15 --mixs-target=100 --scode=
+--clients=5 --auto-tx0=0.01btc --tx0-max-outputs=15 --mixs-target=100 --scode=
 ```
 
-Adjust mix-rate with ```cli.mix.clientDelay = 60```
+Adjust mixing rate with ```cli.mix.clientDelay = 60```
 
 
 
