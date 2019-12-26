@@ -1,4 +1,4 @@
-# whirlpool-client-cli for EXPERTS
+# whirlpool-client-cli for advanced users
 
 
 ## Advanced usage
@@ -7,6 +7,7 @@
 - ```--debug```: debug logs
 - ```--debug-client```: more debug logs
 - ```--dump-payload```: dump pairing-payload of current wallet and exit
+
 
 #### Testing loop
 You can run CLI in loop mode on testnet to generate liquidity on testnet server:
@@ -18,6 +19,7 @@ You can run CLI in loop mode on testnet to generate liquidity on testnet server:
 ```
 
 Adjust mixing rate with ```cli.mix.clientDelay = 60```
+Generate simultaneous liquidity with ```cli.mix.clientsPerPool = 5```
 
 
 

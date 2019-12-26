@@ -32,7 +32,7 @@ Optional arguments:
 #### Advanced
 See [README-API.md](README-API.md) to manage whirlpool-client-cli remotely with REST API. 
 
-See [README-EXPERT.md](README-EXPERT.md) for advanced usage, integration and development.
+See [README-ADVANCED.md](README-ADVANCED.md) for advanced usage, integration and development.
 
 
 ## Resources
