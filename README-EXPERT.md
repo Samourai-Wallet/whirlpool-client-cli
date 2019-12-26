@@ -1,33 +1,28 @@
 # whirlpool-client-cli for EXPERTS
 
 
-## Expert usage
+## Advanced usage
 
 #### Debugging
 - ```--debug```: debug logs
 - ```--debug-client```: more debug logs
 - ```--dump-payload```: dump pairing-payload of current wallet and exit
 
+#### Testing loop
+You can run CLI in loop mode on testnet to generate liquidity on testnet server:
+- run TX0 while possible
+- mix while possible
+- consolidate wallet when PREMIX is empty and start again
+```
+--auto-tx0=0.01btc --tx0-max-outputs=15 --mixs-target=100 --scode=
+```
 
-#### Custom Tor configuration
-Tor should be automatically detected, installed or configured. You can customize it for your needs:
-```
-cli.torConfig.executable = /path/to/bin/tor
-```
-- Use `auto` to use embedded tor, or detecting a local Tor install when your system is not supported.
-- Use `local` to detect a local tor install.
-- Use custom path to `tor` binary to use your own tor build.
+Adjust mix-rate with ```cli.mix.clientDelay = 60```
 
-```
-cli.torConfig.onionServer = true
-cli.torConfig.onionBackend = true
-```
-When tor enabled, connect to whirlpool server or wallet backend through:
-- `true`: Tor hidden services 
-- `false`: clearnet over Tor
 
 
 ## Whirlpool integration
+
 
 #### Authenticate on startup
 You can authenticate in several ways:
@@ -46,10 +41,28 @@ echo $PP|java -jar whirlpool-client-cli-x-run.jar --authenticate
 Configuration can be overriden in whirlpool-cli-config.properties (see default configuration in [src/main/resources/application.properties]).
 
 Or with following arguments:
-- ```--scode```: scode to use for tx0
-- ```--tx0-max-outputs```: tx0 outputs limit
+- ```--scode=```: scode to use for tx0
+- ```--tx0-max-outputs=```: tx0 outputs limit
 - ```--auto-tx0=[poolId]```: run tx0 from deposit utxos automatically
 - ```--auto-mix=[true/false]```: mix premix utxos automatically
+
+
+#### Custom Tor configuration
+Tor should be automatically detected, installed or configured. You can customize it for your needs:
+```
+cli.torConfig.executable = /path/to/bin/tor
+```
+- Use `auto` to use embedded tor, or detecting a local Tor install when your system is not supported.
+- Use `local` to detect a local tor install.
+- Use custom path to `tor` binary to use your own tor build.
+
+```
+cli.torConfig.onionServer = true
+cli.torConfig.onionBackend = true
+```
+When tor enabled, connect to whirlpool server or wallet backend through:
+- `true`: Tor hidden services 
+- `false`: clearnet over Tor
 
 
 
