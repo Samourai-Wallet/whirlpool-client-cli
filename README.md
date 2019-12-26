@@ -29,11 +29,9 @@ Optional arguments:
 - ```--list-pools```: list pools and exit
 
 
-#### API
-whirlpool-client-cli can be managed remotely with REST API. See [README-API.md](README-API.md)
+#### Advanced
+See [README-API.md](README-API.md) to manage whirlpool-client-cli remotely with REST API. 
 
-
-#### Advanced usage
 See [README-EXPERT.md](README-EXPERT.md) for advanced usage, integration and development.
 
 
