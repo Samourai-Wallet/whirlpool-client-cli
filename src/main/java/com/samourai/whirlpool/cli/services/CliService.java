@@ -164,10 +164,13 @@ public class CliService {
   }
 
   private void keepRunning() {
-    // log status
-    this.cliStatusOrchestrator =
-        new CliStatusOrchestrator(CLI_STATUS_DELAY, cliWalletService, cliConfig);
-    this.cliStatusOrchestrator.start();
+    // disable statusOrchestrator when redirecting output
+    if (System.console() != null) {
+      // log status
+      this.cliStatusOrchestrator =
+          new CliStatusOrchestrator(CLI_STATUS_DELAY, cliWalletService, cliConfig);
+      this.cliStatusOrchestrator.start();
+    }
   }
 
   private String authenticate() {

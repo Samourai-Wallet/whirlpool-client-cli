@@ -39,7 +39,7 @@ public class CliStatusOrchestrator extends AbstractOrchestrator {
         .start();
   }
 
-  public void interactive() {
+  private void interactive() {
     while (true) {
       try {
         Character car = CliUtils.readChar();
