@@ -180,6 +180,21 @@ public class CliUtils {
     return jettyHttpClient;
   }
 
+  public static List<String> execOrEmpty(String cmd) throws Exception {
+    try {
+      return exec(cmd);
+    } catch (Exception e) {
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "execOrNull error: "
+                + e.getClass().getName()
+                + ": "
+                + (e.getMessage() != null ? e.getMessage() : ""));
+      }
+    }
+    return new ArrayList<>();
+  }
+
   public static List<String> exec(String cmd) throws Exception {
     List<String> lines = new ArrayList<>();
     Process proc = null;

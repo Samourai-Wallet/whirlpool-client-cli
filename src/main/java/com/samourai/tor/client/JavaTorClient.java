@@ -48,10 +48,10 @@ public class JavaTorClient {
   private Optional<File> findTorExecutableLocal() {
     try {
       // try uppercase
-      List<String> whichResult = CliUtils.exec("which Tor");
+      List<String> whichResult = CliUtils.execOrEmpty("which Tor");
       if (whichResult.isEmpty()) {
         // try lowercase
-        whichResult = CliUtils.exec("which tor");
+        whichResult = CliUtils.execOrEmpty("which tor");
       }
       if (whichResult.size() > 0) {
         if (log.isDebugEnabled()) {
