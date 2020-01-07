@@ -234,4 +234,8 @@ public class CliUtils {
     LogbackUtils.setLogLevel("org.springframework.web", org.slf4j.event.Level.INFO.toString());
     LogbackUtils.setLogLevel("org.apache.http.impl.conn", org.slf4j.event.Level.INFO.toString());
   }
+
+  public static long bytesToMB(long bytes) {
+    return Math.round(bytes / (1024L * 1024L));
+  }
 }

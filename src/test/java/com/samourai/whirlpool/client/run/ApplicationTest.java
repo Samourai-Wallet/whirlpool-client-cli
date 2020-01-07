@@ -44,11 +44,15 @@ public class ApplicationTest extends AbstractApplicationTest {
   public void runApp() {
     String[] args =
         new String[] {
-          "--listen", "--authenticate", "--debug-client", "--debug", "--auto-mix", "--clients=5"
+          "--listen",
+          "--authenticate",
+          "--debug-client",
+          "--debug",
+          "--clients=5",
+          "--auto-tx0=0.01btc",
+          "--tx0-max-outputs=15"
         };
-    ApplicationArguments appArgs = new DefaultApplicationArguments(args);
     Application.main(args);
-    // new Application().run(appArgs);
     while (true) {
       try {
         Thread.sleep(100000);
