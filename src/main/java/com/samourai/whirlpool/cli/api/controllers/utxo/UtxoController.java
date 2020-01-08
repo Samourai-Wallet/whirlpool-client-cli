@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.api.controllers.utxo;
 
 import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
+import com.samourai.whirlpool.cli.api.protocol.beans.ApiUtxo;
 import com.samourai.whirlpool.cli.api.protocol.rest.*;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -30,7 +31,7 @@ public class UtxoController extends AbstractRestController {
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_UTXO_CONFIGURE, method = RequestMethod.POST)
-  public WhirlpoolUtxo configureUtxo(
+  public ApiUtxo configureUtxo(
       @RequestHeader HttpHeaders headers,
       @PathVariable("hash") String utxoHash,
       @PathVariable("index") int utxoIndex,
@@ -47,7 +48,10 @@ public class UtxoController extends AbstractRestController {
 
     // configure mixsTarget
     whirlpoolWallet.setMixsTarget(whirlpoolUtxo, payload.mixsTarget);
-    return whirlpoolUtxo;
+
+    int mixsTargetMin = whirlpoolWallet.getConfig().getMixsTarget();
+    ApiUtxo apiUtxo = new ApiUtxo(whirlpoolUtxo, mixsTargetMin);
+    return apiUtxo;
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_UTXO_TX0_PREVIEW, method = RequestMethod.POST)
