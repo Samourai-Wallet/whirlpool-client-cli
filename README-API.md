@@ -26,7 +26,8 @@ It can be overriden with ```--api-key=```
 
 
 #### HTTPS cert
-REST API uses a self-signed certificate for HTTPS.
+REST API uses a self-signed certificate for HTTPS. It can be downloaded by opening https://CLI-HOST:8899/ with Firefox, then Advanced -> View certificate -> Download PEM.
+
 You can configure your own cert in `whirlpool-cli-config.properties`:
 ```
 server.ssl.key-store-type=PKCS12 or JKS
