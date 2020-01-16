@@ -11,6 +11,8 @@ import com.samourai.wallet.hd.HD_Wallet;
 import com.samourai.wallet.hd.java.HD_WalletFactoryJava;
 import com.samourai.wallet.util.CharSequenceX;
 import com.samourai.wallet.util.FormatsUtilGeneric;
+import com.samourai.wallet.util.oauth.OAuthManager;
+import com.samourai.wallet.util.oauth.OAuthManagerJava;
 import com.samourai.whirlpool.cli.beans.CliState;
 import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
@@ -140,12 +142,14 @@ public class CliWalletService extends WhirlpoolWalletService {
   private BackendApi computeBackendApiService(String passphrase) throws Exception {
     String backendUrl = cliConfig.computeBackendUrl();
 
-    // dojo apiKey
-    String dojoApiKey = cliConfig.computeBackendApiKey();
-    if (dojoApiKey != null) {
-      dojoApiKey = decryptApiKey(dojoApiKey, passphrase);
+    // dojo OAuth
+    Optional<OAuthManager> oAuthManager = Optional.empty();
+    String dojoApiKeyEncrypted = cliConfig.computeBackendApiKey();
+    if (dojoApiKeyEncrypted != null) {
+      String dojoApiKey = decryptApiKey(dojoApiKeyEncrypted, passphrase);
+      oAuthManager = Optional.of(new OAuthManagerJava(dojoApiKey));
     }
-    return new BackendApi(httpClient, backendUrl, dojoApiKey);
+    return new BackendApi(httpClient, backendUrl, oAuthManager);
   }
 
   private WhirlpoolWalletPersistHandler computePersistHandler(String walletIdentifier)
