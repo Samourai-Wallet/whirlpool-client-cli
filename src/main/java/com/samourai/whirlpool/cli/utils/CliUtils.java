@@ -148,7 +148,7 @@ public class CliUtils {
       boolean isRegisterOutput,
       CliTorClientService torClientService,
       Optional<CliProxy> cliProxyDefault)
-      throws NotifiableException {
+      throws Exception {
     // use torConnexion when available, otherwise cliProxyDefault
     Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion(isRegisterOutput);
     Optional<CliProxy> cliProxyOptional =
@@ -156,8 +156,8 @@ public class CliUtils {
     return computeHttpClient(cliProxyOptional, ClientUtils.USER_AGENT);
   }
 
-  public static HttpClient computeHttpClient(
-      Optional<CliProxy> cliProxyOptional, String userAgent) {
+  public static HttpClient computeHttpClient(Optional<CliProxy> cliProxyOptional, String userAgent)
+      throws Exception {
     // we use jetty for proxy SOCKS support
     HttpClient jettyHttpClient = new HttpClient(new SslContextFactory());
     // jettyHttpClient.setSocketAddressResolver(new MySocketAddressResolver());
@@ -178,6 +178,7 @@ public class CliUtils {
         log.debug("+httpClient: no proxy");
       }
     }
+    jettyHttpClient.start();
     return jettyHttpClient;
   }
 

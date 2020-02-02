@@ -4,8 +4,6 @@ import com.samourai.http.client.CliHttpClient;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
-import com.samourai.whirlpool.cli.utils.CliUtils;
-import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.utils.MessageErrorListener;
 import java.util.Arrays;
@@ -165,10 +163,6 @@ public class JavaStompClient implements IStompClient {
     return stompClient;
   }
 
-  private HttpClient computeHttpClient() throws NotifiableException {
-    return CliUtils.computeHttpClient(false, torClientService, cliConfig.getCliProxy());
-  }
-
   private SockJsClient computeWebSocketClient() throws Exception {
     HttpClient httpClient = httpClientService.getHttpClient(false);
 
@@ -182,7 +176,6 @@ public class JavaStompClient implements IStompClient {
             new WebSocketTransport(jettyWebSocketClient), new JettyXhrTransport(httpClient));
 
     SockJsClient sockJsClient = new SockJsClient(webSocketTransports);
-    httpClient.start();
     jettyWebSocketClient.start();
     return sockJsClient;
   }

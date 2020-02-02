@@ -24,7 +24,6 @@ public class CliHttpClient extends JavaHttpClient {
   protected HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception {
     HttpClient httpClient =
         CliUtils.computeHttpClient(isRegisterOutput, torClientService, cliConfig.getCliProxy());
-    httpClient.start();
     return httpClient;
   }
 }
