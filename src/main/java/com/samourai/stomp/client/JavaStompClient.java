@@ -1,6 +1,6 @@
 package com.samourai.stomp.client;
 
-import com.samourai.http.client.JavaHttpClient;
+import com.samourai.http.client.CliHttpClient;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.cli.services.JavaHttpClientService;
@@ -36,7 +36,7 @@ public class JavaStompClient implements IStompClient {
 
   private CliTorClientService torClientService;
   private CliConfig cliConfig;
-  private JavaHttpClient httpClientService;
+  private CliHttpClient httpClientService;
   private TaskScheduler taskScheduler;
 
   private WebSocketStompClient stompClient;
@@ -170,19 +170,19 @@ public class JavaStompClient implements IStompClient {
   }
 
   private SockJsClient computeWebSocketClient() throws Exception {
-    HttpClient jettyHttpClient = httpClientService.getHttpClient(false);
+    HttpClient httpClient = httpClientService.getHttpClient(false);
 
     if (log.isDebugEnabled()) {
       log.debug("Using websocket transports: Websocket, XHR");
     }
     JettyWebSocketClient jettyWebSocketClient =
-        new JettyWebSocketClient(new WebSocketClient(jettyHttpClient));
+        new JettyWebSocketClient(new WebSocketClient(httpClient));
     List<Transport> webSocketTransports =
         Arrays.asList(
-            new WebSocketTransport(jettyWebSocketClient), new JettyXhrTransport(jettyHttpClient));
+            new WebSocketTransport(jettyWebSocketClient), new JettyXhrTransport(httpClient));
 
     SockJsClient sockJsClient = new SockJsClient(webSocketTransports);
-    jettyHttpClient.start();
+    httpClient.start();
     jettyWebSocketClient.start();
     return sockJsClient;
   }

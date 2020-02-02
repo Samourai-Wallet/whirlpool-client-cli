@@ -1,7 +1,7 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.google.common.primitives.Bytes;
-import com.samourai.http.client.JavaHttpClient;
+import com.samourai.http.client.CliHttpClient;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
@@ -22,6 +22,7 @@ import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
+import com.samourai.whirlpool.client.wallet.WhirlpoolDataService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletService;
@@ -49,7 +50,7 @@ public class CliWalletService extends WhirlpoolWalletService {
   private CliConfigService cliConfigService;
   private HD_WalletFactoryJava hdWalletFactory;
   private WalletAggregateService walletAggregateService;
-  private JavaHttpClient httpClient;
+  private CliHttpClient httpClient;
   private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
 
@@ -58,7 +59,7 @@ public class CliWalletService extends WhirlpoolWalletService {
       CliConfigService cliConfigService,
       HD_WalletFactoryJava hdWalletFactory,
       WalletAggregateService walletAggregateService,
-      JavaHttpClient httpClient,
+      CliHttpClient httpClient,
       JavaStompClientService stompClientService,
       CliTorClientService cliTorClientService) {
     super();
@@ -128,7 +129,10 @@ public class CliWalletService extends WhirlpoolWalletService {
     WhirlpoolWalletConfig whirlpoolWalletConfig =
         cliConfig.computeWhirlpoolWalletConfig(
             httpClient, stompClientService, persistHandler, BackendApiService);
-    WhirlpoolWallet whirlpoolWallet = computeWhirlpoolWallet(whirlpoolWalletConfig, bip84w);
+    WhirlpoolDataService whirlpoolDataService =
+        new WhirlpoolDataService(whirlpoolWalletConfig, this);
+    WhirlpoolWallet whirlpoolWallet =
+        computeWhirlpoolWallet(whirlpoolWalletConfig, whirlpoolDataService, bip84w);
     CliWallet cliWallet =
         new CliWallet(
             whirlpoolWallet,

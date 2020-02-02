@@ -153,19 +153,20 @@ public class CliUtils {
     Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion(isRegisterOutput);
     Optional<CliProxy> cliProxyOptional =
         torConnexion.isPresent() ? Optional.of(torConnexion.get().getTorProxy()) : cliProxyDefault;
-    return computeHttpClient(cliProxyOptional);
+    return computeHttpClient(cliProxyOptional, ClientUtils.USER_AGENT);
   }
 
-  protected static HttpClient computeHttpClient(Optional<CliProxy> cliProxyOptional) {
+  public static HttpClient computeHttpClient(
+      Optional<CliProxy> cliProxyOptional, String userAgent) {
     // we use jetty for proxy SOCKS support
     HttpClient jettyHttpClient = new HttpClient(new SslContextFactory());
     // jettyHttpClient.setSocketAddressResolver(new MySocketAddressResolver());
 
     // prevent user-agent tracking
-    jettyHttpClient.setUserAgentField(new HttpField(HttpHeader.USER_AGENT, ClientUtils.USER_AGENT));
+    jettyHttpClient.setUserAgentField(new HttpField(HttpHeader.USER_AGENT, userAgent));
 
     // proxy
-    if (cliProxyOptional.isPresent()) {
+    if (cliProxyOptional != null && cliProxyOptional.isPresent()) {
       CliProxy cliProxy = cliProxyOptional.get();
       if (log.isDebugEnabled()) {
         log.debug("+httpClient: proxy=" + cliProxy);

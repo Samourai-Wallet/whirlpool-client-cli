@@ -1,9 +1,6 @@
 package com.samourai.http.client;
 
 import com.samourai.wallet.api.backend.beans.HttpException;
-import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.services.CliTorClientService;
-import com.samourai.whirlpool.cli.utils.CliUtils;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -19,25 +16,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 
-public class JavaHttpClient extends JacksonHttpClient {
+public abstract class JavaHttpClient extends JacksonHttpClient {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private CliTorClientService torClientService;
-  private CliConfig cliConfig;
   private HttpClient httpClientShared;
   private HttpClient httpClientRegOut;
 
-  public JavaHttpClient(CliTorClientService torClientService, CliConfig cliConfig) {
+  public JavaHttpClient() {
     super();
-    this.torClientService = torClientService;
-    this.cliConfig = cliConfig;
     httpClientShared = null;
     httpClientRegOut = null;
   }
 
+  protected abstract HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception;
+
   @Override
   protected String requestJsonGet(String urlStr, Map<String, String> headers) throws Exception {
     Request req = computeHttpRequest(false, urlStr, HttpMethod.GET, headers);
+    return requestJson(req);
+  }
+
+  @Override
+  protected String requestJsonPost(String urlStr, Map<String, String> headers, String jsonBody)
+      throws Exception {
+    Request req = computeHttpRequest(false, urlStr, HttpMethod.POST, headers);
+    req.content(
+        new StringContentProvider(
+            MediaType.APPLICATION_JSON_VALUE, jsonBody, StandardCharsets.UTF_8));
     return requestJson(req);
   }
 
@@ -119,13 +124,6 @@ public class JavaHttpClient extends JacksonHttpClient {
       }
     }
     return req;
-  }
-
-  private HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception {
-    HttpClient httpClient =
-        CliUtils.computeHttpClient(isRegisterOutput, torClientService, cliConfig.getCliProxy());
-    httpClient.start();
-    return httpClient;
   }
 
   @Override
