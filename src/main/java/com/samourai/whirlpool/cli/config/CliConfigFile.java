@@ -16,6 +16,7 @@ import java.util.Optional;
 import javax.validation.constraints.NotEmpty;
 import org.apache.logging.log4j.util.Strings;
 import org.bitcoinj.core.NetworkParameters;
+import org.hibernate.validator.constraints.Range;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -35,6 +36,10 @@ public abstract class CliConfigFile {
   @NotEmpty private int refreshPoolsDelay;
   @NotEmpty private int tx0MinConfirmations;
   @NotEmpty private String proxy;
+
+  @Range(min = 1000)
+  private long requestTimeout;
+
   private Optional<CliProxy> _cliProxy;
   @NotEmpty private MixConfig mix;
   @NotEmpty private ApiConfig api;
@@ -61,6 +66,7 @@ public abstract class CliConfigFile {
     this.refreshPoolsDelay = copy.refreshPoolsDelay;
     this.tx0MinConfirmations = copy.tx0MinConfirmations;
     this.proxy = copy.proxy;
+    this.requestTimeout = copy.requestTimeout;
     this.api = new ApiConfig(copy.api);
     this.mix = new MixConfig(copy.mix);
   }
@@ -174,6 +180,14 @@ public abstract class CliConfigFile {
 
   public void setProxy(String proxy) {
     this.proxy = proxy;
+  }
+
+  public long getRequestTimeout() {
+    return requestTimeout;
+  }
+
+  public void setRequestTimeout(long requestTimeout) {
+    this.requestTimeout = requestTimeout;
   }
 
   public MixConfig getMix() {

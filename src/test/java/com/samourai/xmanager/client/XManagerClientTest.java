@@ -5,6 +5,7 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.test.AbstractTest;
 import com.samourai.xmanager.protocol.XManagerService;
 import com.samourai.xmanager.protocol.rest.AddressIndexResponse;
+import java.util.Optional;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
@@ -12,22 +13,23 @@ import org.junit.jupiter.api.Test;
 
 public class XManagerClientTest extends AbstractTest {
   private static final boolean testnet = true;
+  private static final long requestTimeout = 5000;
 
   private XManagerClient xManagerClient;
   private XManagerClient xManagerClientFailing;
 
   public XManagerClientTest() throws Exception {
     JavaHttpClient httpClient =
-        new JavaHttpClient() {
+        new JavaHttpClient(requestTimeout) {
           @Override
           protected HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception {
-            return CliUtils.computeHttpClient(null, "whirlpool-cli/test");
+            return CliUtils.computeHttpClient(Optional.empty(), "whirlpool-cli/test");
           }
         };
     xManagerClient = new XManagerClient(testnet, false, httpClient);
 
     JavaHttpClient httpClientFailing =
-        new JavaHttpClient() {
+        new JavaHttpClient(requestTimeout) {
           @Override
           protected HttpClient computeHttpClient(boolean isRegisterOutput) {
             throw new RuntimeException("testing failure");

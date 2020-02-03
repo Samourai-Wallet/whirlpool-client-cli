@@ -15,7 +15,7 @@ public class CliHttpClient extends JavaHttpClient {
   private CliConfig cliConfig;
 
   public CliHttpClient(CliTorClientService torClientService, CliConfig cliConfig) {
-    super();
+    super(cliConfig.getRequestTimeout());
     this.torClientService = torClientService;
     this.cliConfig = cliConfig;
   }

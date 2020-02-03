@@ -4,6 +4,7 @@ import com.samourai.wallet.api.backend.beans.HttpException;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
@@ -21,11 +22,13 @@ public abstract class JavaHttpClient extends JacksonHttpClient {
 
   private HttpClient httpClientShared;
   private HttpClient httpClientRegOut;
+  private long requestTimeout;
 
-  public JavaHttpClient() {
+  public JavaHttpClient(long requestTimeout) {
     super();
     httpClientShared = null;
     httpClientRegOut = null;
+    this.requestTimeout = requestTimeout;
   }
 
   protected abstract HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception;
@@ -123,6 +126,7 @@ public abstract class JavaHttpClient extends JacksonHttpClient {
         req.header(entry.getKey(), entry.getValue());
       }
     }
+    req.timeout(requestTimeout, TimeUnit.MILLISECONDS);
     return req;
   }
 
