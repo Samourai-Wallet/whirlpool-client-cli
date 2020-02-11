@@ -214,6 +214,7 @@ public abstract class CliConfigFile {
     @NotEmpty private int tx0MaxOutputs;
     @NotEmpty private boolean autoMix;
     @NotEmpty private int mixsTarget;
+    private Map<String, Long> overspend;
 
     public MixConfig() {}
 
@@ -225,6 +226,7 @@ public abstract class CliConfigFile {
       this.tx0MaxOutputs = copy.tx0MaxOutputs;
       this.autoMix = copy.autoMix;
       this.mixsTarget = copy.mixsTarget;
+      this.overspend = copy.overspend != null ? new HashMap<>(copy.overspend) : null;
     }
 
     public Integer getClients() {
@@ -283,6 +285,14 @@ public abstract class CliConfigFile {
       this.mixsTarget = mixsTarget;
     }
 
+    public Map<String, Long> getOverspend() {
+      return overspend;
+    }
+
+    public void setOverspend(Map<String, Long> overspend) {
+      this.overspend = overspend;
+    }
+
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
       configInfo.put("cli/mix/clients", clients != null ? Integer.toString(clients) : "null");
@@ -292,6 +302,7 @@ public abstract class CliConfigFile {
       configInfo.put("cli/mix/tx0MaxOutputs", Integer.toString(tx0MaxOutputs));
       configInfo.put("cli/mix/autoMix", Boolean.toString(autoMix));
       configInfo.put("cli/mix/mixsTarget", Integer.toString(mixsTarget));
+      configInfo.put("cli/mix/overspend", overspend != null ? overspend.toString() : "null");
       return configInfo;
     }
   }
@@ -477,6 +488,7 @@ public abstract class CliConfigFile {
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs() > 0 ? mix.getTx0MaxOutputs() : null);
     config.setAutoMix(mix.isAutoMix());
     config.setMixsTarget(mix.getMixsTarget());
+    config.setOverspendPerPool(mix.getOverspend());
 
     return config;
   }

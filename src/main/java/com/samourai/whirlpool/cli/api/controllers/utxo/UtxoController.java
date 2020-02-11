@@ -105,7 +105,7 @@ public class UtxoController extends AbstractRestController {
     // tx0
     Tx0 tx0 =
         whirlpoolWallet.tx0(
-            Lists.of(whirlpoolUtxo), pool, whirlpoolWallet.getTx0Config(), payload.feeTarget);
+            Lists.of(whirlpoolUtxo), pool, payload.feeTarget, whirlpoolWallet.getTx0Config());
     return new ApiTx0Response(tx0);
   }
 
