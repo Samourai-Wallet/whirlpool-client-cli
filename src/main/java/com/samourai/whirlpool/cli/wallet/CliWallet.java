@@ -9,9 +9,11 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.EmptyWalletException;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.mix.listener.MixSuccess;
+import com.samourai.whirlpool.client.tx0.Tx0Config;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.MixProgress;
 import com.samourai.whirlpool.client.wallet.beans.WhirlpoolUtxo;
+import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import io.reactivex.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,6 +139,17 @@ public class CliWallet extends WhirlpoolWallet {
     if (aggregateException != null) {
       throw aggregateException;
     }
+  }
+
+  @Override
+  public Tx0Config getTx0Config(Pool pool) {
+    Tx0Config tx0Config = super.getTx0Config(pool);
+    String poolId = pool.getPoolId();
+    Long overspendOrNull = cliConfig.getMix().getOverspend() != null ? cliConfig.getMix().getOverspend().get(poolId) : null;
+    if (overspendOrNull != null) {
+      tx0Config.setOverspend(overspendOrNull);
+    }
+    return tx0Config;
   }
 
   @Override

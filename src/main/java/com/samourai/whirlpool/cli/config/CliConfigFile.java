@@ -488,7 +488,6 @@ public abstract class CliConfigFile {
     config.setTx0MaxOutputs(mix.getTx0MaxOutputs() > 0 ? mix.getTx0MaxOutputs() : null);
     config.setAutoMix(mix.isAutoMix());
     config.setMixsTarget(mix.getMixsTarget());
-    config.setOverspendPerPool(mix.getOverspend());
 
     return config;
   }
