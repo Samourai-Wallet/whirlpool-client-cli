@@ -485,7 +485,6 @@ public abstract class CliConfigFile {
     config.setMaxClientsPerPool(mix.getClientsPerPool());
     config.setClientDelay(mix.getClientDelay());
     config.setTx0Delay(mix.getTx0Delay());
-    config.setTx0MaxOutputs(mix.getTx0MaxOutputs() > 0 ? mix.getTx0MaxOutputs() : null);
     config.setAutoMix(mix.isAutoMix());
     config.setMixsTarget(mix.getMixsTarget());
 

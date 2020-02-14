@@ -144,8 +144,19 @@ public class CliWallet extends WhirlpoolWallet {
   @Override
   public Tx0Config getTx0Config(Pool pool) {
     Tx0Config tx0Config = super.getTx0Config(pool);
+
+    // maxOutputs
+    if (cliConfig.getMix().getTx0MaxOutputs() > 0) {
+      int maxOutputs = cliConfig.getMix().getTx0MaxOutputs();
+      tx0Config.setMaxOutputs(maxOutputs);
+    }
+
+    // overspend
     String poolId = pool.getPoolId();
-    Long overspendOrNull = cliConfig.getMix().getOverspend() != null ? cliConfig.getMix().getOverspend().get(poolId) : null;
+    Long overspendOrNull =
+        cliConfig.getMix().getOverspend() != null
+            ? cliConfig.getMix().getOverspend().get(poolId)
+            : null;
     if (overspendOrNull != null) {
       tx0Config.setOverspend(overspendOrNull);
     }

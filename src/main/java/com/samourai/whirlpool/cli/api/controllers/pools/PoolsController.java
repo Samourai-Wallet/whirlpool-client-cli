@@ -3,11 +3,13 @@ package com.samourai.whirlpool.cli.api.controllers.pools;
 import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiPoolsResponse;
+import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWallet;
 import com.samourai.whirlpool.client.wallet.beans.Tx0FeeTarget;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import java.util.Collection;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class PoolsController extends AbstractRestController {
   @Autowired private CliWalletService cliWalletService;
+  @Autowired private CliConfig cliConfig;
 
   @RequestMapping(value = CliApiEndpoint.REST_POOLS, method = RequestMethod.GET)
   public ApiPoolsResponse pools(
@@ -25,6 +28,7 @@ public class PoolsController extends AbstractRestController {
     checkHeaders(headers);
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
     Collection<Pool> pools = whirlpoolWallet.getPools(false);
-    return new ApiPoolsResponse(pools, tx0FeeTarget, whirlpoolWallet);
+    Map<String, Long> overspendPerPool = cliConfig.getMix().getOverspend();
+    return new ApiPoolsResponse(pools, tx0FeeTarget, whirlpoolWallet, overspendPerPool);
   }
 }
