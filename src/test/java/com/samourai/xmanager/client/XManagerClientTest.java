@@ -74,14 +74,14 @@ public class XManagerClientTest extends AbstractTest {
   public void verifyAddressIndexResponseOrException() throws Exception {
     Assertions.assertTrue(
         xManagerClient.verifyAddressIndexResponseOrException(
-            XManagerService.WHIRLPOOL, "tb1qcfgn9nlgxu0ycj446prdkg0p36qy5a39pcf74v", 0));
+            XManagerService.WHIRLPOOL, "tb1q6m3urxjc8j2l8fltqj93jarmzn0975nnxuymnx", 0));
     Assertions.assertFalse(
         xManagerClient.verifyAddressIndexResponseOrException(
             XManagerService.WHIRLPOOL, "tb1qz84ma37y3d759sdy7mvq3u4vsxlg2qahw3lm23", 0));
 
     Assertions.assertTrue(
         xManagerClient.verifyAddressIndexResponseOrException(
-            XManagerService.WHIRLPOOL, "tb1qz84ma37y3d759sdy7mvq3u4vsxlg2qahw3lm23", 1));
+            XManagerService.WHIRLPOOL, "tb1qcaerxclcmu9llc7ugh65hemqg6raaz4sul535f", 1));
     Assertions.assertFalse(
         xManagerClient.verifyAddressIndexResponseOrException(
             XManagerService.WHIRLPOOL, "tb1qcfgn9nlgxu0ycj446prdkg0p36qy5a39pcf74v", 1));
