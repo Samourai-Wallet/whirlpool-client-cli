@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli;
 
+import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -33,7 +34,7 @@ public class Application implements ApplicationRunner {
   private static ConfigurableApplicationContext applicationContext;
   private static ApplicationArguments applicationArguments;
   private static boolean restart;
-  private static int exitCode = 0;
+  private static Integer exitCode;
 
   @Autowired Environment env;
   @Autowired CliService cliService;
@@ -65,7 +66,7 @@ public class Application implements ApplicationRunner {
       restart();
     } else {
       // exit
-      if (exitCode != 0) {
+      if (exitCode != null) {
         // error
         if (log.isDebugEnabled()) {
           log.debug("Exit with error: " + exitCode);
@@ -109,7 +110,17 @@ public class Application implements ApplicationRunner {
         return;
       }
 
-      restart = cliService.run(listen);
+      CliResult cliResult = cliService.run(listen);
+      switch (cliResult) {
+        case RESTART:
+          restart = true;
+          break;
+        case EXIT_SUCCESS:
+          exitCode = 0;
+          break;
+        case KEEP_RUNNING:
+          break;
+      }
     } catch (NotifiableException e) {
       exitCode = 1;
       CliUtils.notifyError(e.getMessage());

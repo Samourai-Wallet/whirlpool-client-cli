@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.services;
 
 import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.beans.CliProxy;
+import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
@@ -62,7 +63,7 @@ public class CliService {
     }
   }
 
-  public boolean run(boolean listen) throws Exception {
+  public CliResult run(boolean listen) throws Exception {
     String[] args = appArgs.getApplicationArguments().getSourceArgs();
 
     log.info("------------ whirlpool-client-cli starting ------------");
@@ -88,7 +89,7 @@ public class CliService {
     // check init
     if (appArgs.isInit() || (cliConfigService.isCliStatusNotInitialized() && !listen)) {
       new RunCliInit(appArgs, cliConfigService, cliWalletService).run();
-      return true; // restart
+      return CliResult.RESTART;
     }
 
     // check cli initialized
@@ -105,7 +106,7 @@ public class CliService {
       log.warn("⣿ Or initialize with --init");
       log.warn(CliUtils.LOG_SEPARATOR);
       keepRunning();
-      return false;
+      return CliResult.KEEP_RUNNING;
     }
 
     // check upgrade
@@ -115,7 +116,7 @@ public class CliService {
       log.warn("⣿ UPGRADE SUCCESS");
       log.warn("⣿ Restarting CLI...");
       log.warn(CliUtils.LOG_SEPARATOR);
-      return true; // restart
+      return CliResult.RESTART;
     }
 
     if (listen) {
@@ -135,7 +136,7 @@ public class CliService {
       log.info("⣿ Or authenticate with --authenticate");
       log.info(CliUtils.LOG_SEPARATOR);
       keepRunning();
-      return false;
+      return CliResult.KEEP_RUNNING;
     }
 
     // authenticate to open wallet when passphrase providen through arguments
@@ -154,12 +155,12 @@ public class CliService {
     if (RunCliCommand.hasCommandToRun(appArgs, cliConfig)) {
       // execute specific command
       new RunCliCommand(appArgs, cliWalletService, walletAggregateService).run();
-      return false; // exit
+      return CliResult.EXIT_SUCCESS;
     } else {
       // start wallet
       cliWallet.start();
       keepRunning();
-      return false;
+      return CliResult.KEEP_RUNNING;
     }
   }
 
