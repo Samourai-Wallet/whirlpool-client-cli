@@ -93,6 +93,10 @@ public class CliUtils {
     return null;
   }
 
+  public static boolean hasConsole() {
+    return System.console() != null;
+  }
+
   public static void notifyError(String message) {
     log.error("⣿ ERROR ⣿ " + message);
   }

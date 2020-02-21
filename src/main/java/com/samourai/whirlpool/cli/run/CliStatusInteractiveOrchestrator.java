@@ -34,7 +34,7 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
   }
 
   private void interactive() {
-    while (true) {
+    while (isStarted()) {
       try {
         Character car = CliUtils.readChar();
         if (car != null) {
@@ -53,9 +53,8 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
             printSystem();
           }
         } else {
-          synchronized (this) {
-            // when redirecting input
-            wait(5000);
+          if (log.isDebugEnabled()) {
+            log.debug("console input was null");
           }
         }
       } catch (Exception e) {

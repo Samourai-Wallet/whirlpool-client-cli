@@ -166,11 +166,11 @@ public class CliService {
 
   private void keepRunning() {
     // disable statusOrchestrator when redirecting output
-    if (System.console() != null) {
+    if (CliUtils.hasConsole()) {
       // log status
       this.cliStatusOrchestrator =
           new CliStatusOrchestrator(CLI_STATUS_DELAY, cliWalletService, cliConfig);
-      this.cliStatusOrchestrator.start();
+      this.cliStatusOrchestrator.start(true);
     }
   }
 
