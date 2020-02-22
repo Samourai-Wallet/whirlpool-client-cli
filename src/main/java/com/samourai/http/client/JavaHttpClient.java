@@ -85,9 +85,6 @@ public abstract class JavaHttpClient extends JacksonHttpClient {
           new Exception("Http query failed: status=" + response.getStatus()), responseBody);
     }
     String responseContent = response.getContentAsString();
-    if (log.isTraceEnabled()) {
-      log.trace("response: " + responseContent);
-    }
     return responseContent;
   }
 
@@ -132,6 +129,7 @@ public abstract class JavaHttpClient extends JacksonHttpClient {
 
   @Override
   protected void onRequestError(Exception e, boolean isRegisterOutput) {
+    super.onRequestError(e, isRegisterOutput);
     if (!isRegisterOutput) {
       if (httpClientShared != null) {
         try {
