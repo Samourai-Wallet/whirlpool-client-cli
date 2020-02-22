@@ -19,6 +19,7 @@ import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfigFile;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
+import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
@@ -197,7 +198,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     if (log.isDebugEnabled()) {
       log.debug("indexFile: " + path);
     }
-    return computeFile(path);
+    return CliUtils.computeFile(path);
   }
 
   private File computeUtxosFile(String walletIdentifier) throws NotifiableException {
@@ -205,22 +206,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     if (log.isDebugEnabled()) {
       log.debug("utxosFile: " + path);
     }
-    return computeFile(path);
-  }
-
-  private File computeFile(String path) throws NotifiableException {
-    File f = new File(path);
-    if (!f.exists()) {
-      if (log.isDebugEnabled()) {
-        log.debug("Creating file " + path);
-      }
-      try {
-        f.createNewFile();
-      } catch (Exception e) {
-        throw new NotifiableException("Unable to write file " + path);
-      }
-    }
-    return f;
+    return CliUtils.computeFile(path);
   }
 
   public CliState getCliState() {

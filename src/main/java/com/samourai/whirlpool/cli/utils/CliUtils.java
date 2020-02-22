@@ -9,6 +9,7 @@ import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
 import java.io.Console;
+import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
@@ -243,5 +244,20 @@ public class CliUtils {
 
   public static long bytesToMB(long bytes) {
     return Math.round(bytes / (1024L * 1024L));
+  }
+
+  public static File computeFile(String path) throws NotifiableException {
+    File f = new File(path);
+    if (!f.exists()) {
+      if (log.isDebugEnabled()) {
+        log.debug("Creating file " + path);
+      }
+      try {
+        f.createNewFile();
+      } catch (Exception e) {
+        throw new NotifiableException("Unable to write file " + path);
+      }
+    }
+    return f;
   }
 }

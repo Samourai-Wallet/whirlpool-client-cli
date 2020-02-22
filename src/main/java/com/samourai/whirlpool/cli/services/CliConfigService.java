@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
+import java.nio.channels.FileLock;
 import java.util.Map.Entry;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
@@ -249,18 +250,27 @@ public class CliConfigService {
     }
 
     File f = getConfigurationFile();
+    if (!f.exists()) {
+      f.createNewFile();
+    }
 
-    // write to tempFile
-    File tempFile = File.createTempFile(f.getName(), "");
-    OutputStream out = new FileOutputStream(tempFile);
+    // lock
+    FileLock fileLock = ClientUtils.lockFile(f);
     try {
-      DefaultPropertiesPersister p = new DefaultPropertiesPersister();
-      p.store(props, out, "Updated by application");
+      // write to tempFile
+      File tempFile = File.createTempFile(f.getName(), "");
+      OutputStream out = new FileOutputStream(tempFile);
+      try {
+        DefaultPropertiesPersister p = new DefaultPropertiesPersister();
+        p.store(props, out, "Updated by application");
 
-      // then rename
-      tempFile.renameTo(f);
+        // then rename
+        tempFile.renameTo(f);
+      } finally {
+        out.close();
+      }
     } finally {
-      out.close();
+      ClientUtils.unlockFile(fileLock);
     }
   }
 
