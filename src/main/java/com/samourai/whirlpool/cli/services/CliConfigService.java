@@ -249,13 +249,19 @@ public class CliConfigService {
     }
 
     File f = getConfigurationFile();
-    if (!f.exists()) {
-      f.createNewFile();
-    }
 
-    OutputStream out = new FileOutputStream(f);
-    DefaultPropertiesPersister p = new DefaultPropertiesPersister();
-    p.store(props, out, "Updated by application");
+    // write to tempFile
+    File tempFile = File.createTempFile(f.getName(), "");
+    OutputStream out = new FileOutputStream(tempFile);
+    try {
+      DefaultPropertiesPersister p = new DefaultPropertiesPersister();
+      p.store(props, out, "Updated by application");
+
+      // then rename
+      tempFile.renameTo(f);
+    } finally {
+      out.close();
+    }
   }
 
   private File getConfigurationFile() {
