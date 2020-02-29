@@ -8,6 +8,10 @@
 - ```--debug-client```: more debug logs
 - ```--dump-payload```: dump pairing-payload of current wallet and exit
 
+Any problem with CLI GUI or API? Try this:
+- Configure CLI manually with: ```java -jar whirlpool-client-cli-xxx-run.jar --debug --init```
+- Then restart CLI with manual authentication: ```java -jar whirlpool-client-cli-xxx-run.jar --debug --authenticate```
+
 
 #### Testing loop
 You can run CLI in loop mode on testnet to generate liquidity on testnet server:
@@ -65,7 +69,6 @@ cli.torConfig.onionBackend = true
 When tor enabled, connect to whirlpool server or wallet backend through:
 - `true`: Tor hidden services 
 - `false`: clearnet over Tor
-
 
 
 ## Build instructions
