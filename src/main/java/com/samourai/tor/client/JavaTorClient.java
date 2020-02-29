@@ -88,9 +88,11 @@ public class JavaTorClient {
     return file;
   }
 
-  public JavaTorClient(CliConfig cliConfig) throws Exception {
+  public JavaTorClient(CliConfig cliConfig) {
     this.cliConfig = cliConfig;
+  }
 
+  public void setup() throws Exception {
     Optional<File> torExecutable = computeTorExecutable();
     boolean useExecutableFromZip = !torExecutable.isPresent();
 

@@ -10,6 +10,7 @@ import com.msopentech.thali.toronionproxy.FileUtilities;
 import com.msopentech.thali.toronionproxy.OsData;
 import com.msopentech.thali.toronionproxy.TorConfig;
 import com.msopentech.thali.toronionproxy.TorInstaller;
+import com.samourai.whirlpool.cli.utils.CliUtils;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -69,6 +70,13 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
         torParent.exists() ? torParent : this.config.getTorExecutableFile(),
         this.getAssetOrResourceByName(getPathToTorExecutable() + "tor.zip"));
     FileUtilities.setPerms(this.config.getTorExecutableFile());
+
+    // detect runtime errors on tor executable (ie "error while loading shared libraries...")
+    try {
+      CliUtils.exec(this.config.getTorExecutableFile().getAbsolutePath() + " --help");
+    } catch (Exception e) {
+      throw new IOException("Tor executable error: " + e.getMessage());
+    }
   }
 
   public void updateTorConfigCustom(String content) throws IOException, TimeoutException {

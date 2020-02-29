@@ -97,7 +97,6 @@ public class Application implements ApplicationRunner {
     if (log.isDebugEnabled()) {
       log.debug("Run... " + Arrays.toString(applicationArguments.getSourceArgs()));
     }
-
     if (log.isDebugEnabled()) {
       log.debug("[cli/debug] debug=" + debug + ", debugClient=" + debugClient);
       log.debug("[cli/protocolVersion] " + WhirlpoolProtocol.PROTOCOL_VERSION);
@@ -105,6 +104,9 @@ public class Application implements ApplicationRunner {
     }
 
     try {
+      // setup Tor etc...
+      cliService.setup();
+
       if (env.acceptsProfiles(CliUtils.SPRING_PROFILE_TESTING)) {
         log.info("Running unit test...");
         return;

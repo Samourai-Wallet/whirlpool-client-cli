@@ -23,6 +23,13 @@ public class CliTorClientService {
     this.cliConfig = cliConfig;
   }
 
+  public void setup() throws Exception {
+    Optional<JavaTorClient> torClient = getTorClient();
+    if (torClient.isPresent()) {
+      torClient.get().setup();
+    }
+  }
+
   public void connect() {
     Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {

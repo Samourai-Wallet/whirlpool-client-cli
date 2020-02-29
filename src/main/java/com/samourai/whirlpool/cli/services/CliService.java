@@ -51,11 +51,10 @@ public class CliService {
     this.walletAggregateService = walletAggregateService;
     this.cliTorClientService = cliTorClientService;
     this.cliStatusOrchestrator = null;
-
-    setup();
+    init();
   }
 
-  private void setup() {
+  private void init() {
     // properties were set on CliConfig => override CliConfig with cli args
     appArgs.override(cliConfig);
 
@@ -65,6 +64,11 @@ public class CliService {
       CliProxy cliProxy = cliProxyOptional.get();
       CliUtils.useProxy(cliProxy);
     }
+  }
+
+  public void setup() throws Exception {
+    // setup Tor
+    cliTorClientService.setup();
   }
 
   private File computeDirLockFile() throws NotifiableException {

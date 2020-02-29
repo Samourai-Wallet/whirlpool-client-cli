@@ -216,7 +216,9 @@ public class CliUtils {
 
       int exit = proc.waitFor();
       if (exit != 0) {
-        throw new RuntimeException("exec [" + cmd + "] returned error code: " + exit);
+        String output = StringUtils.join(lines, "\n");
+        throw new RuntimeException(
+            "exec [" + cmd + "] returned error code: " + exit + "\nOutput:\n" + output);
       }
     } finally {
       if (proc != null) {
