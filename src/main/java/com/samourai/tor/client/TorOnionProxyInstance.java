@@ -21,14 +21,13 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
   private int progress;
 
   public TorOnionProxyInstance(
-      TorConfig torConfig, TorSettings torSettings, String logPrefix, boolean useExecutableFromZip)
+      WhirlpoolTorInstaller torInstaller, TorSettings torSettings, String logPrefix)
       throws Exception {
     this.log = ClientUtils.prefixLogger(log, logPrefix);
+    TorConfig torConfig = torInstaller.getConfig();
     if (log.isDebugEnabled()) {
       log.debug("new TorOnionProxyInstance: " + torConfig + " ; " + torSettings);
     }
-    // setup Tor
-    TorInstaller torInstaller = new WhirlpoolTorInstaller(torConfig, useExecutableFromZip);
 
     JavaOnionProxyContext context = new JavaOnionProxyContext(torConfig, torInstaller, torSettings);
     onionProxyManager = new OnionProxyManager(context);

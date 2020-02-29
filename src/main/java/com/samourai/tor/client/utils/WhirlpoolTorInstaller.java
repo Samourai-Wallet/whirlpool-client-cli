@@ -11,12 +11,9 @@ import com.msopentech.thali.toronionproxy.OsData;
 import com.msopentech.thali.toronionproxy.TorConfig;
 import com.msopentech.thali.toronionproxy.TorInstaller;
 import com.samourai.whirlpool.cli.utils.CliUtils;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +23,29 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
   private final TorConfig config;
   private boolean useExecutableFromZip;
 
-  public WhirlpoolTorInstaller(TorConfig config, boolean useExecutableFromZip) {
-    this.config = config;
-    this.useExecutableFromZip = useExecutableFromZip;
+  public WhirlpoolTorInstaller(String torDir, Optional<File> torExecutable) throws Exception {
+    this.config = computeTorConfig(torDir, torExecutable);
+    this.useExecutableFromZip = !torExecutable.isPresent();
+  }
+
+  private TorConfig computeTorConfig(String dirName, Optional<File> torExecutable)
+      throws Exception {
+    File dir = Files.createTempDirectory(dirName).toFile();
+    dir.deleteOnExit();
+
+    TorConfig.Builder torConfigBuilder = new TorConfig.Builder(dir, dir).homeDir(dir);
+
+    if (torExecutable.isPresent()) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(
+            "configuring tor for external executable: " + torExecutable.get().getAbsolutePath());
+      }
+      // use existing local Tor instead of embedded one
+      torConfigBuilder.torExecutable(torExecutable.get());
+    }
+
+    TorConfig torConfig = torConfigBuilder.build();
+    return torConfig;
   }
 
   private static String getPathToTorExecutable() {
@@ -98,5 +115,9 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
 
   public InputStream openBridgesStream() throws IOException {
     throw new UnsupportedOperationException();
+  }
+
+  public TorConfig getConfig() {
+    return config;
   }
 }

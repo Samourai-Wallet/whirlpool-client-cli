@@ -1,14 +1,13 @@
 package com.samourai.tor.client;
 
 import com.msopentech.thali.toronionproxy.OsData;
-import com.msopentech.thali.toronionproxy.TorConfig;
 import com.msopentech.thali.toronionproxy.TorSettings;
+import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
@@ -25,24 +24,108 @@ public class JavaTorClient {
   private TorOnionProxyInstance torInstanceRegOut;
   private boolean started = false;
 
-  private TorConfig computeTorConfig(String dirName, Optional<File> torExecutable)
-      throws Exception {
-    File dir = Files.createTempDirectory(dirName).toFile();
-    dir.deleteOnExit();
+  public JavaTorClient(CliConfig cliConfig) {
+    this.cliConfig = cliConfig;
+  }
 
-    TorConfig.Builder torConfigBuilder = new TorConfig.Builder(dir, dir).homeDir(dir);
+  public void setup() throws Exception {
+    TorSettings torSettings = computeTorSettings();
+    Optional<File> torExecutable = computeTorExecutableAndVerify();
 
-    if (torExecutable.isPresent()) {
-      if (log.isDebugEnabled()) {
-        log.debug(
-            "configuring tor for external executable: " + torExecutable.get().getAbsolutePath());
+    // setup Tor instances
+    this.torInstanceShared =
+        new TorOnionProxyInstance(
+            new WhirlpoolTorInstaller(TOR_DIR_SHARED, torExecutable), torSettings, "shared");
+
+    // run second instance on different ports
+    this.torInstanceRegOut =
+        new TorOnionProxyInstance(
+            new WhirlpoolTorInstaller(TOR_DIR_REG_OUT, torExecutable), torSettings, "regOut");
+  }
+
+  private Optional<File> computeTorExecutableAndVerify() throws Exception {
+    boolean torExecutableAuto = cliConfig.getTorConfig().isExecutableAuto();
+    boolean torExecutableLocal = cliConfig.getTorConfig().isExecutableLocal();
+    String executablePath = cliConfig.getTorConfig().getExecutable();
+
+    // try with embedded
+    boolean torExecutableEmbedded = true;
+    Optional<File> torExecutable =
+        computeTorExecutable(
+            torExecutableAuto, torExecutableEmbedded, torExecutableLocal, executablePath);
+    try {
+      // verify Tor executable is supported
+      checkTorExecutable(torExecutable); // throws exception when Tor not supported
+    } catch (Exception e) {
+      if (torExecutableAuto && torExecutableEmbedded) {
+        log.warn(
+            "Tor executable failed ("
+                + (torExecutable.isPresent() ? torExecutable.get().getAbsolutePath() : "embedded")
+                + ") => trying fallback...");
+        // retry without embedded
+        torExecutableEmbedded = false;
+        torExecutable =
+            computeTorExecutable(
+                torExecutableAuto, torExecutableEmbedded, torExecutableLocal, executablePath);
+        try {
+          checkTorExecutable(torExecutable); // throws exception when Tor not supported
+        } catch (Exception ee) {
+          log.error(
+              "Tor executable failed ("
+                  + (torExecutable.isPresent() ? torExecutable.get().getAbsolutePath() : "embedded")
+                  + ") => Tor is not available",
+              ee);
+          throw e;
+        }
+      } else {
+        log.error(
+            "Tor executable failed ("
+                + (torExecutable.isPresent() ? torExecutable.get().getAbsolutePath() : "embedded")
+                + ") => Tor is not available",
+            e);
+        throw e;
       }
-      // use existing local Tor instead of embedded one
-      torConfigBuilder.torExecutable(torExecutable.get());
+    }
+    return torExecutable;
+  }
+
+  private Optional<File> computeTorExecutable(
+      boolean torExecutableAuto,
+      boolean torExecutableEmbedded,
+      boolean torExecutableLocal,
+      String executablePath)
+      throws NotifiableException {
+    if (!torExecutableAuto && !torExecutableLocal) {
+      // use specified path for Tor executable
+      if (log.isDebugEnabled()) {
+        log.debug("Using tor executable: " + executablePath);
+      }
+      return Optional.of(getTorExecutablePath(executablePath));
     }
 
-    TorConfig torConfig = torConfigBuilder.build();
-    return torConfig;
+    // auto => embedded supported?
+    if (torExecutableAuto
+        && torExecutableEmbedded
+        && !OsData.OsType.UNSUPPORTED.equals(OsData.getOsType())) {
+      // use embedded Tor
+      if (log.isDebugEnabled()) {
+        log.debug("Using tor executable: embedded");
+      }
+      return Optional.empty();
+    }
+
+    // auto + embedded not supported => search for local Tor executable
+    if (log.isDebugEnabled()) {
+      log.debug("Using tor executable: OS not supported, looking for existing local install");
+    }
+    Optional<File> torExecutable = findTorExecutableLocal();
+
+    // no Tor executable found
+    if (!torExecutable.isPresent()) {
+      throw new NotifiableException(
+          "No local Tor executable found on your system, please install Tor.");
+    }
+    return torExecutable;
   }
 
   private Optional<File> findTorExecutableLocal() {
@@ -88,29 +171,14 @@ public class JavaTorClient {
     return file;
   }
 
-  public JavaTorClient(CliConfig cliConfig) {
-    this.cliConfig = cliConfig;
-  }
-
-  public void setup() throws Exception {
-    Optional<File> torExecutable = computeTorExecutable();
-    boolean useExecutableFromZip = !torExecutable.isPresent();
-
-    // setup Tor instances
-    this.torInstanceShared =
-        new TorOnionProxyInstance(
-            computeTorConfig(TOR_DIR_SHARED, torExecutable),
-            computeTorSettings(),
-            "shared",
-            useExecutableFromZip);
-
-    // run second instance on different ports
-    this.torInstanceRegOut =
-        new TorOnionProxyInstance(
-            computeTorConfig(TOR_DIR_REG_OUT, torExecutable),
-            computeTorSettings(),
-            "regOut",
-            useExecutableFromZip);
+  private void checkTorExecutable(Optional<File> torExecutable) throws Exception {
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Verifying Tor executable ("
+              + (torExecutable.isPresent() ? torExecutable.get().getAbsolutePath() : "embedded")
+              + ")");
+    }
+    new WhirlpoolTorInstaller("temp", torExecutable).setup(); // throws
   }
 
   public void connect() {
@@ -178,41 +246,5 @@ public class JavaTorClient {
   private TorSettings computeTorSettings() {
     TorSettings torSettings = new JavaTorSettings(cliConfig.getCliProxy());
     return torSettings;
-  }
-
-  private Optional<File> computeTorExecutable() throws NotifiableException {
-    boolean torExecutableAuto = cliConfig.getTorConfig().isExecutableAuto();
-    boolean torExecutableLocal = cliConfig.getTorConfig().isExecutableLocal();
-
-    if (!torExecutableAuto && !torExecutableLocal) {
-      // use specified path for Tor executable
-      String executablePath = cliConfig.getTorConfig().getExecutable();
-      if (log.isDebugEnabled()) {
-        log.debug("Using tor executable: " + executablePath);
-      }
-      return Optional.of(getTorExecutablePath(executablePath));
-    }
-
-    boolean osUnsupported = OsData.OsType.UNSUPPORTED.equals(OsData.getOsType());
-    if (torExecutableAuto && !osUnsupported) {
-      // use embedded Tor
-      if (log.isDebugEnabled()) {
-        log.debug("Using tor executable: embedded");
-      }
-      return Optional.empty();
-    }
-
-    // search for local Tor executable
-    if (log.isDebugEnabled()) {
-      log.debug("Using tor executable: OS not supported, looking for existing local install");
-    }
-    Optional<File> torExecutable = findTorExecutableLocal();
-
-    // no Tor executable found
-    if (!torExecutable.isPresent()) {
-      throw new NotifiableException(
-          "No local Tor executable found on your system, please install Tor.");
-    }
-    return torExecutable;
   }
 }
