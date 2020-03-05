@@ -4,6 +4,7 @@ import com.samourai.http.client.IHttpClient;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.whirlpool.cli.beans.CliProxy;
+import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
@@ -357,9 +358,8 @@ public abstract class CliConfigFile {
   }
 
   public static class TorConfig {
-    public static final String EXECUTABLE_AUTO = "auto";
-    public static final String EXECUTABLE_LOCAL = "local";
     @NotEmpty private String executable;
+    private CliTorExecutableMode executableMode;
     @NotEmpty private boolean onionServer;
     @NotEmpty private boolean onionBackend;
 
@@ -379,12 +379,13 @@ public abstract class CliConfigFile {
       this.executable = executable;
     }
 
-    public boolean isExecutableAuto() {
-      return EXECUTABLE_AUTO.equals(this.executable);
-    }
-
-    public boolean isExecutableLocal() {
-      return EXECUTABLE_LOCAL.equals(this.executable);
+    public CliTorExecutableMode getExecutableMode() {
+      if (executableMode == null) {
+        executableMode =
+            CliTorExecutableMode.find(this.executable.toUpperCase())
+                .orElse(CliTorExecutableMode.SPECIFIED);
+      }
+      return executableMode;
     }
 
     public boolean isOnionServer() {

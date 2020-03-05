@@ -3,6 +3,7 @@ package com.samourai.tor.client;
 import com.msopentech.thali.toronionproxy.OsData;
 import com.msopentech.thali.toronionproxy.TorSettings;
 import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
+import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -44,29 +45,28 @@ public class JavaTorClient {
   }
 
   private Optional<File> computeTorExecutableAndVerify() throws Exception {
-    boolean torExecutableAuto = cliConfig.getTorConfig().isExecutableAuto();
-    boolean torExecutableLocal = cliConfig.getTorConfig().isExecutableLocal();
-    String executablePath = cliConfig.getTorConfig().getExecutable();
+    CliTorExecutableMode executableMode = cliConfig.getTorConfig().getExecutableMode();
+    String executablePath =
+        CliTorExecutableMode.SPECIFIED.equals(executableMode)
+            ? cliConfig.getTorConfig().getExecutable()
+            : null;
+    boolean tryEmbedded = CliTorExecutableMode.AUTO.equals(executableMode);
 
     // try with embedded
-    boolean torExecutableEmbedded = true;
     Optional<File> torExecutable =
-        computeTorExecutable(
-            torExecutableAuto, torExecutableEmbedded, torExecutableLocal, executablePath);
+        computeTorExecutable(executableMode, executablePath, tryEmbedded);
     try {
       // verify Tor executable is supported
       checkTorExecutable(torExecutable); // throws exception when Tor not supported
     } catch (Exception e) {
-      if (torExecutableAuto && torExecutableEmbedded) {
+      if (tryEmbedded) {
         log.warn(
             "Tor executable failed ("
                 + (torExecutable.isPresent() ? torExecutable.get().getAbsolutePath() : "embedded")
                 + ") => trying fallback...");
         // retry without embedded
-        torExecutableEmbedded = false;
-        torExecutable =
-            computeTorExecutable(
-                torExecutableAuto, torExecutableEmbedded, torExecutableLocal, executablePath);
+        tryEmbedded = false;
+        torExecutable = computeTorExecutable(executableMode, executablePath, tryEmbedded);
         try {
           checkTorExecutable(torExecutable); // throws exception when Tor not supported
         } catch (Exception ee) {
@@ -90,40 +90,36 @@ public class JavaTorClient {
   }
 
   private Optional<File> computeTorExecutable(
-      boolean torExecutableAuto,
-      boolean torExecutableEmbedded,
-      boolean torExecutableLocal,
-      String executablePath)
+      CliTorExecutableMode executableMode, String executablePath, boolean tryEmbedded)
       throws NotifiableException {
-    if (!torExecutableAuto && !torExecutableLocal) {
-      // use specified path for Tor executable
+    // path specified
+    if (CliTorExecutableMode.SPECIFIED.equals(executableMode)) {
       if (log.isDebugEnabled()) {
-        log.debug("Using tor executable: " + executablePath);
+        log.debug("Using tor executable (specified): " + executablePath);
       }
       return Optional.of(getTorExecutablePath(executablePath));
     }
 
-    // auto => embedded supported?
-    if (torExecutableAuto
-        && torExecutableEmbedded
-        && !OsData.OsType.UNSUPPORTED.equals(OsData.getOsType())) {
-      // use embedded Tor
+    // embedded
+    if (tryEmbedded && !OsData.OsType.UNSUPPORTED.equals(OsData.getOsType())) {
       if (log.isDebugEnabled()) {
-        log.debug("Using tor executable: embedded");
+        log.debug("Using tor executable (embedded): " + OsData.getOsType());
       }
       return Optional.empty();
     }
 
-    // auto + embedded not supported => search for local Tor executable
-    if (log.isDebugEnabled()) {
-      log.debug("Using tor executable: OS not supported, looking for existing local install");
-    }
+    // find local Tor executable
     Optional<File> torExecutable = findTorExecutableLocal();
-
-    // no Tor executable found
     if (!torExecutable.isPresent()) {
+      // not found
+      if (log.isDebugEnabled()) {
+        log.debug("Using tor executable (local): no local install found");
+      }
       throw new NotifiableException(
           "No local Tor executable found on your system, please install Tor.");
+    }
+    if (log.isDebugEnabled()) {
+      log.debug("Using tor executable (local): " + torExecutable.get());
     }
     return torExecutable;
   }
