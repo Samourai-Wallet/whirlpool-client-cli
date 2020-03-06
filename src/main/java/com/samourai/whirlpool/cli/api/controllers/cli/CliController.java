@@ -30,7 +30,6 @@ public class CliController extends AbstractRestController {
   @RequestMapping(value = CliApiEndpoint.REST_CLI, method = RequestMethod.GET)
   public ApiCliStateResponse state(@RequestHeader HttpHeaders headers) throws Exception {
     checkHeaders(headers);
-
     ApiCliStateResponse response =
         new ApiCliStateResponse(
             cliWalletService.getCliState(),

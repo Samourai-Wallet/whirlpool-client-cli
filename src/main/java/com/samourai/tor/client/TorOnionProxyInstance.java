@@ -164,7 +164,6 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
 
   @Override
   public int getProgress() {
-    checkReady(); // update progress
     return progress;
   }
 
