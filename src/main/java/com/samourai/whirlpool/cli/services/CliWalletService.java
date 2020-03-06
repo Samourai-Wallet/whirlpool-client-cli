@@ -18,6 +18,7 @@ import com.samourai.whirlpool.cli.beans.CliStatus;
 import com.samourai.whirlpool.cli.beans.WhirlpoolPairingPayload;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.config.CliConfigFile;
+import com.samourai.whirlpool.cli.exception.AuthenticationException;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.cli.wallet.CliWallet;
@@ -87,13 +88,12 @@ public class CliWalletService extends WhirlpoolWalletService {
     try {
       seedWords = decryptSeedWords(cliConfig.getSeed(), passphrase);
     } catch (Exception e) {
-      log.error("decryptSeedWords failed, invalid passphrase?");
       if (log.isDebugEnabled()
           && !(e instanceof AEADBadTagException)
           && !(e instanceof InvalidCipherTextException)) {
         log.debug("", e);
       }
-      throw new NotifiableException("Decryption failed, invalid passphrase?");
+      throw new AuthenticationException("Authentication failed: invalid passphrase?");
     }
 
     String walletIdentifier;

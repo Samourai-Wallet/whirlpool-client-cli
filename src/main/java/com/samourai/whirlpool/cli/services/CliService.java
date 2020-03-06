@@ -4,6 +4,7 @@ import com.samourai.whirlpool.cli.ApplicationArgs;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliResult;
 import com.samourai.whirlpool.cli.config.CliConfig;
+import com.samourai.whirlpool.cli.exception.AuthenticationException;
 import com.samourai.whirlpool.cli.exception.NoSessionWalletException;
 import com.samourai.whirlpool.cli.run.CliStatusOrchestrator;
 import com.samourai.whirlpool.cli.run.RunCliCommand;
@@ -167,14 +168,21 @@ public class CliService {
         return CliResult.KEEP_RUNNING;
       }
 
-      // authenticate to open wallet when passphrase providen through arguments
-      String seedPassphrase = authenticate();
-
-      // we may have authenticated from API in the meantime...
-      CliWallet cliWallet =
-          cliWalletService.hasSessionWallet()
-              ? cliWalletService.getSessionWallet()
-              : cliWalletService.openWallet(seedPassphrase);
+      CliWallet cliWallet = null;
+      while (cliWallet == null) {
+        // authenticate to open wallet when passphrase providen through arguments
+        String seedPassphrase = authenticate();
+        try {
+          // we may have authenticated from API in the meantime...
+          cliWallet =
+              cliWalletService.hasSessionWallet()
+                  ? cliWalletService.getSessionWallet()
+                  : cliWalletService.openWallet(seedPassphrase);
+        } catch (AuthenticationException e) {
+          log.error(e.getMessage());
+          // will retry
+        }
+      }
       log.info(CliUtils.LOG_SEPARATOR);
       log.info("⣿ AUTHENTICATION SUCCESS");
       log.info("⣿ Whirlpool is starting...");
