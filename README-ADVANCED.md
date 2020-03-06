@@ -62,11 +62,16 @@ cli.torConfig.executable = /path/to/bin/tor
 - Use `local` to detect a local tor install.
 - Use custom path to `tor` binary to use your own tor build.
 
+Custom config can be appended to Torrc with:
 ```
-cli.torConfig.onionServer = true
-cli.torConfig.onionBackend = true
+cli.torConfig.customTorrc = /path/to/torrc
 ```
-When tor enabled, connect to whirlpool server or wallet backend through:
+
+Tor mode can be customized with:
+```
+cli.torConfig.onionServer = true   # whirlpool server
+cli.torConfig.onionBackend = true  # wallet backend
+```
 - `true`: Tor hidden services 
 - `false`: clearnet over Tor
 

@@ -9,6 +9,8 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
@@ -239,8 +241,18 @@ public class JavaTorClient {
     return torInstance;
   }
 
-  private TorSettings computeTorSettings() {
-    TorSettings torSettings = new JavaTorSettings(cliConfig.getCliProxy());
+  private TorSettings computeTorSettings() throws Exception {
+    String customTorrc = null;
+    String customTorrcFilename = cliConfig.getTorConfig().getCustomTorrc();
+    if (!StringUtils.isEmpty(customTorrcFilename)) {
+      try {
+        customTorrc = new String(Files.readAllBytes(Paths.get(customTorrcFilename)));
+      } catch (Exception e) {
+        throw new NotifiableException(
+            "Cannot read cli.torConfig.customTorrc file: " + customTorrcFilename, e);
+      }
+    }
+    TorSettings torSettings = new JavaTorSettings(cliConfig.getCliProxy(), customTorrc);
     return torSettings;
   }
 }

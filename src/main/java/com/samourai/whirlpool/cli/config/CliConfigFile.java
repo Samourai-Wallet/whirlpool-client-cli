@@ -362,6 +362,7 @@ public abstract class CliConfigFile {
     private CliTorExecutableMode executableMode;
     @NotEmpty private boolean onionServer;
     @NotEmpty private boolean onionBackend;
+    private String customTorrc;
 
     public TorConfig() {}
 
@@ -369,6 +370,7 @@ public abstract class CliConfigFile {
       this.executable = copy.executable;
       this.onionServer = copy.onionServer;
       this.onionBackend = copy.onionBackend;
+      this.customTorrc = copy.customTorrc;
     }
 
     public String getExecutable() {
@@ -404,11 +406,20 @@ public abstract class CliConfigFile {
       this.onionBackend = onionBackend;
     }
 
+    public String getCustomTorrc() {
+      return customTorrc;
+    }
+
+    public void setCustomTorrc(String customTorrc) {
+      this.customTorrc = customTorrc;
+    }
+
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
       configInfo.put("cli/tor/executable", executable);
       configInfo.put("cli/tor/onionServer", Boolean.toString(onionServer));
       configInfo.put("cli/tor/onionBackend", Boolean.toString(onionBackend));
+      configInfo.put("cli/tor/customTorrc", customTorrc != null ? customTorrc : "null");
       return configInfo;
     }
   }

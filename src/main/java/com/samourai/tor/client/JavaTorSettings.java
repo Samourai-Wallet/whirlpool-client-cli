@@ -7,9 +7,16 @@ import java.util.Optional;
 
 public class JavaTorSettings extends DefaultSettings {
   private CliProxy cliProxy;
+  private String customTorrc;
 
-  public JavaTorSettings(Optional<CliProxy> cliProxy) {
+  public JavaTorSettings(Optional<CliProxy> cliProxy, String customTorrc) {
     this.cliProxy = cliProxy.orElse(null);
+    this.customTorrc = customTorrc;
+  }
+
+  @Override
+  public String getCustomTorrc() {
+    return customTorrc;
   }
 
   @Override
