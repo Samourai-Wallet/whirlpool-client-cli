@@ -68,11 +68,7 @@ public class Application implements ApplicationRunner {
       // exit
       if (exitCode != null) {
         // error
-        if (log.isDebugEnabled()) {
-          log.debug("Exit with error: " + exitCode);
-        }
-        SpringApplication.exit(applicationContext, () -> exitCode);
-        System.exit(exitCode);
+        exitError(exitCode);
       } else {
         // success
         if (log.isDebugEnabled()) {
@@ -161,6 +157,16 @@ public class Application implements ApplicationRunner {
             });
     thread.setDaemon(false);
     thread.start();
+  }
+
+  public static void exitError(int exitCode) {
+    if (log.isDebugEnabled()) {
+      log.debug("Exit with error: " + exitCode);
+    }
+    if (applicationContext != null) {
+      SpringApplication.exit(applicationContext, () -> exitCode);
+    }
+    System.exit(exitCode);
   }
 
   private static String[] computeRestartArgs() {

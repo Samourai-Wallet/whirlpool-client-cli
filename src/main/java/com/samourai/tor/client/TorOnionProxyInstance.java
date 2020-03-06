@@ -3,6 +3,7 @@ package com.samourai.tor.client;
 import com.msopentech.thali.java.toronionproxy.JavaOnionProxyContext;
 import com.msopentech.thali.toronionproxy.*;
 import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
+import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
 import com.samourai.whirlpool.client.exception.NotifiableException;
@@ -61,8 +62,8 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
                   throw new RuntimeException("Couldn't start tor");
                 }
               } catch (Exception e) {
-                log.error("", e);
-                stop();
+                log.error("Tor failed to start", e);
+                Application.exitError(1);
               }
             },
             "start-TorOnionProxyInstance");
