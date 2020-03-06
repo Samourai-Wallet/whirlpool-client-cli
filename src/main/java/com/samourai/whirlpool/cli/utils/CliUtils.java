@@ -55,7 +55,11 @@ public class CliUtils {
 
   public static String readUserInputRequired(String message, boolean secret) {
     message = "⣿ INPUT REQUIRED ⣿ " + message;
-    return readUserInput(message, secret, true);
+    String input;
+    do {
+      input = readUserInput(message, secret, true);
+    } while (input == null);
+    return input;
   }
 
   public static String readUserInput(String message, boolean secret, boolean scannerFallback) {
@@ -76,7 +80,7 @@ public class CliUtils {
     if (line != null) {
       line = line.trim();
       if (line.isEmpty()) {
-        return null;
+        line = null;
       }
     }
     return line;

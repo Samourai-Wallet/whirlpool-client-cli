@@ -210,7 +210,7 @@ public class CliService {
     log.info(CliUtils.LOG_SEPARATOR);
     log.info("⣿ AUTHENTICATION REQUIRED");
     log.info("⣿ Whirlpool wallet is CLOSED.");
-    log.info("⣿ • Please type your seed passphrase to authenticate and start mixing.");
+    log.info("⣿ • Type your seed passphrase to authenticate and start mixing.");
     return CliUtils.readUserInputRequired("Seed passphrase?", true);
   }
 
