@@ -122,7 +122,7 @@ public class UtxoController extends AbstractRestController {
     WhirlpoolWallet whirlpoolWallet = cliWalletService.getSessionWallet();
 
     // start mix
-    whirlpoolWallet.mixQueue(whirlpoolUtxo);
+    whirlpoolWallet.mix(whirlpoolUtxo);
   }
 
   @RequestMapping(value = CliApiEndpoint.REST_UTXO_STOPMIX, method = RequestMethod.POST)
