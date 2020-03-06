@@ -48,7 +48,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     }
 
     if (log.isDebugEnabled()) {
-      log.debug("starting Tor");
+      log.debug("Starting Tor connexion...");
     }
     progress = PROGRESS_CONNECTING;
 
@@ -61,6 +61,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
                   log.error("Couldn't start tor");
                   throw new RuntimeException("Couldn't start tor");
                 }
+                waitReady();
               } catch (Exception e) {
                 log.error("Tor failed to start", e);
                 Application.exitError(1);
@@ -72,12 +73,17 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
   }
 
   public void waitReady() throws NotifiableException {
+    if (progress != 100) {
+      if (log.isDebugEnabled()) {
+        log.debug("Waiting for Tor connexion...");
+      }
+    }
     while (!checkReady()) {
       if (startThread == null) {
         throw new NotifiableException("Tor connect failed");
       }
       if (log.isDebugEnabled()) {
-        log.debug("waiting for Tor connexion...");
+        log.debug("Waiting for Tor circuit... ");
       }
       try {
         Thread.sleep(500);
@@ -166,9 +172,6 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
   public CliProxy getTorProxy() throws NotifiableException {
     CliProxy proxy;
     while ((proxy = getTorSocksOrNull()) == null) {
-      if (log.isDebugEnabled()) {
-        log.debug("waiting for TorSocks...");
-      }
       waitReady();
       try {
         Thread.sleep(500);
@@ -179,9 +182,9 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
   }
 
   private CliProxy getTorSocksOrNull() {
-    if (torSocks == null) {
+    if (torSocks == null && onionProxyManager.isRunning()) {
       try {
-        log.info("Waiting for TorSocks...");
+        // we should have a connexion now
         int socksPort = onionProxyManager.getIPv4LocalHostSocksPort();
         torSocks = new CliProxy(CliProxyProtocol.SOCKS, "127.0.0.1", socksPort);
         log.info("TorSocks started: " + torSocks);

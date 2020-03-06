@@ -185,7 +185,7 @@ public class JavaTorClient {
       return;
     }
     if (log.isDebugEnabled()) {
-      log.debug("Connecting");
+      log.debug("Connecting Tor...");
     }
 
     torInstanceShared.start();
