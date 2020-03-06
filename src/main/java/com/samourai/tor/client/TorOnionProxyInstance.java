@@ -67,7 +67,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
                 Application.exitError(1);
               }
             },
-            "start-TorOnionProxyInstance");
+            "TorOnionProxyInstance-start");
     startThread.setDaemon(true);
     startThread.start();
   }
@@ -142,7 +142,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
             () -> {
               stop();
             },
-            "stop-torOnionProxyInstance");
+            "TorOnionProxyInstance-stop");
     stopThread.setDaemon(true);
     stopThread.start();
     /*try {
@@ -155,7 +155,22 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
 
   public void changeIdentity() {
     progress = PROGRESS_CONNECTING;
-    if (!onionProxyManager.setNewIdentity()) {
+    boolean success = onionProxyManager.setNewIdentity();
+    if (success) {
+      // watch tor progress in a new thread
+      Thread statusThread =
+          new Thread(
+              () -> {
+                try {
+                  waitReady(); // updates progress
+                } catch (Exception e) {
+                  log.error("", e);
+                }
+              },
+              "TorOnionProxyInstance-status");
+      statusThread.setDaemon(true);
+      statusThread.start();
+    } else {
       log.warn("changeIdentity failed, restarting Tor...");
       stop();
       start();

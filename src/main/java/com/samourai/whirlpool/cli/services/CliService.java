@@ -218,8 +218,8 @@ public class CliService {
     log.info(CliUtils.LOG_SEPARATOR);
     log.info("⣿ AUTHENTICATION REQUIRED");
     log.info("⣿ Whirlpool wallet is CLOSED.");
-    log.info("⣿ • Type your seed passphrase to authenticate and start mixing.");
-    return CliUtils.readUserInputRequired("Seed passphrase?", true);
+    log.info("⣿ • Type your passphrase to authenticate and start mixing.");
+    return CliUtils.readUserInputRequired("Passphrase?", true);
   }
 
   public void shutdown() {

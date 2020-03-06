@@ -107,7 +107,7 @@ public class CliWalletService extends WhirlpoolWalletService {
       // identifier
       walletIdentifier = computeWalletIdentifier(seed, passphrase, params);
     } catch (MnemonicException e) {
-      throw new NotifiableException("Mnemonic failed, invalid passphrase?");
+      throw new NotifiableException("Mnemonic failed: invalid passphrase?");
     }
 
     // debug cliConfig
