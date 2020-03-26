@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.api.controllers.cli;
 
+import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.api.controllers.AbstractRestController;
 import com.samourai.whirlpool.cli.api.protocol.CliApiEndpoint;
 import com.samourai.whirlpool.cli.api.protocol.rest.ApiCliInitRequest;
@@ -12,8 +13,12 @@ import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliWalletService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
+import java.lang.invoke.MethodHandles;
 import javax.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -23,9 +28,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class CliController extends AbstractRestController {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   @Autowired private CliConfigService cliConfigService;
   @Autowired private CliWalletService cliWalletService;
   @Autowired private CliConfig cliConfig;
+  @Autowired private TaskExecutor taskExecutor;
 
   @RequestMapping(value = CliApiEndpoint.REST_CLI, method = RequestMethod.GET)
   public ApiCliStateResponse state(@RequestHeader HttpHeaders headers) throws Exception {
@@ -60,6 +68,20 @@ public class CliController extends AbstractRestController {
     String apiKey = cliConfigService.initialize(pairing, tor, dojo);
 
     ApiCliInitResponse response = new ApiCliInitResponse(apiKey);
+
+    // restart CLI *AFTER* response reply
+    taskExecutor.execute(
+        new Runnable() {
+          @Override
+          public void run() {
+            try {
+              Thread.sleep(1000);
+            } catch (Exception e) {
+              log.error("", e);
+            }
+            Application.restart();
+          }
+        });
     return response;
   }
 
