@@ -2,6 +2,7 @@ package com.samourai.whirlpool.cli.services;
 
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
+import com.samourai.wallet.util.CallbackWithArg;
 import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.api.protocol.beans.ApiCliConfig;
 import com.samourai.whirlpool.cli.beans.CliStatus;
@@ -16,7 +17,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
-import java.nio.channels.FileLock;
 import java.util.Map.Entry;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
@@ -249,29 +249,19 @@ public class CliConfigService {
       }
     }
 
+    // write
     File f = getConfigurationFile();
-    if (!f.exists()) {
-      f.createNewFile();
-    }
-
-    // lock
-    FileLock fileLock = ClientUtils.lockFile(f);
-    try {
-      // write to tempFile
-      File tempFile = File.createTempFile(f.getName(), "");
-      OutputStream out = new FileOutputStream(tempFile);
-      try {
-        DefaultPropertiesPersister p = new DefaultPropertiesPersister();
-        p.store(props, out, "Updated by application");
-
-        // then rename
-        tempFile.renameTo(f);
-      } finally {
-        out.close();
-      }
-    } finally {
-      ClientUtils.unlockFile(fileLock);
-    }
+    CallbackWithArg<File> callback =
+        tempFile -> {
+          OutputStream out = new FileOutputStream(tempFile);
+          try {
+            DefaultPropertiesPersister p = new DefaultPropertiesPersister();
+            p.store(props, out, "Updated by application");
+          } finally {
+            out.close();
+          }
+        };
+    ClientUtils.safeWrite(f, callback);
   }
 
   private File getConfigurationFile() {
