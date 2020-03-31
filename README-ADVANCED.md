@@ -50,6 +50,10 @@ echo $PP|java -jar whirlpool-client-cli-x-run.jar --authenticate
 
 #### Configuration override
 Configuration can be overriden in whirlpool-cli-config.properties (see default configuration in [src/main/resources/application.properties]).
+Or with equivalent argument:
+```
+--cli.tor=true --cli.apiKey=foo...
+```
 
 Or with following arguments:
 - ```--scode=```: scode to use for tx0
