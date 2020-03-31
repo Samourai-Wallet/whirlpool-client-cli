@@ -8,10 +8,15 @@
 - ```--debug-client```: more debug logs
 - ```--dump-payload```: dump pairing-payload of current wallet and exit
 
-Any problem with CLI GUI or API? Try this:
-- Configure CLI manually with: ```java -jar whirlpool-client-cli-xxx-run.jar --debug --init```
-- Then restart CLI with manual authentication: ```java -jar whirlpool-client-cli-xxx-run.jar --debug --authenticate```
+Any problem with a remote CLI? Test it locally:
+- Configure CLI manually: ```java -jar whirlpool-client-cli-xxx-run.jar --debug --init```
+- Then start it with manual authentication: ```java -jar whirlpool-client-cli-xxx-run.jar --debug --authenticate```
 
+#### Log file
+You can configure a log file in whirlpool-cli-config.properties:
+```
+logging.file = /tmp/whirlpool-cli.log
+```
 
 #### Testing loop
 You can run CLI in loop mode on testnet to generate liquidity on testnet server:
