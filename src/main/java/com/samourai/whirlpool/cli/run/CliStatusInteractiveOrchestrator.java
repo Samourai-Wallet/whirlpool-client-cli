@@ -12,6 +12,7 @@ import com.samourai.whirlpool.client.wallet.orchestrator.AbstractOrchestrator;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,6 +102,10 @@ public class CliStatusInteractiveOrchestrator extends AbstractOrchestrator {
     int i = 0;
     for (Thread t : threadSet) {
       log.info("#" + i + " " + t + ":" + "" + t.getState());
+      // show trace for BLOCKED
+      if (Thread.State.BLOCKED.equals(t.getState())) {
+        log.info(StringUtils.join(t.getStackTrace(), "\n"));
+      }
       i++;
     }
 
