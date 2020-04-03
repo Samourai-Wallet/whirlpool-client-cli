@@ -8,9 +8,9 @@ import com.samourai.whirlpool.client.test.AbstractTest;
 import java.util.Optional;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Ignore
 public class BackendApiTest extends AbstractTest {
   private static final boolean testnet = true;
   private static final long requestTimeout = 5000;
@@ -30,6 +30,7 @@ public class BackendApiTest extends AbstractTest {
             httpClient, BackendServer.TESTNET.getBackendUrlClear(), java8.util.Optional.empty());
   }
 
+  @Disabled
   @Test
   public void initBip84() throws Exception {
     backendApi.initBip84("vpub...");
