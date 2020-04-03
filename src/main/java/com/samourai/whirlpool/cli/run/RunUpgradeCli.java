@@ -3,7 +3,6 @@ package com.samourai.whirlpool.cli.run;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import java.lang.invoke.MethodHandles;
-import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +31,8 @@ public class RunUpgradeCli {
     log.info(" - Upgrading to: V3");
 
     // unset mix.clients=
-    Properties props = cliConfigService.loadProperties();
-    props.put(CliConfigService.KEY_MIX_CLIENTS, "");
-    cliConfigService.saveProperties(props);
+    // Properties props = cliConfigService.loadProperties();
+    // props.put(CliConfigService.KEY_MIX_CLIENTS, "");
+    // cliConfigService.saveProperties(props);
   }
 }
