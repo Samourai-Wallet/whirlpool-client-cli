@@ -32,7 +32,6 @@ public class BackendApiTest extends AbstractTest {
   @Ignore
   @Test
   public void initBip84() throws Exception {
-    backendApi.initBip84(
-        "vpub...");
+    backendApi.initBip84("vpub...");
   }
 }
