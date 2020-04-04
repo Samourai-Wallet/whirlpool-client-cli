@@ -7,7 +7,6 @@ import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.test.AbstractTest;
 import java.util.Optional;
 import org.eclipse.jetty.client.HttpClient;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
