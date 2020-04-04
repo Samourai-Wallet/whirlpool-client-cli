@@ -164,7 +164,7 @@
         <!-- repo for jtorctl -->
         <repository>
             <id>spring-plugins</id>
-            <url>http://repo.spring.io/plugins-release/</url>
+            <url>https://repo.spring.io/plugins-release/</url>
         </repository>
     </repositories>
     <scm>
