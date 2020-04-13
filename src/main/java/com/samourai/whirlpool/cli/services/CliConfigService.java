@@ -33,7 +33,9 @@ import org.springframework.util.DefaultPropertiesPersister;
 public class CliConfigService {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static final int CLI_VERSION = 3;
+  public static final int CLI_VERSION_4 = 4;
+  public static final int CLI_VERSION = CLI_VERSION_4;
+
   public static final String CLI_CONFIG_FILENAME = "whirlpool-cli-config.properties";
   private static final String KEY_APIKEY = "cli.apiKey";
   private static final String KEY_SEED = "cli.seed";
@@ -42,6 +44,7 @@ public class CliConfigService {
   private static final String KEY_DOJO_APIKEY = "cli.dojo.apiKey";
   public static final String KEY_DOJO_ENABLED = "cli.dojo.enabled";
   private static final String KEY_VERSION = "cli.version";
+  public static final String KEY_MIX_CLIENTS = "cli.mix.clients";
 
   private CliConfig cliConfig;
   private CliStatus cliStatus;
@@ -269,14 +272,14 @@ public class CliConfigService {
 
   public boolean checkUpgrade() throws Exception {
     boolean shouldRestart = false;
-    int lastVersion = cliConfig.getVersion();
+    int localVersion = cliConfig.getVersion();
 
-    if (lastVersion < CLI_VERSION) {
+    if (localVersion < CLI_VERSION) {
       // older version => run upgrade
       if (log.isDebugEnabled()) {
-        log.debug(" • Upgrading cli wallet: " + lastVersion + " -> " + CLI_VERSION);
+        log.debug(" • Upgrading cli wallet: " + localVersion + " -> " + CLI_VERSION);
       }
-      new RunUpgradeCli(cliConfig, this).run(lastVersion);
+      new RunUpgradeCli(cliConfig, this).run(localVersion);
 
       // set version
       setVersionCurrent();

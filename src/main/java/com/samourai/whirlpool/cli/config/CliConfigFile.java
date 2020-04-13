@@ -208,7 +208,7 @@ public abstract class CliConfigFile {
   }
 
   public static class MixConfig {
-    @NotEmpty private int clients;
+    /*@NotEmpty TODO constraint temporary disabled*/ private int clients;
     @NotEmpty private int clientsPerPool;
     @NotEmpty private int clientDelay;
     @NotEmpty private int tx0Delay;
@@ -234,8 +234,9 @@ public abstract class CliConfigFile {
       return clients;
     }
 
-    public void setClients(int clients) {
-      this.clients = clients;
+    // public void setClients(int clients) { // TODO constraint temporary disabled
+    public void setClients(Integer clients) {
+      this.clients = clients != null ? clients : 0;
     }
 
     public int getClientsPerPool() {
