@@ -24,42 +24,51 @@ public class CliTorClientService {
   }
 
   public void setup() throws Exception {
-    Optional<JavaTorClient> torClient = getTorClient();
-    if (torClient.isPresent()) {
-      torClient.get().setup();
+    if (cliConfig.getTor()) {
+      if (!torClient.isPresent()) {
+        if (log.isDebugEnabled()) {
+          log.debug("Enabling Tor.");
+        }
+        // instanciate & initialize
+        JavaTorClient tc = new JavaTorClient(cliConfig);
+        tc.setup(); // throws
+        torClient = Optional.of(tc);
+        if (log.isDebugEnabled()) {
+          log.debug("Tor is enabled.");
+        }
+      }
+    } else {
+      if (log.isDebugEnabled()) {
+        log.debug("Tor is disabled.");
+      }
     }
   }
 
   public void connect() {
-    Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
       torClient.get().connect();
     }
   }
 
   public void waitReady() throws NotifiableException {
-    Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
       torClient.get().waitReady();
     }
   }
 
   private void disconnect() {
-    Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
       torClient.get().disconnect();
     }
   }
 
   public void shutdown() {
-    Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
       torClient.get().shutdown();
     }
   }
 
   public void changeIdentity() {
-    Optional<JavaTorClient> torClient = getTorClient();
     if (torClient.isPresent()) {
       torClient.get().changeIdentity();
     }
@@ -67,7 +76,6 @@ public class CliTorClientService {
 
   public Optional<JavaTorConnexion> getTorConnexion(boolean isRegisterOutput) {
     if (cliConfig.getTor()) {
-      Optional<JavaTorClient> torClient = getTorClient();
       if (torClient.isPresent()) {
         // Tor enabled
         JavaTorConnexion torConnexion = torClient.get().getConnexion(isRegisterOutput);
@@ -79,9 +87,11 @@ public class CliTorClientService {
   }
 
   public Optional<Integer> getProgress() {
-    Optional<JavaTorClient> torClient = getTorClient();
     if (!torClient.isPresent()) {
-      return Optional.empty();
+      if (cliConfig.getTor()) {
+        return Optional.of(0); // Tor is initializing
+      }
+      return Optional.empty(); // Tor is disabled
     }
 
     // average progress of the two connexions
@@ -89,32 +99,5 @@ public class CliTorClientService {
     int progressRegOut = torClient.get().getConnexion(true).getProgress();
     int progress = (progressShared + progressRegOut) / 2;
     return Optional.of(progress);
-  }
-
-  private Optional<JavaTorClient> getTorClient() {
-    if (cliConfig.getTor()) {
-      if (!torClient.isPresent()) {
-        if (log.isDebugEnabled()) {
-          log.debug("Enabling Tor.");
-        }
-        // instanciate TorClient
-        try {
-          torClient = Optional.of(new JavaTorClient(cliConfig));
-        } catch (Exception e) {
-          log.error("", e);
-          torClient = Optional.empty();
-        }
-      }
-    } else {
-      if (torClient.isPresent()) {
-        if (log.isDebugEnabled()) {
-          log.debug("Disabling Tor.");
-        }
-        // disconnect and clear TorClient
-        disconnect();
-        torClient = Optional.empty();
-      }
-    }
-    return torClient;
   }
 }

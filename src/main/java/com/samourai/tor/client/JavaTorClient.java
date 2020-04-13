@@ -66,18 +66,25 @@ public class JavaTorClient {
             "Tor executable failed ("
                 + (torExecutable.isPresent() ? torExecutable.get().getAbsolutePath() : "embedded")
                 + ") => trying fallback...");
-        // retry without embedded
-        tryEmbedded = false;
-        torExecutable = computeTorExecutable(executableMode, executablePath, tryEmbedded);
         try {
-          checkTorExecutable(torExecutable); // throws exception when Tor not supported
+          // retry without embedded
+          tryEmbedded = false;
+          torExecutable = computeTorExecutable(executableMode, executablePath, tryEmbedded);
+          try {
+            checkTorExecutable(torExecutable); // throws exception when Tor not supported
+          } catch (Exception ee) {
+            log.error(
+                "Tor executable failed ("
+                    + (torExecutable.isPresent()
+                        ? torExecutable.get().getAbsolutePath()
+                        : "embedded")
+                    + ") => Tor is not available",
+                ee);
+            throw e;
+          }
         } catch (Exception ee) {
-          log.error(
-              "Tor executable failed ("
-                  + (torExecutable.isPresent() ? torExecutable.get().getAbsolutePath() : "embedded")
-                  + ") => Tor is not available",
-              ee);
-          throw e;
+          log.error("initial (embedded) error", e);
+          throw ee;
         }
       } else {
         log.error(
