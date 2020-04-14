@@ -23,13 +23,14 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
   private final TorConfig config;
   private boolean useExecutableFromZip;
 
-  public WhirlpoolTorInstaller(String torDir, Optional<File> torExecutable) throws Exception {
-    this.config = computeTorConfig(torDir, torExecutable);
+  public WhirlpoolTorInstaller(String torDir, Optional<File> torExecutable, int fileCreationTimeout)
+      throws Exception {
+    this.config = computeTorConfig(torDir, torExecutable, fileCreationTimeout);
     this.useExecutableFromZip = !torExecutable.isPresent();
   }
 
-  private TorConfig computeTorConfig(String dirName, Optional<File> torExecutable)
-      throws Exception {
+  private static TorConfig computeTorConfig(
+      String dirName, Optional<File> torExecutable, int fileCreationTimeout) throws Exception {
     File dir = Files.createTempDirectory(dirName).toFile();
     dir.deleteOnExit();
 
@@ -43,6 +44,7 @@ public final class WhirlpoolTorInstaller extends TorInstaller {
       // use existing local Tor instead of embedded one
       torConfigBuilder.torExecutable(torExecutable.get());
     }
+    torConfigBuilder.fileCreationTimeout(fileCreationTimeout);
 
     TorConfig torConfig = torConfigBuilder.build();
     return torConfig;

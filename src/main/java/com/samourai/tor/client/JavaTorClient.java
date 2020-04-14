@@ -35,13 +35,11 @@ public class JavaTorClient {
 
   public void setup() throws Exception {
     TorSettings torSettings = computeTorSettings();
-    Optional<File> torExecutable = computeTorExecutableAndVerify();
-
-    WhirlpoolTorInstaller torInstaller = new WhirlpoolTorInstaller("whirlpoolTor", torExecutable);
+    WhirlpoolTorInstaller torInstaller = computeTorInstaller();
     this.torInstance = new TorOnionProxyInstance(torInstaller, torSettings, torHttpUsages);
   }
 
-  private Optional<File> computeTorExecutableAndVerify() throws Exception {
+  private WhirlpoolTorInstaller computeTorInstaller() throws Exception {
     CliTorExecutableMode executableMode = cliConfig.getTorConfig().getExecutableMode();
     String executablePath =
         CliTorExecutableMode.SPECIFIED.equals(executableMode)
@@ -54,7 +52,7 @@ public class JavaTorClient {
         computeTorExecutable(executableMode, executablePath, tryEmbedded);
     try {
       // verify Tor executable is supported
-      checkTorExecutable(torExecutable); // throws exception when Tor not supported
+      return checkTorInstaller(torExecutable); // throws exception when Tor not supported
     } catch (Exception e) {
       if (tryEmbedded) {
         log.warn(
@@ -66,7 +64,7 @@ public class JavaTorClient {
           tryEmbedded = false;
           torExecutable = computeTorExecutable(executableMode, executablePath, tryEmbedded);
           try {
-            checkTorExecutable(torExecutable); // throws exception when Tor not supported
+            return checkTorInstaller(torExecutable); // throws exception when Tor not supported
           } catch (Exception ee) {
             log.error(
                 "Tor executable failed ("
@@ -90,7 +88,6 @@ public class JavaTorClient {
         throw e;
       }
     }
-    return torExecutable;
   }
 
   private Optional<File> computeTorExecutable(
@@ -171,14 +168,18 @@ public class JavaTorClient {
     return file;
   }
 
-  private void checkTorExecutable(Optional<File> torExecutable) throws Exception {
+  private WhirlpoolTorInstaller checkTorInstaller(Optional<File> torExecutable) throws Exception {
     if (log.isDebugEnabled()) {
       log.debug(
           "Verifying Tor executable ("
               + (torExecutable.isPresent() ? torExecutable.get().getAbsolutePath() : "embedded")
               + ")");
     }
-    new WhirlpoolTorInstaller("whirlpoolTorInstaller", torExecutable).setup(); // throws
+    int fileCreationTimeout = cliConfig.getTorConfig().getFileCreationTimeout();
+    WhirlpoolTorInstaller torInstaller =
+        new WhirlpoolTorInstaller("whirlpoolTor", torExecutable, fileCreationTimeout);
+    torInstaller.setup(); // throws
+    return torInstaller;
   }
 
   public void connect() {

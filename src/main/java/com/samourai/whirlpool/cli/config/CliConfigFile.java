@@ -364,6 +364,7 @@ public abstract class CliConfigFile {
     @NotEmpty private TorConfigItem coordinator;
     @NotEmpty private TorConfigItem backend;
     private String customTorrc;
+    private int fileCreationTimeout;
 
     public TorConfig() {}
 
@@ -372,6 +373,7 @@ public abstract class CliConfigFile {
       this.coordinator = copy.coordinator;
       this.backend = copy.backend;
       this.customTorrc = copy.customTorrc;
+      this.fileCreationTimeout = copy.fileCreationTimeout;
     }
 
     public String getExecutable() {
@@ -415,12 +417,21 @@ public abstract class CliConfigFile {
       this.customTorrc = customTorrc;
     }
 
+    public int getFileCreationTimeout() {
+      return fileCreationTimeout;
+    }
+
+    public void setFileCreationTimeout(int fileCreationTimeout) {
+      this.fileCreationTimeout = fileCreationTimeout;
+    }
+
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
       configInfo.put("cli/tor/executable", executable);
       configInfo.put("cli/tor/coordinator", coordinator.toString());
       configInfo.put("cli/tor/backend", backend.toString());
       configInfo.put("cli/tor/customTorrc", customTorrc != null ? customTorrc : "null");
+      configInfo.put("cli/tor/fileCreationTimeout", Integer.toString(fileCreationTimeout));
       return configInfo;
     }
   }

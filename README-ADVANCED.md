@@ -91,6 +91,10 @@ cli.torConfig.backend.onion = true # wallet backend
 - `true`: Tor hidden services 
 - `false`: clearnet over Tor
 
+Tor startup timeout can be customized with:
+```
+cli.torConfig.fileCreationTimeout = 20 # 20s
+```
 
 ## Build instructions
 Build with maven:
