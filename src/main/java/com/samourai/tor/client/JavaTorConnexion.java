@@ -5,7 +5,5 @@ import com.samourai.whirlpool.client.exception.NotifiableException;
 
 public interface JavaTorConnexion {
 
-  CliProxy getTorProxy() throws NotifiableException;
-
-  int getProgress();
+  CliProxy getTorProxy(boolean isRegisterOutput) throws NotifiableException;
 }

@@ -140,7 +140,8 @@ public class CliWalletService extends WhirlpoolWalletService {
             cliConfig,
             cliConfigService,
             walletAggregateService,
-            cliTorClientService);
+            cliTorClientService,
+            httpClient);
     return (CliWallet) openWallet(cliWallet);
   }
 

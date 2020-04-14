@@ -7,24 +7,24 @@ import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
 import com.samourai.whirlpool.client.exception.NotifiableException;
-import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.SocketUtils;
 
 public class TorOnionProxyInstance implements JavaTorConnexion {
-  private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final int PROGRESS_CONNECTING = 50;
 
   private OnionProxyManager onionProxyManager;
   private Thread startThread;
-  private CliProxy torSocks = null;
+  private boolean torSocksReady = false;
+  private CliProxy torSocksShared = null;
+  private CliProxy torSocksRegOut = null;
   private int progress;
 
-  public TorOnionProxyInstance(
-      WhirlpoolTorInstaller torInstaller, TorSettings torSettings, String logPrefix)
+  public TorOnionProxyInstance(WhirlpoolTorInstaller torInstaller, TorSettings torSettings)
       throws Exception {
-    this.log = ClientUtils.prefixLogger(log, logPrefix);
     TorConfig torConfig = torInstaller.getConfig();
     if (log.isDebugEnabled()) {
       log.debug("new TorOnionProxyInstance: " + torConfig + " ; " + torSettings);
@@ -34,6 +34,15 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     onionProxyManager = new OnionProxyManager(context);
 
     TorConfigBuilder builder = onionProxyManager.getContext().newConfigBuilder().updateTorConfig();
+
+    int socksPortShared = SocketUtils.findAvailableTcpPort();
+    builder.socksPort(Integer.toString(socksPortShared), null);
+    torSocksShared = new CliProxy(CliProxyProtocol.SOCKS, "127.0.0.1", socksPortShared);
+
+    int socksPortRegOut = SocketUtils.findAvailableTcpPort();
+    builder.socksPort(Integer.toString(socksPortRegOut), null);
+    torSocksRegOut = new CliProxy(CliProxyProtocol.SOCKS, "127.0.0.1", socksPortRegOut);
+
     onionProxyManager.getContext().getInstaller().updateTorConfigCustom(builder.asString());
     onionProxyManager.setup();
 
@@ -96,13 +105,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     boolean ready = onionProxyManager.isRunning();
     if (ready && progress != 100) {
       if (log.isDebugEnabled()) {
-        String torProxy = "error";
-        try {
-          torProxy = getTorProxy().toString();
-        } catch (Exception e) {
-          log.error("", e);
-        }
-        log.debug("Tor connected! " + torProxy);
+        log.debug("Tor connected! " + torSocksShared + " | " + torSocksRegOut);
       }
       progress = 100;
     }
@@ -130,7 +133,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
       }
     }
 
-    torSocks = null;
+    torSocksReady = false;
   }
 
   public synchronized void clear() {
@@ -177,35 +180,30 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     }
   }
 
-  @Override
-  public int getProgress() {
+  protected int getProgress() {
     return progress;
   }
 
   @Override
-  public CliProxy getTorProxy() throws NotifiableException {
-    CliProxy proxy;
-    while ((proxy = getTorSocksOrNull()) == null) {
-      waitReady();
+  public CliProxy getTorProxy(boolean isRegisterOutput) throws NotifiableException {
+    waitTorSocks();
+    return isRegisterOutput ? torSocksRegOut : torSocksShared;
+  }
+
+  private void waitTorSocks() {
+    while (!torSocksReady && onionProxyManager.isRunning()) {
+      try {
+        // we should have a connexion now
+        onionProxyManager.getIPv4LocalHostSocksPort();
+        torSocksReady = true;
+        log.info("TorSocks started.");
+      } catch (Exception e) {
+        log.error("TorSocks error", e);
+      }
       try {
         Thread.sleep(500);
       } catch (InterruptedException e) {
       }
     }
-    return proxy;
-  }
-
-  private CliProxy getTorSocksOrNull() {
-    if (torSocks == null && onionProxyManager.isRunning()) {
-      try {
-        // we should have a connexion now
-        int socksPort = onionProxyManager.getIPv4LocalHostSocksPort();
-        torSocks = new CliProxy(CliProxyProtocol.SOCKS, "127.0.0.1", socksPort);
-        log.info("TorSocks started: " + torSocks);
-      } catch (Exception e) {
-        log.error("Unable to get TorSocks", e);
-      }
-    }
-    return torSocks;
   }
 }

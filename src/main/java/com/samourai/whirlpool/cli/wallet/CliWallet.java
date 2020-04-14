@@ -1,5 +1,6 @@
 package com.samourai.whirlpool.cli.wallet;
 
+import com.samourai.http.client.CliHttpClient;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
@@ -25,18 +26,21 @@ public class CliWallet extends WhirlpoolWallet {
   private CliConfigService cliConfigService;
   private WalletAggregateService walletAggregateService;
   private CliTorClientService cliTorClientService;
+  private CliHttpClient httpClient;
 
   public CliWallet(
       WhirlpoolWallet whirlpoolWallet,
       CliConfig cliConfig,
       CliConfigService cliConfigService,
       WalletAggregateService walletAggregateService,
-      CliTorClientService cliTorClientService) {
+      CliTorClientService cliTorClientService,
+      CliHttpClient httpClient) {
     super(whirlpoolWallet);
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.walletAggregateService = walletAggregateService;
     this.cliTorClientService = cliTorClientService;
+    this.httpClient = httpClient;
   }
 
   @Override
@@ -67,6 +71,7 @@ public class CliWallet extends WhirlpoolWallet {
 
     // change Tor identity
     cliTorClientService.changeIdentity();
+    httpClient.changeIdentity();
   }
 
   @Override

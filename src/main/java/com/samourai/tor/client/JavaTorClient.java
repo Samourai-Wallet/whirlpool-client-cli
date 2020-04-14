@@ -19,12 +19,9 @@ import org.slf4j.LoggerFactory;
 
 public class JavaTorClient {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static final String TOR_DIR_SHARED = "whirlpoolTorShared";
-  private static final String TOR_DIR_REG_OUT = "whirlpoolTorRegOut";
 
   private CliConfig cliConfig;
-  private TorOnionProxyInstance torInstanceShared;
-  private TorOnionProxyInstance torInstanceRegOut;
+  private TorOnionProxyInstance torInstance;
   private boolean started = false;
 
   public JavaTorClient(CliConfig cliConfig) {
@@ -35,15 +32,9 @@ public class JavaTorClient {
     TorSettings torSettings = computeTorSettings();
     Optional<File> torExecutable = computeTorExecutableAndVerify();
 
-    // setup Tor instances
-    this.torInstanceShared =
+    this.torInstance =
         new TorOnionProxyInstance(
-            new WhirlpoolTorInstaller(TOR_DIR_SHARED, torExecutable), torSettings, "shared");
-
-    // run second instance on different ports
-    this.torInstanceRegOut =
-        new TorOnionProxyInstance(
-            new WhirlpoolTorInstaller(TOR_DIR_REG_OUT, torExecutable), torSettings, "regOut");
+            new WhirlpoolTorInstaller("whirlpoolTor", torExecutable), torSettings);
   }
 
   private Optional<File> computeTorExecutableAndVerify() throws Exception {
@@ -183,7 +174,7 @@ public class JavaTorClient {
               + (torExecutable.isPresent() ? torExecutable.get().getAbsolutePath() : "embedded")
               + ")");
     }
-    new WhirlpoolTorInstaller("temp", torExecutable).setup(); // throws
+    new WhirlpoolTorInstaller("whirlpoolTorInstaller", torExecutable).setup(); // throws
   }
 
   public void connect() {
@@ -195,8 +186,7 @@ public class JavaTorClient {
       log.debug("Connecting Tor...");
     }
 
-    torInstanceShared.start();
-    torInstanceRegOut.start();
+    torInstance.start();
     started = true;
   }
 
@@ -204,8 +194,7 @@ public class JavaTorClient {
     if (!started) {
       connect();
     }
-    torInstanceShared.waitReady();
-    torInstanceRegOut.waitReady();
+    torInstance.waitReady();
     log.info("Tor is ready");
   }
 
@@ -220,8 +209,7 @@ public class JavaTorClient {
         log.debug("Changing Tor identity");
       }
 
-      torInstanceShared.changeIdentity();
-      torInstanceRegOut.changeIdentity();
+      torInstance.changeIdentity();
     }
   }
 
@@ -231,20 +219,23 @@ public class JavaTorClient {
     }
 
     started = false;
-    torInstanceShared.stop();
-    torInstanceRegOut.stop();
+    torInstance.stop();
   }
 
   public void shutdown() {
     started = false;
-    torInstanceShared.clear();
-    torInstanceRegOut.clear();
-    torInstanceShared = null;
-    torInstanceRegOut = null;
+    torInstance.clear();
+    torInstance = null;
   }
 
-  public JavaTorConnexion getConnexion(boolean isRegisterOutput) {
-    TorOnionProxyInstance torInstance = isRegisterOutput ? torInstanceRegOut : torInstanceShared;
+  public int getProgress() {
+    if (torInstance == null) {
+      return 0;
+    }
+    return torInstance.getProgress();
+  }
+
+  public JavaTorConnexion getConnexion() {
     return torInstance;
   }
 

@@ -159,9 +159,11 @@ public class CliUtils {
       Optional<CliProxy> cliProxyDefault)
       throws Exception {
     // use torConnexion when available, otherwise cliProxyDefault
-    Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion(isRegisterOutput);
+    Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion();
     Optional<CliProxy> cliProxyOptional =
-        torConnexion.isPresent() ? Optional.of(torConnexion.get().getTorProxy()) : cliProxyDefault;
+        torConnexion.isPresent()
+            ? Optional.of(torConnexion.get().getTorProxy(isRegisterOutput))
+            : cliProxyDefault;
     return computeHttpClient(cliProxyOptional, ClientUtils.USER_AGENT);
   }
 

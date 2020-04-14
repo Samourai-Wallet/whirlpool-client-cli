@@ -74,11 +74,11 @@ public class CliTorClientService {
     }
   }
 
-  public Optional<JavaTorConnexion> getTorConnexion(boolean isRegisterOutput) {
+  public Optional<JavaTorConnexion> getTorConnexion() {
     if (cliConfig.getTor()) {
       if (torClient.isPresent()) {
         // Tor enabled
-        JavaTorConnexion torConnexion = torClient.get().getConnexion(isRegisterOutput);
+        JavaTorConnexion torConnexion = torClient.get().getConnexion();
         return Optional.of(torConnexion);
       }
     }
@@ -94,10 +94,7 @@ public class CliTorClientService {
       return Optional.empty(); // Tor is disabled
     }
 
-    // average progress of the two connexions
-    int progressShared = torClient.get().getConnexion(false).getProgress();
-    int progressRegOut = torClient.get().getConnexion(true).getProgress();
-    int progress = (progressShared + progressRegOut) / 2;
+    int progress = torClient.get().getProgress();
     return Optional.of(progress);
   }
 }

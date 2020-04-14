@@ -31,6 +31,22 @@ public abstract class JavaHttpClient extends JacksonHttpClient {
     this.requestTimeout = requestTimeout;
   }
 
+  public void changeIdentity() {
+    // restart httpClientRegOut
+    try {
+      httpClientRegOut.stop();
+      httpClientRegOut.start();
+    } catch (Exception e) {
+      log.error("", e);
+      try {
+        httpClientRegOut.stop();
+      } catch (Exception ee) {
+      }
+      httpClientRegOut = null;
+    }
+    // httpClientShared will renew on next websocket connexion, don't break opened connexions
+  }
+
   protected abstract HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception;
 
   @Override
