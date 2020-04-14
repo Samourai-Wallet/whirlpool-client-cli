@@ -1,9 +1,6 @@
 package com.samourai.stomp.client;
 
-import com.samourai.http.client.CliHttpClient;
-import com.samourai.whirlpool.cli.config.CliConfig;
-import com.samourai.whirlpool.cli.services.CliTorClientService;
-import com.samourai.whirlpool.cli.services.JavaHttpClientService;
+import com.samourai.http.client.JavaHttpClient;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.utils.MessageErrorListener;
 import java.util.Arrays;
@@ -32,22 +29,14 @@ public class JavaStompClient implements IStompClient {
   private static final Logger log = LoggerFactory.getLogger(JavaStompClient.class);
   private static final int HEARTBEAT_DELAY = 20000;
 
-  private CliTorClientService torClientService;
-  private CliConfig cliConfig;
-  private CliHttpClient httpClientService;
+  private JavaHttpClient httpClient;
   private TaskScheduler taskScheduler;
 
   private WebSocketStompClient stompClient;
   private StompSession stompSession;
 
-  public JavaStompClient(
-      CliTorClientService torClientService,
-      CliConfig cliConfig,
-      JavaHttpClientService httpClientService,
-      ThreadPoolTaskScheduler taskScheduler) {
-    this.torClientService = torClientService;
-    this.cliConfig = cliConfig;
-    this.httpClientService = httpClientService;
+  public JavaStompClient(JavaHttpClient httpClient, ThreadPoolTaskScheduler taskScheduler) {
+    this.httpClient = httpClient;
     this.taskScheduler = taskScheduler;
   }
 
@@ -164,16 +153,16 @@ public class JavaStompClient implements IStompClient {
   }
 
   private SockJsClient computeWebSocketClient() throws Exception {
-    HttpClient httpClient = httpClientService.getHttpClient(false);
+    HttpClient jettyHttpClient = httpClient.getJettyHttpClient();
 
     if (log.isDebugEnabled()) {
       log.debug("Using websocket transports: Websocket, XHR");
     }
     JettyWebSocketClient jettyWebSocketClient =
-        new JettyWebSocketClient(new WebSocketClient(httpClient));
+        new JettyWebSocketClient(new WebSocketClient(jettyHttpClient));
     List<Transport> webSocketTransports =
         Arrays.asList(
-            new WebSocketTransport(jettyWebSocketClient), new JettyXhrTransport(httpClient));
+            new WebSocketTransport(jettyWebSocketClient), new JettyXhrTransport(jettyHttpClient));
 
     SockJsClient sockJsClient = new SockJsClient(webSocketTransports);
     jettyWebSocketClient.start();

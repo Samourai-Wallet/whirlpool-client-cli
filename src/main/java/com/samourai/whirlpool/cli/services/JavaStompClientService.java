@@ -1,26 +1,20 @@
 package com.samourai.whirlpool.cli.services;
 
+import com.samourai.http.client.HttpUsage;
+import com.samourai.http.client.JavaHttpClient;
 import com.samourai.stomp.client.IStompClient;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.stomp.client.JavaStompClient;
-import com.samourai.whirlpool.cli.config.CliConfig;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JavaStompClientService implements IStompClientService {
-  private CliTorClientService torClientService;
-  private CliConfig cliConfig;
   private JavaHttpClientService httpClientService;
 
   private ThreadPoolTaskScheduler taskScheduler;
 
-  public JavaStompClientService(
-      CliTorClientService torClientService,
-      CliConfig cliConfig,
-      JavaHttpClientService httpClientService) {
-    this.torClientService = torClientService;
-    this.cliConfig = cliConfig;
+  public JavaStompClientService(JavaHttpClientService httpClientService) {
     this.httpClientService = httpClientService;
 
     taskScheduler = new ThreadPoolTaskScheduler();
@@ -31,6 +25,7 @@ public class JavaStompClientService implements IStompClientService {
 
   @Override
   public IStompClient newStompClient() {
-    return new JavaStompClient(torClientService, cliConfig, httpClientService, taskScheduler);
+    JavaHttpClient httpClient = httpClientService.getHttpClient(HttpUsage.COORDINATOR_WEBSOCKET);
+    return new JavaStompClient(httpClient, taskScheduler);
   }
 }

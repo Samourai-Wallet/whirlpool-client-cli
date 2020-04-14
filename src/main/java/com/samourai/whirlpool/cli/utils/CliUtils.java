@@ -1,10 +1,8 @@
 package com.samourai.whirlpool.cli.utils;
 
 import ch.qos.logback.classic.Level;
-import com.samourai.tor.client.JavaTorConnexion;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
-import com.samourai.whirlpool.cli.services.CliTorClientService;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.utils.LogbackUtils;
@@ -153,22 +151,12 @@ public class CliUtils {
     }
   }
 
-  public static HttpClient computeHttpClient(
-      boolean isRegisterOutput,
-      CliTorClientService torClientService,
-      Optional<CliProxy> cliProxyDefault)
-      throws Exception {
-    // use torConnexion when available, otherwise cliProxyDefault
-    Optional<JavaTorConnexion> torConnexion = torClientService.getTorConnexion();
-    Optional<CliProxy> cliProxyOptional =
-        torConnexion.isPresent()
-            ? Optional.of(torConnexion.get().getTorProxy(isRegisterOutput))
-            : cliProxyDefault;
+  public static HttpClient computeHttpClient(Optional<CliProxy> cliProxyOptional) {
     return computeHttpClient(cliProxyOptional, ClientUtils.USER_AGENT);
   }
 
-  public static HttpClient computeHttpClient(Optional<CliProxy> cliProxyOptional, String userAgent)
-      throws Exception {
+  public static HttpClient computeHttpClient(
+      Optional<CliProxy> cliProxyOptional, String userAgent) {
     // we use jetty for proxy SOCKS support
     HttpClient jettyHttpClient = new HttpClient(new SslContextFactory());
     // jettyHttpClient.setSocketAddressResolver(new MySocketAddressResolver());
@@ -189,7 +177,6 @@ public class CliUtils {
         log.debug("+httpClient: no proxy");
       }
     }
-    jettyHttpClient.start();
     return jettyHttpClient;
   }
 

@@ -76,10 +76,17 @@ Custom config can be appended to Torrc with:
 cli.torConfig.customTorrc = /path/to/torrc
 ```
 
+Tor can be enabled with:
+```
+cli.tor = true # global toggle
+cli.torConfig.coordinator.enabled = true # whirlpool server
+cli.torConfig.backend.enabled = true # wallet backend
+```
+
 Tor mode can be customized with:
 ```
-cli.torConfig.onionServer = true   # whirlpool server
-cli.torConfig.onionBackend = true  # wallet backend
+cli.torConfig.coordinator.onion = true # whirlpool server
+cli.torConfig.backend.onion = true # wallet backend
 ```
 - `true`: Tor hidden services 
 - `false`: clearnet over Tor

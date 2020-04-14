@@ -1,6 +1,7 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.http.client.IHttpClient;
+import com.samourai.http.client.HttpUsage;
+import com.samourai.http.client.IHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.backend.BackendServer;
@@ -8,6 +9,9 @@ import com.samourai.wallet.util.FormatsUtilGeneric;
 import com.samourai.whirlpool.client.utils.ClientUtils;
 import com.samourai.whirlpool.client.wallet.WhirlpoolWalletConfig;
 import com.samourai.whirlpool.client.wallet.persist.WhirlpoolWalletPersistHandler;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -23,7 +27,7 @@ public class CliConfig extends CliConfigFile {
 
   @Override
   public WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
-      IHttpClient httpClient,
+      IHttpClientService httpClientService,
       IStompClientService stompClientService,
       WhirlpoolWalletPersistHandler persistHandler,
       BackendApi backendApi) {
@@ -35,7 +39,7 @@ public class CliConfig extends CliConfigFile {
 
     WhirlpoolWalletConfig config =
         super.computeWhirlpoolWalletConfig(
-            httpClient, stompClientService, persistHandler, backendApi);
+            httpClientService, stompClientService, persistHandler, backendApi);
     config.setAutoTx0PoolId(autoTx0PoolId);
     return config;
   }
@@ -103,8 +107,32 @@ public class CliConfig extends CliConfigFile {
   private String computeBackendUrlSamourai() {
     boolean isTestnet = FormatsUtilGeneric.getInstance().isTestNet(getServer().getParams());
     BackendServer backendServer = BackendServer.get(isTestnet);
-    boolean useOnion = getTor() && getTorConfig().isOnionBackend();
+    boolean useOnion =
+        getTor()
+            && getTorConfig().getBackend().isEnabled()
+            && getTorConfig().getBackend().isOnion();
     String backendUrl = backendServer.getBackendUrl(useOnion);
     return backendUrl;
+  }
+
+  public Collection<HttpUsage> computeTorHttpUsages() {
+    List<HttpUsage> httpUsages = new LinkedList<>();
+    if (!getTor()) {
+      // tor is disabled
+      return httpUsages;
+    }
+
+    // backend
+    if (getTorConfig().getBackend().isEnabled()) {
+      httpUsages.add(HttpUsage.BACKEND);
+    }
+
+    // coordinator
+    if (getTorConfig().getCoordinator().isEnabled()) {
+      httpUsages.add(HttpUsage.COORDINATOR_WEBSOCKET);
+      httpUsages.add(HttpUsage.COORDINATOR_REST);
+      httpUsages.add(HttpUsage.COORDINATOR_REGISTER_OUTPUT);
+    }
+    return httpUsages;
   }
 }

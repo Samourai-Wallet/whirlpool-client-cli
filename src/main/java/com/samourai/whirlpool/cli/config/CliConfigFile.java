@@ -1,6 +1,6 @@
 package com.samourai.whirlpool.cli.config;
 
-import com.samourai.http.client.IHttpClient;
+import com.samourai.http.client.IHttpClientService;
 import com.samourai.stomp.client.IStompClientService;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.whirlpool.cli.beans.CliProxy;
@@ -234,9 +234,9 @@ public abstract class CliConfigFile {
       return clients;
     }
 
-    // public void setClients(int clients) { // TODO constraint temporary disabled
+    // public void setClients(int clients) {
     public void setClients(Integer clients) {
-      this.clients = clients != null ? clients : 0;
+      this.clients = clients;
     }
 
     public int getClientsPerPool() {
@@ -361,16 +361,16 @@ public abstract class CliConfigFile {
   public static class TorConfig {
     @NotEmpty private String executable;
     private CliTorExecutableMode executableMode;
-    @NotEmpty private boolean onionServer;
-    @NotEmpty private boolean onionBackend;
+    @NotEmpty private TorConfigItem coordinator;
+    @NotEmpty private TorConfigItem backend;
     private String customTorrc;
 
     public TorConfig() {}
 
     public TorConfig(TorConfig copy) {
       this.executable = copy.executable;
-      this.onionServer = copy.onionServer;
-      this.onionBackend = copy.onionBackend;
+      this.coordinator = copy.coordinator;
+      this.backend = copy.backend;
       this.customTorrc = copy.customTorrc;
     }
 
@@ -391,20 +391,20 @@ public abstract class CliConfigFile {
       return executableMode;
     }
 
-    public boolean isOnionServer() {
-      return onionServer;
+    public TorConfigItem getCoordinator() {
+      return coordinator;
     }
 
-    public void setOnionServer(boolean onionServer) {
-      this.onionServer = onionServer;
+    public void setCoordinator(TorConfigItem coordinator) {
+      this.coordinator = coordinator;
     }
 
-    public boolean isOnionBackend() {
-      return onionBackend;
+    public TorConfigItem getBackend() {
+      return backend;
     }
 
-    public void setOnionBackend(boolean onionBackend) {
-      this.onionBackend = onionBackend;
+    public void setBackend(TorConfigItem backend) {
+      this.backend = backend;
     }
 
     public String getCustomTorrc() {
@@ -418,10 +418,42 @@ public abstract class CliConfigFile {
     public Map<String, String> getConfigInfo() {
       Map<String, String> configInfo = new HashMap<>();
       configInfo.put("cli/tor/executable", executable);
-      configInfo.put("cli/tor/onionServer", Boolean.toString(onionServer));
-      configInfo.put("cli/tor/onionBackend", Boolean.toString(onionBackend));
+      configInfo.put("cli/tor/coordinator", coordinator.toString());
+      configInfo.put("cli/tor/backend", backend.toString());
       configInfo.put("cli/tor/customTorrc", customTorrc != null ? customTorrc : "null");
       return configInfo;
+    }
+  }
+
+  public static class TorConfigItem {
+    @NotEmpty private boolean enabled;
+    @NotEmpty private boolean onion;
+
+    public TorConfigItem() {}
+
+    public TorConfigItem(TorConfigItem copy) {
+      this.enabled = copy.enabled;
+      this.onion = copy.onion;
+    }
+
+    public boolean isEnabled() {
+      return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
+
+    public boolean isOnion() {
+      return onion;
+    }
+
+    public void setOnion(boolean onion) {
+      this.onion = onion;
+    }
+
+    public String toString() {
+      return "enabled=" + enabled + ", onion=" + onion;
     }
   }
 
@@ -472,13 +504,13 @@ public abstract class CliConfigFile {
   }
 
   public String computeServerUrl() {
-    boolean useOnion = tor && torConfig.onionServer;
+    boolean useOnion = tor && torConfig.coordinator.enabled && torConfig.coordinator.onion;
     String serverUrl = server.getServerUrl(useOnion);
     return serverUrl;
   }
 
   protected WhirlpoolWalletConfig computeWhirlpoolWalletConfig(
-      IHttpClient httpClient,
+      IHttpClientService httpClientService,
       IStompClientService stompClientService,
       WhirlpoolWalletPersistHandler persistHandler,
       BackendApi backendApi) {
@@ -486,7 +518,13 @@ public abstract class CliConfigFile {
     NetworkParameters params = server.getParams();
     WhirlpoolWalletConfig config =
         new WhirlpoolWalletConfig(
-            httpClient, stompClientService, persistHandler, serverUrl, params, false, backendApi);
+            httpClientService,
+            stompClientService,
+            persistHandler,
+            serverUrl,
+            params,
+            false,
+            backendApi);
     if (!Strings.isEmpty(scode)) {
       config.setScode(scode);
     }

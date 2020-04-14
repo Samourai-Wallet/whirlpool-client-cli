@@ -2,7 +2,9 @@ package com.samourai.tor.client;
 
 import com.msopentech.thali.toronionproxy.OsData;
 import com.msopentech.thali.toronionproxy.TorSettings;
+import com.samourai.http.client.HttpUsage;
 import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
+import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliTorExecutableMode;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.utils.CliUtils;
@@ -11,6 +13,7 @@ import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
@@ -21,20 +24,21 @@ public class JavaTorClient {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private CliConfig cliConfig;
+  private Collection<HttpUsage> torHttpUsages;
   private TorOnionProxyInstance torInstance;
   private boolean started = false;
 
-  public JavaTorClient(CliConfig cliConfig) {
+  public JavaTorClient(CliConfig cliConfig, Collection<HttpUsage> torHttpUsages) {
     this.cliConfig = cliConfig;
+    this.torHttpUsages = torHttpUsages;
   }
 
   public void setup() throws Exception {
     TorSettings torSettings = computeTorSettings();
     Optional<File> torExecutable = computeTorExecutableAndVerify();
 
-    this.torInstance =
-        new TorOnionProxyInstance(
-            new WhirlpoolTorInstaller("whirlpoolTor", torExecutable), torSettings);
+    WhirlpoolTorInstaller torInstaller = new WhirlpoolTorInstaller("whirlpoolTor", torExecutable);
+    this.torInstance = new TorOnionProxyInstance(torInstaller, torSettings, torHttpUsages);
   }
 
   private Optional<File> computeTorExecutableAndVerify() throws Exception {
@@ -213,15 +217,6 @@ public class JavaTorClient {
     }
   }
 
-  public void disconnect() {
-    if (log.isDebugEnabled()) {
-      log.debug("Disconnecting");
-    }
-
-    started = false;
-    torInstance.stop();
-  }
-
   public void shutdown() {
     started = false;
     torInstance.clear();
@@ -235,8 +230,8 @@ public class JavaTorClient {
     return torInstance.getProgress();
   }
 
-  public JavaTorConnexion getConnexion() {
-    return torInstance;
+  public Optional<CliProxy> getTorProxy(HttpUsage httpUsage) {
+    return torInstance.getTorProxy(httpUsage);
   }
 
   private TorSettings computeTorSettings() throws Exception {

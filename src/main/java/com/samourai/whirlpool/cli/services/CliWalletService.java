@@ -1,7 +1,8 @@
 package com.samourai.whirlpool.cli.services;
 
 import com.google.common.primitives.Bytes;
-import com.samourai.http.client.CliHttpClient;
+import com.samourai.http.client.HttpUsage;
+import com.samourai.http.client.JavaHttpClient;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.pairing.PairingNetwork;
 import com.samourai.wallet.api.pairing.PairingPayload;
@@ -52,7 +53,7 @@ public class CliWalletService extends WhirlpoolWalletService {
   private CliConfigService cliConfigService;
   private HD_WalletFactoryJava hdWalletFactory;
   private WalletAggregateService walletAggregateService;
-  private CliHttpClient httpClient;
+  private JavaHttpClientService httpClientService;
   private JavaStompClientService stompClientService;
   private CliTorClientService cliTorClientService;
 
@@ -61,7 +62,7 @@ public class CliWalletService extends WhirlpoolWalletService {
       CliConfigService cliConfigService,
       HD_WalletFactoryJava hdWalletFactory,
       WalletAggregateService walletAggregateService,
-      CliHttpClient httpClient,
+      JavaHttpClientService httpClientService,
       JavaStompClientService stompClientService,
       CliTorClientService cliTorClientService) {
     super();
@@ -69,7 +70,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     this.cliConfigService = cliConfigService;
     this.hdWalletFactory = hdWalletFactory;
     this.walletAggregateService = walletAggregateService;
-    this.httpClient = httpClient;
+    this.httpClientService = httpClientService;
     this.stompClientService = stompClientService;
     this.cliTorClientService = cliTorClientService;
   }
@@ -129,7 +130,7 @@ public class CliWalletService extends WhirlpoolWalletService {
     WhirlpoolWalletPersistHandler persistHandler = computePersistHandler(walletIdentifier);
     WhirlpoolWalletConfig whirlpoolWalletConfig =
         cliConfig.computeWhirlpoolWalletConfig(
-            httpClient, stompClientService, persistHandler, BackendApiService);
+            httpClientService, stompClientService, persistHandler, BackendApiService);
     WhirlpoolDataService whirlpoolDataService =
         new WhirlpoolDataService(whirlpoolWalletConfig, this);
     WhirlpoolWallet whirlpoolWallet =
@@ -141,7 +142,7 @@ public class CliWalletService extends WhirlpoolWalletService {
             cliConfigService,
             walletAggregateService,
             cliTorClientService,
-            httpClient);
+            httpClientService);
     return (CliWallet) openWallet(cliWallet);
   }
 
@@ -155,6 +156,7 @@ public class CliWalletService extends WhirlpoolWalletService {
       String dojoApiKey = decryptApiKey(dojoApiKeyEncrypted, passphrase);
       oAuthManager = Optional.of(new OAuthManagerJava(dojoApiKey));
     }
+    JavaHttpClient httpClient = httpClientService.getHttpClient(HttpUsage.BACKEND);
     return new BackendApi(httpClient, backendUrl, oAuthManager);
   }
 

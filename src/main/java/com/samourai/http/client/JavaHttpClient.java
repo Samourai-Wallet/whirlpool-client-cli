@@ -1,6 +1,7 @@
 package com.samourai.http.client;
 
 import com.samourai.wallet.api.backend.beans.HttpException;
+import com.samourai.whirlpool.client.utils.ClientUtils;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -17,58 +18,52 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 
-public abstract class JavaHttpClient extends JacksonHttpClient {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public class JavaHttpClient extends JacksonHttpClient {
+  private Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private HttpClient httpClientShared;
-  private HttpClient httpClientRegOut;
+  private HttpUsage httpUsage;
+  private HttpClient httpClient;
   private long requestTimeout;
 
-  public JavaHttpClient(long requestTimeout) {
+  public JavaHttpClient(HttpUsage httpUsage, HttpClient httpClient, long requestTimeout) {
     super();
-    httpClientShared = null;
-    httpClientRegOut = null;
+    log = ClientUtils.prefixLogger(log, httpUsage.name());
+    this.httpUsage = httpUsage;
+    this.httpClient = httpClient;
     this.requestTimeout = requestTimeout;
   }
 
-  public void changeIdentity() {
-    // restart httpClientRegOut
-    try {
-      httpClientRegOut.stop();
-      httpClientRegOut.start();
-    } catch (Exception e) {
-      log.error("", e);
-      try {
-        httpClientRegOut.stop();
-      } catch (Exception ee) {
-      }
-      httpClientRegOut = null;
+  @Override
+  public void connect() throws Exception {
+    if (!httpClient.isRunning()) {
+      httpClient.start();
     }
-    // httpClientShared will renew on next websocket connexion, don't break opened connexions
   }
 
-  protected abstract HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception;
+  public void restart() {
+    try {
+      if (log.isDebugEnabled()) {
+        log.debug("restart");
+      }
+      if (httpClient.isRunning()) {
+        httpClient.stop();
+      }
+      httpClient.start();
+    } catch (Exception e) {
+      log.error("", e);
+    }
+  }
 
   @Override
   protected String requestJsonGet(String urlStr, Map<String, String> headers) throws Exception {
-    Request req = computeHttpRequest(false, urlStr, HttpMethod.GET, headers);
+    Request req = computeHttpRequest(urlStr, HttpMethod.GET, headers);
     return requestJson(req);
   }
 
   @Override
   protected String requestJsonPost(String urlStr, Map<String, String> headers, String jsonBody)
       throws Exception {
-    Request req = computeHttpRequest(false, urlStr, HttpMethod.POST, headers);
-    req.content(
-        new StringContentProvider(
-            MediaType.APPLICATION_JSON_VALUE, jsonBody, StandardCharsets.UTF_8));
-    return requestJson(req);
-  }
-
-  @Override
-  protected String requestJsonPostOverTor(
-      String urlStr, Map<String, String> headers, String jsonBody) throws Exception {
-    Request req = computeHttpRequest(true, urlStr, HttpMethod.POST, headers);
+    Request req = computeHttpRequest(urlStr, HttpMethod.POST, headers);
     req.content(
         new StringContentProvider(
             MediaType.APPLICATION_JSON_VALUE, jsonBody, StandardCharsets.UTF_8));
@@ -78,7 +73,7 @@ public abstract class JavaHttpClient extends JacksonHttpClient {
   @Override
   protected String requestJsonPostUrlEncoded(
       String urlStr, Map<String, String> headers, Map<String, String> body) throws Exception {
-    Request req = computeHttpRequest(false, urlStr, HttpMethod.POST, headers);
+    Request req = computeHttpRequest(urlStr, HttpMethod.POST, headers);
     req.content(new FormContentProvider(computeBodyFields(body)));
     return requestJson(req);
   }
@@ -104,35 +99,18 @@ public abstract class JavaHttpClient extends JacksonHttpClient {
     return responseContent;
   }
 
-  public HttpClient getHttpClient(boolean isRegisterOutput) throws Exception {
-    if (!isRegisterOutput) {
-      if (httpClientShared == null) {
-        if (log.isDebugEnabled()) {
-          log.debug("+httpClientShared");
-        }
-        httpClientShared = computeHttpClient(isRegisterOutput);
-      }
-      return httpClientShared;
-    } else {
-      if (httpClientRegOut == null) {
-        if (log.isDebugEnabled()) {
-          log.debug("+httpClientRegOut");
-        }
-        httpClientRegOut = computeHttpClient(isRegisterOutput);
-      }
-      return httpClientRegOut;
-    }
+  public HttpClient getJettyHttpClient() throws Exception {
+    connect();
+    return httpClient;
   }
 
-  private Request computeHttpRequest(
-      boolean isRegOut, String url, HttpMethod method, Map<String, String> headers)
+  private Request computeHttpRequest(String url, HttpMethod method, Map<String, String> headers)
       throws Exception {
     if (log.isDebugEnabled()) {
       String headersStr = headers != null ? " (" + headers.keySet() + ")" : "";
       log.debug("+" + method + ": " + url + headersStr);
     }
-    HttpClient httpClient = getHttpClient(isRegOut);
-    Request req = httpClient.newRequest(url);
+    Request req = getJettyHttpClient().newRequest(url);
     req.method(method);
     if (headers != null) {
       for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -144,30 +122,12 @@ public abstract class JavaHttpClient extends JacksonHttpClient {
   }
 
   @Override
-  protected void onRequestError(Exception e, boolean isRegisterOutput) {
-    super.onRequestError(e, isRegisterOutput);
-    if (!isRegisterOutput) {
-      if (httpClientShared != null) {
-        try {
-          httpClientShared.stop();
-        } catch (Exception ee) {
-        }
-        if (log.isDebugEnabled()) {
-          log.debug("--httpClientShared");
-        }
-        httpClientShared = null;
-      }
-    } else {
-      if (httpClientRegOut != null) {
-        try {
-          httpClientRegOut.stop();
-        } catch (Exception ee) {
-        }
-        if (log.isDebugEnabled()) {
-          log.debug("--httpClientRegOut");
-        }
-        httpClientRegOut = null;
-      }
-    }
+  protected void onRequestError(Exception e) {
+    super.onRequestError(e);
+    restart();
+  }
+
+  public HttpUsage getHttpUsage() {
+    return httpUsage;
   }
 }

@@ -1,10 +1,10 @@
 package com.samourai.whirlpool.cli.wallet;
 
-import com.samourai.http.client.CliHttpClient;
 import com.samourai.wallet.client.Bip84ApiWallet;
 import com.samourai.whirlpool.cli.config.CliConfig;
 import com.samourai.whirlpool.cli.services.CliConfigService;
 import com.samourai.whirlpool.cli.services.CliTorClientService;
+import com.samourai.whirlpool.cli.services.JavaHttpClientService;
 import com.samourai.whirlpool.cli.services.WalletAggregateService;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.exception.EmptyWalletException;
@@ -26,7 +26,7 @@ public class CliWallet extends WhirlpoolWallet {
   private CliConfigService cliConfigService;
   private WalletAggregateService walletAggregateService;
   private CliTorClientService cliTorClientService;
-  private CliHttpClient httpClient;
+  private JavaHttpClientService httpClientService;
 
   public CliWallet(
       WhirlpoolWallet whirlpoolWallet,
@@ -34,13 +34,13 @@ public class CliWallet extends WhirlpoolWallet {
       CliConfigService cliConfigService,
       WalletAggregateService walletAggregateService,
       CliTorClientService cliTorClientService,
-      CliHttpClient httpClient) {
+      JavaHttpClientService httpClientService) {
     super(whirlpoolWallet);
     this.cliConfig = cliConfig;
     this.cliConfigService = cliConfigService;
     this.walletAggregateService = walletAggregateService;
     this.cliTorClientService = cliTorClientService;
-    this.httpClient = httpClient;
+    this.httpClientService = httpClientService;
   }
 
   @Override
@@ -70,8 +70,10 @@ public class CliWallet extends WhirlpoolWallet {
     super.onMixSuccess(whirlpoolUtxo, mixSuccess);
 
     // change Tor identity
-    cliTorClientService.changeIdentity();
-    httpClient.changeIdentity();
+    if (cliConfig.getTor()) {
+      cliTorClientService.changeIdentity();
+      httpClientService.changeIdentityRest();
+    }
   }
 
   @Override

@@ -1,5 +1,6 @@
 package com.samourai.xmanager.client;
 
+import com.samourai.http.client.HttpUsage;
 import com.samourai.http.client.JavaHttpClient;
 import com.samourai.wallet.api.backend.BackendApi;
 import com.samourai.wallet.api.backend.BackendServer;
@@ -17,13 +18,9 @@ public class BackendApiTest extends AbstractTest {
   private BackendApi backendApi;
 
   public BackendApiTest() throws Exception {
+    HttpClient jettyHttpClient = CliUtils.computeHttpClient(Optional.empty(), "whirlpool-cli/test");
     JavaHttpClient httpClient =
-        new JavaHttpClient(requestTimeout) {
-          @Override
-          protected HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception {
-            return CliUtils.computeHttpClient(Optional.empty(), "whirlpool-cli/test");
-          }
-        };
+        new JavaHttpClient(HttpUsage.BACKEND, jettyHttpClient, requestTimeout);
     backendApi =
         new BackendApi(
             httpClient, BackendServer.TESTNET.getBackendUrlClear(), java8.util.Optional.empty());

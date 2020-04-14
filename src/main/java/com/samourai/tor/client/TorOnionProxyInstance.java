@@ -1,29 +1,37 @@
 package com.samourai.tor.client;
 
 import com.msopentech.thali.java.toronionproxy.JavaOnionProxyContext;
-import com.msopentech.thali.toronionproxy.*;
+import com.msopentech.thali.toronionproxy.OnionProxyManager;
+import com.msopentech.thali.toronionproxy.TorConfig;
+import com.msopentech.thali.toronionproxy.TorConfigBuilder;
+import com.msopentech.thali.toronionproxy.TorSettings;
+import com.samourai.http.client.HttpUsage;
 import com.samourai.tor.client.utils.WhirlpoolTorInstaller;
 import com.samourai.whirlpool.cli.Application;
 import com.samourai.whirlpool.cli.beans.CliProxy;
 import com.samourai.whirlpool.cli.beans.CliProxyProtocol;
 import com.samourai.whirlpool.client.exception.NotifiableException;
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SocketUtils;
 
-public class TorOnionProxyInstance implements JavaTorConnexion {
+public class TorOnionProxyInstance {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final int PROGRESS_CONNECTING = 50;
 
   private OnionProxyManager onionProxyManager;
   private Thread startThread;
   private boolean torSocksReady = false;
-  private CliProxy torSocksShared = null;
-  private CliProxy torSocksRegOut = null;
+  private Map<HttpUsage, CliProxy> torProxies = null;
   private int progress;
 
-  public TorOnionProxyInstance(WhirlpoolTorInstaller torInstaller, TorSettings torSettings)
+  public TorOnionProxyInstance(
+      WhirlpoolTorInstaller torInstaller, TorSettings torSettings, Collection<HttpUsage> httpUsages)
       throws Exception {
     TorConfig torConfig = torInstaller.getConfig();
     if (log.isDebugEnabled()) {
@@ -35,13 +43,13 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
 
     TorConfigBuilder builder = onionProxyManager.getContext().newConfigBuilder().updateTorConfig();
 
-    int socksPortShared = SocketUtils.findAvailableTcpPort();
-    builder.socksPort(Integer.toString(socksPortShared), null);
-    torSocksShared = new CliProxy(CliProxyProtocol.SOCKS, "127.0.0.1", socksPortShared);
-
-    int socksPortRegOut = SocketUtils.findAvailableTcpPort();
-    builder.socksPort(Integer.toString(socksPortRegOut), null);
-    torSocksRegOut = new CliProxy(CliProxyProtocol.SOCKS, "127.0.0.1", socksPortRegOut);
+    torProxies = new ConcurrentHashMap<>();
+    for (HttpUsage httpUsage : httpUsages) {
+      int socksPort = SocketUtils.findAvailableTcpPort();
+      builder.socksPort(Integer.toString(socksPort), null);
+      CliProxy torProxy = new CliProxy(CliProxyProtocol.SOCKS, "127.0.0.1", socksPort);
+      torProxies.put(httpUsage, torProxy);
+    }
 
     onionProxyManager.getContext().getInstaller().updateTorConfigCustom(builder.asString());
     onionProxyManager.setup();
@@ -105,7 +113,7 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     boolean ready = onionProxyManager.isRunning();
     if (ready && progress != 100) {
       if (log.isDebugEnabled()) {
-        log.debug("Tor connected! " + torSocksShared + " | " + torSocksRegOut);
+        log.debug("Tor connected! torProxies=" + torProxies);
       }
       progress = 100;
     }
@@ -184,10 +192,13 @@ public class TorOnionProxyInstance implements JavaTorConnexion {
     return progress;
   }
 
-  @Override
-  public CliProxy getTorProxy(boolean isRegisterOutput) throws NotifiableException {
+  public Optional<CliProxy> getTorProxy(HttpUsage httpUsage) {
     waitTorSocks();
-    return isRegisterOutput ? torSocksRegOut : torSocksShared;
+    CliProxy torProxy = torProxies.get(httpUsage);
+    if (torProxy == null) {
+      return Optional.empty();
+    }
+    return Optional.of(torProxy);
   }
 
   private void waitTorSocks() {

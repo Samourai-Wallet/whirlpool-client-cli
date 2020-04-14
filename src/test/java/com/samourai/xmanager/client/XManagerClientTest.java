@@ -1,5 +1,6 @@
 package com.samourai.xmanager.client;
 
+import com.samourai.http.client.HttpUsage;
 import com.samourai.http.client.JavaHttpClient;
 import com.samourai.whirlpool.cli.utils.CliUtils;
 import com.samourai.whirlpool.client.test.AbstractTest;
@@ -19,22 +20,12 @@ public class XManagerClientTest extends AbstractTest {
   private XManagerClient xManagerClientFailing;
 
   public XManagerClientTest() throws Exception {
+    HttpClient jettyHttpClient = CliUtils.computeHttpClient(Optional.empty(), "whirlpool-cli/test");
     JavaHttpClient httpClient =
-        new JavaHttpClient(requestTimeout) {
-          @Override
-          protected HttpClient computeHttpClient(boolean isRegisterOutput) throws Exception {
-            return CliUtils.computeHttpClient(Optional.empty(), "whirlpool-cli/test");
-          }
-        };
+        new JavaHttpClient(HttpUsage.BACKEND, jettyHttpClient, requestTimeout);
     xManagerClient = new XManagerClient(testnet, false, httpClient);
 
-    JavaHttpClient httpClientFailing =
-        new JavaHttpClient(requestTimeout) {
-          @Override
-          protected HttpClient computeHttpClient(boolean isRegisterOutput) {
-            throw new RuntimeException("testing failure");
-          }
-        };
+    JavaHttpClient httpClientFailing = new JavaHttpClient(HttpUsage.BACKEND, null, requestTimeout);
     xManagerClientFailing = new XManagerClient(testnet, false, httpClientFailing);
   }
 
