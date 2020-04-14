@@ -79,8 +79,8 @@ cli.torConfig.customTorrc = /path/to/torrc
 Tor can be enabled with:
 ```
 cli.tor = true # global toggle
-cli.torConfig.coordinator.enabled = true # whirlpool server
-cli.torConfig.backend.enabled = true # wallet backend
+cli.torConfig.coordinator.enabled = true # enable for whirlpool coordinator
+cli.torConfig.backend.enabled = true # enable for wallet backend
 ```
 
 Tor mode can be customized with:
