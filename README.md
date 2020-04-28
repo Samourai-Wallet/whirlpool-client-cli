@@ -3,6 +3,8 @@
 
 # whirlpool-client-cli
 
+# This repository is now maintained at https://code.samourai.io/whirlpool/whirlpool-client-cli 
+
 Command line client for [Whirlpool](https://github.com/Samourai-Wallet/Whirlpool) by Samourai-Wallet.
 
 ## Getting started
